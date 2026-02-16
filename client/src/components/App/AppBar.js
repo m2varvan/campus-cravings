@@ -13,7 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 
 const pages = [
-  { label: 'Promotions', path: '/', id: 'nav-promotions' },
+  { label: 'Deals', path: '/', id: 'nav-promotions' },
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 const settings = [

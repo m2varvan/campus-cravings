@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider} from '@mui/material/styles';
-import Promotions from '../Promotion/Promotion';
+import Deals from '../Deals/index';
 import Restaurant from '../Restaurant/Restaurant';
 import Login from '../User/Login';
 import SiteAppBar from './AppBar';
@@ -21,7 +21,7 @@ const App = () => {
         <SiteAppBar />
         <div>
           <Routes>
-            <Route path="/" element = {<Promotions uuid={uuid}/>} />
+            <Route path="/" element = {<Deals uuid={uuid}/>} />
             <Route path="/Restaurant" element = {<Restaurant />} />
             <Route path="/Login" element = {<Login />} />
             <Route path="/Signup" element = {<SignUp />} />
