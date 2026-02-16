@@ -6,9 +6,12 @@ import { Typography, Grid } from '@mui/material';
 const Deals = ({uuid}) => {
 
     const [todayDeals, setTodayDeals] = React.useState([])
+    const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false)
+    const [todayDealsError, setTodayDealsError] = React.useState(false)
 
     const loadTodayDeals = async () => {
         try {
+            setLoadingTodayDeals(true)
             const response = await fetch('/api/todaydeals');
 
             if (!response.ok) {
@@ -21,31 +24,28 @@ const Deals = ({uuid}) => {
 
         } catch (error) {
             console.error("Failed to load today's deals:", error);
-
-        } finally {
-
+            setTodayDeals(true)
+        } finally{
+            setLoadingTodayDeals(false)
         }
-        
     };
 
     React.useEffect(() => {
         loadTodayDeals()
     }, [])
 
-   
-
     return(
-        <Grid container p={4}> 
+        <Grid container p={4} display={'flex'}> 
             <Typography variant='h4'>University Shops Plaza Deals</Typography>
 
             <TodayDeal uuid={uuid} 
-                        loadTodayPromotions={loadTodayDeals}
-                        todayPromotions={todayDeals}/>
+                    todayDeals={todayDeals}
+                    loading={loadingTodayDeals}
+                    error={todayDealsError}/>
 
             <WeekDeal uuid={uuid}/>
         </Grid>
     )
-
 };
 
 export default Deals;

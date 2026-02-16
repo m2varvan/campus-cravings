@@ -50,6 +50,7 @@ app.get('/api/todaydeals', (req, res) => {
         const todayDeals = results.map(deal => ({
             dealID: deal.deal_id,
             restaurantID: deal.restaurant_id,
+            restaurantName: deal.restaurant_name,
             dealName: deal.deal_name,
             dealDescription: deal.description,
             dealPrice: deal.deal_price,
