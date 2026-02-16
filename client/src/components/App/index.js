@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider} from '@mui/material/styles';
-import Promotions from './Promotion';
-import Restaurant from './Restaurant';
-import Login from './Login';
+import Promotions from '../Promotion/Promotion';
+import Restaurant from '../Restaurant/Restaurant';
+import Login from '../User/Login';
 import SiteAppBar from './AppBar';
-import SignUp from './SignUp';
+import SignUp from '../User/SignUp';
 
 const App = () => {
 
@@ -13,6 +13,7 @@ const App = () => {
   const theme = createTheme({
   });
 
+  const uuid = null;
 
   return (
     <ThemeProvider theme={theme}>
@@ -20,7 +21,7 @@ const App = () => {
         <SiteAppBar />
         <div>
           <Routes>
-            <Route path="/" element = {<Promotions />} />
+            <Route path="/" element = {<Promotions uuid={uuid}/>} />
             <Route path="/Restaurant" element = {<Restaurant />} />
             <Route path="/Login" element = {<Login />} />
             <Route path="/Signup" element = {<SignUp />} />
