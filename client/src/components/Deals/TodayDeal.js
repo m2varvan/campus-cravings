@@ -6,21 +6,22 @@ import Box from '@mui/material/Box';
 
 const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
 
+    // Load today's deals on render
     React.useEffect(() => {
         loadTodayDeals()
     }, [])
 
+    // Variables and functions to show only 12 by default
     const defaultVisible = 12
     const [visibleCount, setVisibleCount] = useState(defaultVisible);
-
     const handleShowMore = () => {
         setVisibleCount(todayDeals.length);
     };
-
     const handleShowLess = () => {
         setVisibleCount(defaultVisible)
     };
 
+    // Function to get the current date and format it
     const getTodayDate = () => {
         const now = new Date();
 
@@ -44,11 +45,13 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
 
     return (
         <Grid item xs={12}>
+
+            {/* Today's Deals title and date */}
             <Typography variant='h5' sx={{ my: 2 }}>
                 Today's Deals ({getTodayDate()})
             </Typography>
 
-            {/* Loading State */}
+            {/* Show loading message when deals are loading */}
             {loading && (
                 <Box
                     sx={{
@@ -66,7 +69,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                 </Box>
             )}
 
-            {/* Error State */}
+            {/* Show error message if API call fails */}
             {!loading && error && (
                 <Box
                     sx={{
@@ -80,7 +83,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                 </Box>
             )}
 
-            {/* No Deals */}
+            {/* Show message saying no deals available */}
             {!loading && !error && todayDeals.length === 0 && (
                 <Box
                     sx={{
@@ -94,13 +97,16 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                 </Box>
             )}
 
-            {/* Deals List */}
+            {/* Show Deals */}
             {!loading && !error && todayDeals.length > 0 && (
                 <>
                     <Grid container>
+
+                        {/* Iterate through deals array and render a each deal in a deal component */}
                         {todayDeals.slice(0, visibleCount).map((deal) => (
                             <Deal uuid={uuid} deal={deal} />
                         ))}
+                        
                     </Grid>
 
                     {/* Show More Button */}

@@ -4,13 +4,17 @@ import ExpandedDeal from "./ExpandedDeal";
 
 const Deal = ({uuid, deal}) => {
 
-    const [openDetails, setOpenDetails] = React.useState(false)
+    // State to open dialog box with deal details
+    const [openDetails, setOpenDetails] = React.useState(false);
+
+    // Calculate average rating
+    const avgRating = ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1);
 
     return(
         <>
         <Grid item xs={12} sm={6} lg={4}>
             <Box
-                onClick={() => setOpenDetails(true)}
+                onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 sx={{
                 bgcolor: 'secondary.light',
                 p: 2,
@@ -19,25 +23,40 @@ const Deal = ({uuid, deal}) => {
                 }}
             >
                 {/* Deal name and price on opposite ends */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                    <Typography variant="h6">{deal.dealName}</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+
+                {/* Name and Restaurant Name */}
+                <Box sx={{width: '85%'}}>
+                   <Typography
+                        variant="h6"
+                        sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {deal.dealName}
+                    </Typography>
                     <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                    {deal.restaurantName}
+                        {deal.restaurantName}
                     </Typography>
                 </Box>
-
+                
+                {/* Price and Average Rating */}
                 <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="h6">${deal.dealPrice}</Typography>
+                    <Typography variant="h6">
+                        ${deal.dealPrice}
+                    </Typography>
                     <Typography variant="body2">
-                        ⭐{(deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3} ({deal.numRatings && 0})
+                        ⭐{avgRating} ({deal.numRatings && 0})
                     </Typography>
                 </Box>
                 
                 </Box>
             </Box>
         </Grid>
-
+        
+        {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} deal={deal} handleClose={() => setOpenDetails(false)} open={openDetails} />
         </>
 

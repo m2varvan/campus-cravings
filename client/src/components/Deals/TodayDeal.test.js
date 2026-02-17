@@ -95,8 +95,6 @@ describe('TodayDeal', () => {
         mockDeals.forEach((promo) => {
             expect(screen.getByText(promo.dealName)).toBeInTheDocument();
         });
-
-        screen.debug()
     });
 
 

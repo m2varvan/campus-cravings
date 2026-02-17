@@ -5,10 +5,12 @@ import { Typography, Grid } from '@mui/material';
 
 const Deals = ({uuid}) => {
 
+    // Stateful variables to load today's deals from db
     const [todayDeals, setTodayDeals] = React.useState([])
     const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false)
     const [todayDealsError, setTodayDealsError] = React.useState(false)
 
+    // API to load today's deals
     const loadTodayDeals = async () => {
         try {
             setLoadingTodayDeals(true)
@@ -32,14 +34,17 @@ const Deals = ({uuid}) => {
 
     return(
         <Grid container p={4} display={'flex'}> 
+            {/* Page Title */}
             <Typography variant='h4'>University Shops Plaza Deals</Typography>
 
+            {/* Today's Deals */}
             <TodayDeal uuid={uuid} 
                     todayDeals={todayDeals}
                     loading={loadingTodayDeals}
                     error={todayDealsError}
                     loadTodayDeals={loadTodayDeals}/>
 
+            {/* Weekly Deals */}
             <WeekDeal uuid={uuid}/>
         </Grid>
     )

@@ -4,10 +4,11 @@ import { createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import Deals from '../Deals/index';
-import Restaurant from '../Restaurant/Restaurant';
+import RestaurantList from '../Restaurant/index';
 import Login from '../User/Login';
 import SiteAppBar from './AppBar';
 import SignUp from '../User/SignUp';
+import RestaurantDetails from '../Restaurant/RestaurantDetails';
 
 const App = () => {
 
@@ -48,7 +49,8 @@ const App = () => {
         <div>
           <Routes>
             <Route path="/" element = {<Deals uuid={uuid}/>} />
-            <Route path="/Restaurant" element = {<Restaurant />} />
+            <Route path="/Restaurant" element = {<RestaurantList />} />
+            <Route path="/restaurant/:id" element={<RestaurantDetails />} />
             <Route path="/Login" element = {<Login />} />
             <Route path="/Signup" element = {<SignUp />} />
           </Routes>

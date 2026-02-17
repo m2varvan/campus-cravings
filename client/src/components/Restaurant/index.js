@@ -1,4 +1,4 @@
-const Restaurant = () => {
+const RestaurantList = () => {
 
     return(
         <div>
@@ -8,4 +8,4 @@ const Restaurant = () => {
 
 };
 
-export default Restaurant;
+export default RestaurantList;

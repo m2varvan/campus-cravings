@@ -28,17 +28,22 @@ app.get('/api/todaydeals', (req, res) => {
             d.deal_name, 
             d.description, 
             d.deal_price, 
-            d.edited_at, 
+            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
             r.restaurant_name, 
-            dh.day_of_week, 
-            dh.start_time, 
-            dh.end_time
+            GROUP_CONCAT(TIME_FORMAT(dh.start_time, '%H:%i')) AS start_times,
+            GROUP_CONCAT(TIME_FORMAT(dh.end_time, '%H:%i')) AS end_times,
+            AVG(rt.taste_score) AS avg_taste_rating,
+            AVG(rt.value_score) AS avg_value_rating,
+            AVG(rt.portion_score) AS avg_portion_rating,
+            COUNT(rt.rating_id) AS number_of_ratings
         FROM deals d
         RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
         JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+        LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
         WHERE dh.day_of_week = DAYNAME(NOW())
         AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
         AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
+        GROUP BY d.deal_id;
     `
 
     connection.query(sql, (error, results) => {
@@ -52,12 +57,16 @@ app.get('/api/todaydeals', (req, res) => {
             restaurantID: deal.restaurant_id,
             restaurantName: deal.restaurant_name,
             dealName: deal.deal_name,
-            dealDescription: deal.description,
-            dealPrice: deal.deal_price,
-            dealEditData: deal.edited_at,
+            dealDescription: deal.description || 'n/a',
+            dealPrice: deal.deal_price.toFixed(2),
+            dealEditData: deal.edited_at_formatted,
             dayOfWeek: deal.day_of_week,
-            dealStartTime: deal.start_time,
-            dealEndTime: deal.end_time
+            dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
+            dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
+            dealValueRating: deal.avg_value_rating ? deal.avg_value_rating.toFixed(1): 0,
+            dealTasteRating: deal.avg_taste_rating ? deal.avg_taste_rating.toFixed(1) : 0,
+            dealPortionRating: deal.avg_portion_rating ? deal.avg_portion_rating.toFixed(1) : 0,
+            numRatings: deal.number_or_ratings || 0
         }));
 
         console.log(todayDeals)
@@ -65,6 +74,52 @@ app.get('/api/todaydeals', (req, res) => {
     });
 
     connection.end();
+});
+
+// API to get the deal availability for a specific deal
+app.post('/api/dealhours', (req, res) => {
+
+    const connection = mysql.createConnection(config); 
+    const {dealID} = req.body;
+
+    const sql = `
+        SELECT 
+            deal_id, 
+            day_of_week, 
+            GROUP_CONCAT(TIME_FORMAT(start_time, '%H:%i') ORDER BY start_time) AS start_times,
+            GROUP_CONCAT(TIME_FORMAT(end_time, '%H:%i') ORDER BY end_time) AS end_times
+        FROM deal_hours
+        WHERE (start_date <= DATE(NOW()) OR start_date IS NULL)
+        AND (end_date >= DATE(NOW()) OR end_date IS NULL)
+        AND deal_id = ?
+        GROUP BY deal_id, day_of_week
+        ORDER BY 
+            deal_id,
+            FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
+        ;`
+    
+
+    // Connnect to SQL Database and insert review. Handle any errors. 
+    connection.query(sql, [dealID], (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load hours' });
+    }
+
+    // Return hours
+    const dealHours = result.map(day => ({
+        dealID: day.deal_id,
+        dayOfWeek: day.day_of_week,
+        dealStartTime: day.start_times ? day.start_times.split(',') : [],
+        dealEndTime: day.end_times ? day.end_times.split(',') : [],
+    }));
+
+        console.log(dealHours)
+        res.json(dealHours);
+  })
+
+  connection.end();
+        
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
