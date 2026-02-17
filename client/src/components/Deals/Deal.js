@@ -1,4 +1,5 @@
 import { Typography, Box, Grid } from "@mui/material";
+import React from 'react';
 
 const Deal = ({uuid, deal}) => {
     return(

@@ -75,7 +75,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                 <>
                     <Grid container>
                         {todayDeals.slice(0, visibleCount).map((deal) => (
-                            <Deal key={deal.uuid} deal={deal} />
+                            <Deal key={deal.dealID} deal={deal} />
                         ))}
                     </Grid>
 

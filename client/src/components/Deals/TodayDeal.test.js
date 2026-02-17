@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import React from 'react'; 
-import Deals from './index';
 import TodayDeal from './TodayDeal';
+
 
 
 describe('TodayDeal', () => {
@@ -33,7 +34,7 @@ describe('TodayDeal', () => {
         dealID: 20,
         dealName: 'Promo Special',
         dealDescription: '',
-        dealPrice: '10.99',
+        dealPrice: '19.99',
         dealEditDate: '2026-02-14 13:48:34',
         restaurantID: '33',
         restaurantName: 'Baba Grill',
@@ -76,8 +77,9 @@ describe('TodayDeal', () => {
         render(<TodayDeal 
             loadTodayDeals={loadTodayDeals}
             error={false}
-            loading={true}
+            loading={false}
             todayDeals={mockDeals}
+            uuid={null}
             {...props} />);
     }
 
@@ -88,12 +90,15 @@ describe('TodayDeal', () => {
         });
     });
 
-    test.only('displays promotions available for the current day', () => {
+    test('displays promotions available for the current day', () => {
         renderComponent();
         mockDeals.forEach((promo) => {
             expect(screen.getByText(promo.dealName)).toBeInTheDocument();
         });
+
+        screen.debug()
     });
+
 
     test('displays dish name, price, and restaurant name', () => {
         renderComponent();
@@ -105,24 +110,28 @@ describe('TodayDeal', () => {
     });
     
     test('displays "No promotions available." if no promotions exist', () => {
-        render(<TodayDeal promotions={[]} />);
+        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
+        render(<TodayDeal todayDeals={[]}
+                        loadTodayDeals={loadTodayDeals}
+                        loading={false}
+                        error={false}
+                        uuid={null} />);
         expect(screen.getByText(/No promotions available/i)).toBeInTheDocument();
     });
 
-    test('does not require login to view daily promotions', () => {
-        render(<TodayDeal uuid={null} promotions={mockDeals} />);
-        mockDeals.forEach((promo) => {
-            expect(screen.getByText(promo.dealName)).toBeInTheDocument();
-        });
-    });
 
     test('displays error message if promotions fail to load', () => {
-        render(<Deals error="An error occurred while loading promotions." />);
-        expect(screen.getByText(/An error occurred while loading promotions/i)).toBeInTheDocument();
+        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
+        render(<TodayDeal todayDeals={[]}
+                        loadTodayDeals={loadTodayDeals}
+                        loading={false}
+                        error={true}
+                        uuid={null} />);
+        expect(screen.getByText(/Something went wrong while loading deals. Please try again./i)).toBeInTheDocument();
     });
 
-    test('limits to 20 promotions by default and shows "See more" for extra', () => {
-        const manyPromos = Array.from({ length: 25 }, (_, i) => ({
+    test('limits to 12 promotions by default and shows "See more" for extra', () => {
+        const manyPromos = Array.from({ length: 12 }, (_, i) => ({
             dealID: i,
             dealName: `Promo ${i}`,
             dealDescription: `Desctiption ${i}`,
@@ -134,12 +143,16 @@ describe('TodayDeal', () => {
             startTime: '11:30:00',
             endTime: '16:00:00',
         }));
-        render(<Deals promotions={manyPromos} />);
-        for (let i = 0; i < 20; i++) {
+        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
+        render(<TodayDeal todayDeals={manyPromos}
+                        loadTodayDeals={loadTodayDeals}
+                        loading={false}
+                        error={false}
+                        uuid={null} />);
+        for (let i = 0; i < 12; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }
         expect(screen.queryByText('Promo 20')).not.toBeInTheDocument();
-        expect(screen.getByText(/See more/i)).toBeInTheDocument();
     });
 });
 

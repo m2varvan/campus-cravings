@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { createTheme, ThemeProvider} from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
 import Deals from '../Deals/index';
 import Restaurant from '../Restaurant/Restaurant';
 import Login from '../User/Login';
@@ -11,12 +13,31 @@ const App = () => {
 
   // Create theme
   const theme = createTheme({
+    palette: {
+      mode: 'light',
+      background: {
+        default: '#FFF8F0', // cream background
+        paper: '#FFF8F0',   // cream paper surfaces
+      },
+      text: {
+        primary: '#2B2D42', // dark text
+        secondary: '#2B2D42',
+        disabled: '#2B2D42',
+      },
+      primary: {
+        light: '#FFF3BF',       // soft yellow
+        main: '#FFD166',        // mid yellow
+        dark: '#F4C542',        // bright yellow
+        contrastText: '#2B2D42', // dark text on yellow backgrounds
+      },
+    },
   });
 
   const uuid = null;
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Router>
         <SiteAppBar />
         <div>
