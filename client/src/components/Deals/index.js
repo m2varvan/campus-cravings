@@ -24,15 +24,11 @@ const Deals = ({uuid}) => {
 
         } catch (error) {
             console.error("Failed to load today's deals:", error);
-            setTodayDeals(true)
+            setTodayDealsError(true)
         } finally{
             setLoadingTodayDeals(false)
         }
     };
-
-    React.useEffect(() => {
-        loadTodayDeals()
-    }, [])
 
     return(
         <Grid container p={4} display={'flex'}> 
@@ -41,7 +37,8 @@ const Deals = ({uuid}) => {
             <TodayDeal uuid={uuid} 
                     todayDeals={todayDeals}
                     loading={loadingTodayDeals}
-                    error={todayDealsError}/>
+                    error={todayDealsError}
+                    loadTodayDeals={loadTodayDeals}/>
 
             <WeekDeal uuid={uuid}/>
         </Grid>

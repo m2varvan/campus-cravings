@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import ExpandedDeal from './ExpandedDeal';
+// import { render, screen } from '@testing-library/react';
+// import ExpandedDeal from './ExpandedDeal';
 
 describe('Promotion', () => {
     test.todo('allows navigation to restaurant details from promotion'); // Expanded Deal

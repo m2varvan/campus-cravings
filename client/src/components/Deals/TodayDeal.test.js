@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import Promotion from './Promotion';
+import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react'; 
+import Deals from './index';
 import TodayDeal from './TodayDeal';
 
 
@@ -65,24 +66,38 @@ describe('TodayDeal', () => {
         endTime: '21:00:00',
     };
 
-    const mockPromotions = [deal1, deal2, deal3, deal4, deal5];
+    const mockDeals = [deal1, deal2, deal3, deal4, deal5];
 
-    test('loads today promotions on the first render', () => {
-        const loadTodayPromotions = jest.fn().mockName('loadTodayPromotions');
-        render(<TodayDeal loadTodayPromotions={loadTodayPromotions} />);
-        expect(loadTodayPromotions).toHaveBeenCalled();
+    let loadTodayDeals
+
+    function renderComponent(props = {}) {
+        loadTodayDeals = jest.fn().mockName('loadTodayDeals');
+
+        render(<TodayDeal 
+            loadTodayDeals={loadTodayDeals}
+            error={false}
+            loading={true}
+            todayDeals={mockDeals}
+            {...props} />);
+    }
+
+    test('loads today promotions on the first render', async () => {
+        renderComponent();
+        await waitFor(() => {
+            expect(loadTodayDeals).toHaveBeenCalled();
+        });
     });
 
-    test('displays promotions available for the current day', () => {
-        render(<TodayDeal promotions={mockPromotions} />);
-        mockPromotions.forEach((promo) => {
+    test.only('displays promotions available for the current day', () => {
+        renderComponent();
+        mockDeals.forEach((promo) => {
             expect(screen.getByText(promo.dealName)).toBeInTheDocument();
         });
     });
 
     test('displays dish name, price, and restaurant name', () => {
-        render(<TodayDeal promotions={mockPromotions} />);
-        mockPromotions.forEach((promo) => {
+        renderComponent();
+        mockDeals.forEach((promo) => {
             expect(screen.getByText(promo.dealName)).toBeInTheDocument();
             expect(screen.getByText(`$${promo.dealPrice}`)).toBeInTheDocument();
             expect(screen.getByText(promo.restaurantName)).toBeInTheDocument();
@@ -95,14 +110,14 @@ describe('TodayDeal', () => {
     });
 
     test('does not require login to view daily promotions', () => {
-        render(<TodayDeal uuid={null} promotions={mockPromotions} />);
-        mockPromotions.forEach((promo) => {
+        render(<TodayDeal uuid={null} promotions={mockDeals} />);
+        mockDeals.forEach((promo) => {
             expect(screen.getByText(promo.dealName)).toBeInTheDocument();
         });
     });
 
     test('displays error message if promotions fail to load', () => {
-        render(<Promotion error="An error occurred while loading promotions." />);
+        render(<Deals error="An error occurred while loading promotions." />);
         expect(screen.getByText(/An error occurred while loading promotions/i)).toBeInTheDocument();
     });
 
@@ -119,7 +134,7 @@ describe('TodayDeal', () => {
             startTime: '11:30:00',
             endTime: '16:00:00',
         }));
-        render(<Promotion promotions={manyPromos} />);
+        render(<Deals promotions={manyPromos} />);
         for (let i = 0; i < 20; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }

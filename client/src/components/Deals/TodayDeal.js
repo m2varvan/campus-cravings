@@ -1,14 +1,24 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Deal from './Deal';
 import { Typography, Grid, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
-const TodayDeal = ({ uuid, todayDeals = [], loading, error }) => {
-    const [visibleCount, setVisibleCount] = useState(6);
+const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
+
+    React.useEffect(() => {
+        loadTodayDeals()
+    }, [])
+
+    const defaultVisible = 12
+    const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
     const handleShowMore = () => {
-        setVisibleCount((prev) => prev + 6);
+        setVisibleCount(todayDeals.length);
+    };
+
+    const handleShowLess = () => {
+        setVisibleCount(defaultVisible)
     };
 
     const getTodayDate = () => {
@@ -69,7 +79,7 @@ const TodayDeal = ({ uuid, todayDeals = [], loading, error }) => {
                         ))}
                     </Grid>
 
-                    {/* 🔽 Show More Button */}
+                    {/* Show More Button */}
                     {visibleCount < todayDeals.length && (
                         <Box textAlign="center" mt={2}>
                             <Button variant="contained" onClick={handleShowMore}>
@@ -77,6 +87,16 @@ const TodayDeal = ({ uuid, todayDeals = [], loading, error }) => {
                             </Button>
                         </Box>
                     )}
+
+                    {/* Hide More Button */}
+                    {visibleCount > defaultVisible && (
+                        <Box textAlign="center" mt={2}>
+                            <Button variant="contained" onClick={handleShowLess}>
+                                Show Less
+                            </Button>
+                        </Box>
+                    )}
+
                 </>
             )}
         </Grid>
