@@ -15,6 +15,7 @@ const Deal = ({uuid, deal}) => {
         <Grid item xs={12} sm={6} lg={4}>
             <Box
                 onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
+                data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
                     p: 2,
@@ -26,7 +27,7 @@ const Deal = ({uuid, deal}) => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
 
                 {/* Name and Restaurant Name */}
-                <Box sx={{width: '85%'}}>
+                <Box sx={{width: '80%'}}>
                    <Typography
                         variant="h6"
                         sx={{
