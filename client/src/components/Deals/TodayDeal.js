@@ -50,24 +50,48 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
 
             {/* Loading State */}
             {loading && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={24} />
-                    <Typography>Loading Today's Deals</Typography>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',   
+                        justifyContent: 'center',
+                        width: '100%',      
+                        textAlign: 'center',
+                        gap: 2,
+                    }}
+                >
+                    <CircularProgress size={48} color="secondary" />
+                    <Typography variant={'h6'}>Loading Today's Deals</Typography>
                 </Box>
             )}
 
             {/* Error State */}
             {!loading && error && (
-                <Typography color="error">
-                    Something went wrong while loading deals. Please try again.
-                </Typography>
+                <Box
+                    sx={{
+                        width: '100%',      
+                        textAlign: 'center',
+                    }}
+                >
+                    <Typography variant={'h6'} color="error">
+                        Something went wrong while loading deals. Please try again.
+                    </Typography>
+                </Box>
             )}
 
             {/* No Deals */}
             {!loading && !error && todayDeals.length === 0 && (
-                <Typography>
-                    No promotions available today.
-                </Typography>
+                <Box
+                    sx={{
+                        width: '100%',      
+                        textAlign: 'center',
+                    }}
+                >
+                    <Typography variant={'h6'}>
+                        No promotions available today.
+                    </Typography>
+                </Box>
             )}
 
             {/* Deals List */}
@@ -75,7 +99,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                 <>
                     <Grid container>
                         {todayDeals.slice(0, visibleCount).map((deal) => (
-                            <Deal key={deal.dealID} deal={deal} />
+                            <Deal uuid={uuid} deal={deal} />
                         ))}
                     </Grid>
 
