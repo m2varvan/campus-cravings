@@ -37,6 +37,9 @@ const App = () => {
         dark: '#2B2D42',
       }
     },
+    typography: {
+      fontFamily: 'monospace'
+    }
   });
 
   const uuid = null;

@@ -104,9 +104,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
 
                         {/* Iterate through deals array and render a each deal in a deal component */}
                         {todayDeals.slice(0, visibleCount).map((deal) => (
-                            <div key={deal.dealID}>
-                                <Deal uuid={uuid} deal={deal} />
-                            </div>
+                            <Deal key={deal.dealID} uuid={uuid} deal={deal} />
                         ))}
 
                     </Grid>

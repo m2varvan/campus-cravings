@@ -53,12 +53,11 @@ const SiteAppBar = () => {
               display: { xs: 'none', md: 'flex' },
               fontFamily: 'monospace',
               fontWeight: 700,
-              letterSpacing: '.3rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            LOGO
+            Campus Cravings
           </Typography>
 
           {/* Logo for xs and sm*/}
@@ -72,13 +71,12 @@ const SiteAppBar = () => {
               display: { xs: 'flex', md: 'none' },
               flexGrow: 1,
               fontFamily: 'monospace',
+              fontSize: '1.8rem', 
               fontWeight: 700,
-              letterSpacing: '.3rem',
               color: 'inherit',
-              textDecoration: 'none',
             }}
           >
-            LOGO
+            CampusCravings
           </Typography>
 
           {/* Page Buttons */}
@@ -88,7 +86,15 @@ const SiteAppBar = () => {
                 key={page.label}
                 id={page.id}
                 onClick={() => handleNavigate(page.path)}
-                sx={{ color: 'white', display: 'block' }}
+                sx={{
+                  color: 'white',
+                  display: 'block',
+                  fontSize: '1.1rem',      
+                  px: 3,   
+                  py: 1.5,
+                  minWidth: 120,
+                  textTransform: 'none'
+                }}
               >
                 {page.label}
               </Button>

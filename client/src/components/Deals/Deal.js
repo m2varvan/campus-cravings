@@ -16,10 +16,10 @@ const Deal = ({uuid, deal}) => {
             <Box
                 onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 sx={{
-                bgcolor: 'secondary.light',
-                p: 2,
-                m: 1,
-                borderRadius: 1,
+                    bgcolor: 'secondary.light',
+                    p: 2,
+                    m: 1,
+                    borderRadius: 1,
                 }}
             >
                 {/* Deal name and price on opposite ends */}
