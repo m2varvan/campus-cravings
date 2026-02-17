@@ -1,62 +1,120 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import Deal from './Deal';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ExpandedDeal from './ExpandedDeal';
+import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 
-describe('Expanded Deals', () => {
-    const deal1 = {
+describe('ExpandedDeal', () => {
+
+    const mockDeal = {
         dealID: 1,
-        dealName: 'Lunch Special',
-        dealDescription: 'Choice of Veg of Chicken Dish Comes with Steam Rice Upgrade to Egg Fried Rice/Egg Noodles fo $1.99',
-        dealPrice: '10.99',
-        dealEditDate: '2026-02-14 13:48:34',
-        restaurantID: '1',
-        restaurantName: 'Hakka Nation',
-        dayOfWeek: 'Monday',
-        startTime: '11:30:00',
-        endTime: '16:00:00',
+        dealName: 'Burger Special',
+        restaurantID: 123,
+        restaurantName: 'Test Restaurant',
+        dealDescription: 'Tasty burger with fries',
+        dealPrice: 9.99,
+        numRatings: 10,
+        dealValueRating: 4,
+        dealTasteRating: 5,
+        dealPortionRating: 3,
+        dealEditData: '2024-01-01 13:16',
     };
 
-    const mockDeals = [deal1];
+    const mockHours = [
+        {
+        dayOfWeek: 'Monday',
+        dealStartTime: ['10:00', '14:00'],
+        dealEndTime: ['12:00', '16:00'],
+        },
+        {
+        dayOfWeek: 'Tuesday',
+        dealStartTime: ['11:00'],
+        dealEndTime: ['15:00'],
+        },
+    ];
 
-    test('allows navigation to restaurant details from promotion', () => {
-        render(<Deal deal={deal1} />);
+    let handleClose;
 
-        const restaurantLink = screen.getByText(deal1.restaurantName);
-        expect(restaurantLink).toBeInTheDocument();
+    function renderComponent(props = {}) {
+        handleClose = jest.fn().mockName('handleClose');
 
-        fireEvent.click(restaurantLink);
-    });
-
-    test.only('shows additional details when a promotion is selected', () => {
         render(
-            <>
-                <Deal deal={deal1} />
-            </>
+        <MemoryRouter>
+            <ExpandedDeal
+            deal={mockDeal}
+            open={true}
+            uuid={null}
+            handleClose={handleClose}
+            {...props}
+            />
+        </MemoryRouter>
         );
+    }
 
-        const dealButton = screen.getByText(deal1.dealName);
-        fireEvent.click(dealButton);
-
-        // Check that all details appear
-        expect(screen.getByText(deal1.dealName)).toBeInTheDocument();
-        expect(screen.getByText(deal1.dealDescription)).toBeInTheDocument();
-        expect(screen.getByText(`$${deal1.dealPrice}`)).toBeInTheDocument();
-        expect(screen.getByText(deal1.restaurantName)).toBeInTheDocument();
-        // expect(screen.getByText(deal1.dayOfWeek)).toBeInTheDocument();
-        // expect(screen.getByText(deal1.startTime)).toBeInTheDocument();
-        // expect(screen.getByText(deal1.endTime)).toBeInTheDocument();
+    afterEach(() => {
+        jest.resetAllMocks();
     });
 
-    test('closes expanded promotion and returns to overview', () => {
-        // Render ExpandedDeal with a mock close callback
-        const mockClose = jest.fn();
-        render(<ExpandedDeal deal={deal1} onClose={mockClose} />);
+    test('displays the restaurant details', () => {
+        renderComponent();
+        expect(screen.getByText(mockDeal.dealName)).toBeInTheDocument();
+        expect(screen.getByText(mockDeal.dealDescription)).toBeInTheDocument();
+        expect(screen.getByText(mockDeal.restaurantName)).toBeInTheDocument();
+        expect(screen.getByText(`$${mockDeal.dealPrice}`)).toBeInTheDocument();
+        expect(screen.getByText(`Deal information last updated: ${mockDeal.dealEditData}`)).toBeInTheDocument();
+    });
 
-        // Assume there's a "Close" button
-        const closeButton = screen.getByRole('button', { name: /close/i });
-        fireEvent.click(closeButton);
+    test('calls handleClose when Close button is clicked', () => {
+        renderComponent();
+        const button = screen.getByRole('button', { name: /close/i })
+        fireEvent.click(button);
+        expect(handleClose).toHaveBeenCalledTimes(1);
+    });
 
-        expect(mockClose).toHaveBeenCalled();
+    test('calls getDealHours on render', () => {
+        // mock fetch
+        global.fetch = jest.fn().mockReturnValue({
+            ok: true,
+            json: () => []
+        });
+        renderComponent();
+        expect(global.fetch).toHaveBeenCalledWith('/api/dealhours', expect.any(Object));
+    });
+
+    test('shows correct deal availability', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve(mockHours),
+        });
+
+        renderComponent();
+
+        // Wait for the component to update after fetch resolves
+        await waitFor(() => {
+            expect(screen.getByText(/Monday:/)).toBeInTheDocument();
+            expect(screen.getByText(/10:00 - 12:00/)).toBeInTheDocument();
+            expect(screen.getByText(/14:00 - 16:00/)).toBeInTheDocument();
+            expect(screen.getByText(/Tuesday:/)).toBeInTheDocument();
+            expect(screen.getByText(/11:00 - 15:00/)).toBeInTheDocument();
+        });
+
+    });
+
+
+    test('shows loading message while hours are loading', async () => {
+        let resolveFetch;
+        global.fetch = jest.fn(() => new Promise((res) => { resolveFetch = res }));
+
+        renderComponent();
+
+        // Loading message should appear
+        expect(screen.getByText(/Loading availability.../)).toBeInTheDocument();
+    });
+
+    test('shows error message if hours fail to load', () => {
+        global.fetch = jest.fn(() => {throw new Error('API failure')});
+        renderComponent();
+        expect(screen.getByText(/Failed to load availability/)).toBeInTheDocument();
+    
     });
 });
