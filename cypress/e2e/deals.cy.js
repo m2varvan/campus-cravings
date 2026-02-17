@@ -1,5 +1,5 @@
-describe('Showing Promotions', () => {
-    it("Shows Monday's promotions from the server", () => {
+describe('Showing Deals', () => {
+    it("Shows Monday's Deals from the server", () => {
 
         const dayOfWeek = 'Monday';
         const deal1 = {
@@ -63,12 +63,12 @@ describe('Showing Promotions', () => {
             endTime: '21:00:00',
         };
 
-        cy.intercept('GET', '/api/promotions', [
+        cy.intercept('GET', '/api/todaydeals', [
             deal1, deal2, deal3, deal4, deal5
         ]);
 
         cy.visit('/');
-        cy.contains("Today's Promotions")
+        cy.contains("Today's Deals");
         cy.contains(dayOfWeek);
 
         cy.contains(deal1.dealName);

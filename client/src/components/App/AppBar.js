@@ -38,7 +38,7 @@ const SiteAppBar = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 

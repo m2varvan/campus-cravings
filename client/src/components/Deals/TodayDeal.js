@@ -82,7 +82,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                     {/* Show More Button */}
                     {visibleCount < todayDeals.length && (
                         <Box textAlign="center" mt={2}>
-                            <Button variant="contained" onClick={handleShowMore}>
+                            <Button variant="contained" onClick={handleShowMore} color={'secondary'}>
                                 Show More
                             </Button>
                         </Box>
@@ -91,7 +91,7 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                     {/* Hide More Button */}
                     {visibleCount > defaultVisible && (
                         <Box textAlign="center" mt={2}>
-                            <Button variant="contained" onClick={handleShowLess}>
+                            <Button variant="contained" onClick={handleShowLess} color={'secondary'}>
                                 Show Less
                             </Button>
                         </Box>

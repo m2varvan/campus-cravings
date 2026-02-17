@@ -30,6 +30,11 @@ const App = () => {
         dark: '#F4C542',        // bright yellow
         contrastText: '#2B2D42', // dark text on yellow backgrounds
       },
+      secondary: {
+        light: '#A9BCD9',
+        main: '#5E7AA6',
+        dark: '#2B2D42',
+      }
     },
   });
 
