@@ -51,7 +51,7 @@ describe('Deal', () => {
         expect(screen.getByText(`$${mockDeal.dealPrice}`)).toBeInTheDocument();
     });
 
-    test.only('deals with no ratings display "No ratings yet" on deal card', () => {
+    test('deals with no ratings display "No ratings yet" on deal card', () => {
         render(<Deal
             deal={mockDeal2}
             uuid={null}

@@ -50,7 +50,7 @@ const Deal = ({uuid, deal}) => {
                     </Typography>
                     <Typography variant="body2">
                         {deal.numRatings ?
-                        '⭐ ' + avgRating (deal.numRatings)
+                        '⭐ ' + avgRating + '/5 ' + (deal.numRatings)
                         :
                         'No ratings yet' // In italics
                         }

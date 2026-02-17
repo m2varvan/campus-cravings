@@ -185,35 +185,43 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose }) => {
                   Average Ratings ({deal.numRatings} Ratings)
                 </Typography>
 
+                {/* If there are no ratings, display message saying no ratings yet. Otherwise display ratings */}
+                {deal.numRatings === 0 ?
+                <Typography variant='body1'>No ratings yet. </Typography>
+                :
+                <>
                 {/* Value Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Value</Typography>
-                  <Typography variant="body2">⭐ {deal.dealValueRating}</Typography>
+                  <Typography variant="body2">Average Value Rating</Typography>
+                  <Typography variant="body2">⭐ {deal.dealValueRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Taste Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Taste</Typography>
-                  <Typography variant="body2">⭐ {deal.dealTasteRating}</Typography>
+                  <Typography variant="body2">Average Taste Rating</Typography>
+                  <Typography variant="body2">⭐ {deal.dealTasteRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Portion Size Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2">Portion Size</Typography>
-                <Typography variant="body2">⭐ {deal.dealPortionRating}</Typography>
+                <Typography variant="body2">Average Portion Size Rating </Typography>
+                <Typography variant="body2">⭐ {deal.dealPortionRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Overall Rating */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" fontWeight={600}>
-                      Overall
+                      Average Overall Rating
                   </Typography>
                   <Typography variant="body2" fontWeight={600}>
                       ⭐ {(
                       (deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3
-                      ).toFixed(1)}
+                      ).toFixed(1)}/5
                   </Typography>
                 </Box>
+                </>
+                }
+                
             </Box>
 
             {/* My Ratings */}

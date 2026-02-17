@@ -17,6 +17,10 @@ describe('TodayDeal', () => {
         dayOfWeek: 'Monday',
         startTime: '11:30:00',
         endTime: '16:00:00',
+        numRatings: 0,
+        avgTasteRating: 0,
+        avgPortionRating: 0,
+        avgValueRating: 0,
     };
     const deal2 = {
         dealID: 2,
@@ -29,6 +33,10 @@ describe('TodayDeal', () => {
         dayOfWeek: 'Monday',
         startTime: '11:00:00',
         endTime: '14:00:00',
+        numRatings: 0,
+        avgTasteRating: 0,
+        avgPortionRating: 0,
+        avgValueRating: 0,
     };
     const deal3 = {
         dealID: 20,
@@ -41,6 +49,10 @@ describe('TodayDeal', () => {
         dayOfWeek: 'Monday',
         startTime: '11:00:00',
         endTime: '21:00:00',
+        numRatings: 0,
+        avgTasteRating: 0,
+        avgPortionRating: 0,
+        avgValueRating: 0,
     };
     const deal4 = {
         dealID: 4,
@@ -53,6 +65,10 @@ describe('TodayDeal', () => {
         dayOfWeek: 'Monday',
         startTime: '15:00:00',
         endTime: '17:00:00',
+        numRatings: 0,
+        avgTasteRating: 0,
+        avgPortionRating: 0,
+        avgValueRating: 0,
     };
     const deal5 = {
         dealID: 5,
@@ -65,6 +81,10 @@ describe('TodayDeal', () => {
         dayOfWeek: 'Monday',
         startTime: '11:00:00',
         endTime: '21:00:00',
+        numRatings: 0,
+        avgTasteRating: 0,
+        avgPortionRating: 0,
+        avgValueRating: 0,
     };
 
     const mockDeals = [deal1, deal2, deal3, deal4, deal5];
@@ -137,6 +157,10 @@ describe('TodayDeal', () => {
             dealEditDate: '2026-02-14 13:48:34',
             restaurantID: '1',
             restaurantName: 'Restaurant name' + i,
+            numRatings: 0,
+            avgTasteRating: 0,
+            avgPortionRating: 0,
+            avgValueRating: 0,
             dayOfWeek: 'Monday',
             startTime: '11:30:00',
             endTime: '16:00:00',

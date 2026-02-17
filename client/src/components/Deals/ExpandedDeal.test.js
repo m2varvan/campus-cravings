@@ -14,9 +14,9 @@ describe('ExpandedDeal', () => {
         dealDescription: 'Tasty burger with fries',
         dealPrice: 9.99,
         numRatings: 10,
-        dealValueRating: 4,
+        dealValueRating: 4.5,
         dealTasteRating: 5,
-        dealPortionRating: 3,
+        dealPortionRating: 2.5,
         dealEditData: '2024-01-01 13:16',
     };
 
@@ -133,26 +133,30 @@ describe('ExpandedDeal', () => {
 
     test('deals with no ratings display "No ratings yet" in expanded deal info', () => {
         handleClose = jest.fn().mockName('handleClose');
-        render(<ExpandedDeal
-            deal={mockDeal2}
-            open={true}
-            uuid={null}
-            handleClose={handleClose}
-            />);
+        render(<MemoryRouter>
+                <ExpandedDeal
+                deal={mockDeal2}
+                open={true}
+                uuid={null}
+                handleClose={handleClose}
+                />
+            </MemoryRouter>);
 
         expect(screen.getByText(/No ratings yet/i)).toBeInTheDocument();
     });
 
     test('ratings are displayed consistently with a star and (one decimal point)/5 in expanded deal info', () => {
         renderComponent();
-        const avg40 = screen.getAllByText((/⭐ 4\.0\/5/i));
-        expect(avg40).toHaveLength(2);
-        expect(screen.getByText((/⭐ 5\.0\/5/i)))
-        expect(screen.getByText((/⭐ 3\.0\/5/i)))
-        expect(/Overall Rating/i).toBeInTheDocument()
-        expect(/Portion Size Rating/i).toBeInTheDocument()
-        expect(/Taste Rating/i).toBeInTheDocument()
-        expect(/Value Rating/i).toBeInTheDocument()
+        expect(screen.getByText(/Average Portion Size Rating/i)).toBeInTheDocument()
+        expect(screen.getByText(/Average Value Rating/i)).toBeInTheDocument()
+        expect(screen.getByText(/Average Taste Rating/i)).toBeInTheDocument()
+        expect(screen.getByText(new RegExp(`⭐ ${mockDeal.dealPortionRating.toFixed(1)}/5`))).toBeInTheDocument()
+        expect(screen.getByText(new RegExp(`⭐ ${mockDeal.dealTasteRating.toFixed(1)}/5`))).toBeInTheDocument()
+        expect(screen.getByText(new RegExp(`⭐ ${mockDeal.dealValueRating.toFixed(1)}/5`))).toBeInTheDocument()
+        expect(screen.getByText(/Average Overall Rating/i)).toBeInTheDocument()
+        const average = ((mockDeal.dealTasteRating + mockDeal.dealValueRating + mockDeal.dealPortionRating) / 3).toFixed(1)
+        expect(screen.getByText(new RegExp(`⭐ ${average}/5`))).toBeInTheDocument()
+        
         
     })
 
@@ -166,5 +170,5 @@ describe('ExpandedDeal', () => {
         renderComponent();
         expect(screen.getByText(/(10 Ratings)/i)).toBeInTheDocument();
     })
-    
+
 });
