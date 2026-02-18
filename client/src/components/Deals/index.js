@@ -10,6 +10,10 @@ const Deals = ({uuid}) => {
     const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false)
     const [todayDealsError, setTodayDealsError] = React.useState(false)
 
+    const [weekDeals, setWeekDeals] = React.useState({})
+    const [loadingWeekDeals, setLoadingWeekDeals] = React.useState(false)
+    const [WeekDealsError, setWeekDealsError] = React.useState(false)
+
     // API to load today's deals
     const loadTodayDeals = async () => {
         try {
@@ -32,6 +36,28 @@ const Deals = ({uuid}) => {
         }
     };
 
+    // API to load today's deals
+    const loadWeekDeals = async () => {
+        try {
+            setLoadingWeekDeals(true)
+            const response = await fetch('/api/weekdeals');
+
+            if (!response.ok) {
+                throw new Error (`Server error: $(response.status)`);
+            }
+
+            const data = await response.json();
+            setWeekDeals(data)
+            console.log(data)
+
+        } catch (error) {
+            console.error("Failed to load weekly deals:", error);
+            setWeekDealsError(true)
+        } finally{
+            setLoadingWeekDeals(false)
+        }
+    };
+
     return(
         <Grid container p={4} display={'flex'}> 
             {/* Page Title */}
@@ -45,7 +71,11 @@ const Deals = ({uuid}) => {
                     loadTodayDeals={loadTodayDeals}/>
 
             {/* Weekly Deals */}
-            <WeekDeal uuid={uuid}/>
+            <WeekDeal uuid={uuid}
+                    weekDeals={weekDeals}
+                    loading={loadingWeekDeals}
+                    error={WeekDealsError}
+                    loadWeekDeals={loadWeekDeals}/>
         </Grid>
     )
 };

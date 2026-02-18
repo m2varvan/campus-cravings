@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react'; 
-import TodayDeal from './TodayDeal';
+import WeekDeal from './WeekDeal';
 
 
 
-describe('TodayDeal', () => {
+describe('WeekDeal', () => {
     const deal1 = {
         dealID: 1,
         dealName: 'Lunch Special',
@@ -46,7 +46,7 @@ describe('TodayDeal', () => {
         dealEditDate: '2026-02-14 13:48:34',
         restaurantID: '33',
         restaurantName: 'Baba Grill',
-        dayOfWeek: 'Monday',
+        dayOfWeek: 'Tuesday',
         startTime: '11:00:00',
         endTime: '21:00:00',
         numRatings: 0,
@@ -62,7 +62,7 @@ describe('TodayDeal', () => {
         dealEditDate: '2026-02-14 13:48:34',
         restaurantID: '16',
         restaurantName: "Aunty's Kitchen",
-        dayOfWeek: 'Monday',
+        dayOfWeek: 'Wednesday',
         startTime: '15:00:00',
         endTime: '17:00:00',
         numRatings: 0,
@@ -78,7 +78,7 @@ describe('TodayDeal', () => {
         dealEditDate: '2026-02-14 13:48:34',
         restaurantID: '3',
         restaurantName: 'Izna Poke Plus',
-        dayOfWeek: 'Monday',
+        dayOfWeek: 'Friday',
         startTime: '11:00:00',
         endTime: '21:00:00',
         numRatings: 0,
@@ -87,69 +87,91 @@ describe('TodayDeal', () => {
         avgValueRating: 0,
     };
 
-    const mockDeals = [deal1, deal2, deal3, deal4, deal5];
+    const mockDeals = {
+        Monday: [deal1, deal2],
+        Tuesday: [deal3],
+        Wednesday: [deal4],
+        Thursday: [],
+        Friday: [deal5],
+        Saturday: [],
+        Sunday: []
+    };
 
-    let loadTodayDeals
+    let loadWeekDeals
 
     function renderComponent(props = {}) {
-        loadTodayDeals = jest.fn().mockName('loadTodayDeals');
+        loadWeekDeals = jest.fn().mockName('loadWeekDeals');
 
-        render(<TodayDeal 
-            loadTodayDeals={loadTodayDeals}
+        render(<WeekDeal
+            loadWeekDeals={loadWeekDeals}
             error={false}
             loading={false}
-            todayDeals={mockDeals}
+            weekDeals={mockDeals}
             uuid={null}
             {...props} />);
     }
 
-    test('loads today promotions on the first render', async () => {
+    test('loads weekly promotions on the first render', async () => {
         renderComponent();
         await waitFor(() => {
-            expect(loadTodayDeals).toHaveBeenCalled();
+            expect(loadWeekDeals).toHaveBeenCalled();
         });
     });
 
-    test('displays promotions available for the current day', () => {
+    test('displays dish name for each deal under proper week day name', () => {
         renderComponent();
-        mockDeals.forEach((promo) => {
-            expect(screen.getByText(promo.dealName)).toBeInTheDocument();
-        });
+
+        const section_monday = screen.getByTestId('monday');
+        expect(within(section_monday).getByText(/monday/i)).toBeInTheDocument();
+        expect(within(section_monday).getByText((deal1.dealName))).toBeInTheDocument();
+        expect(within(section_monday).getByText((deal2.dealName))).toBeInTheDocument();
+
+        const section_tues = screen.getByTestId('tuesday');
+        expect(within(section_tues).getByText(/tuesday/i)).toBeInTheDocument();
+        expect(within(section_tues).getByText((deal3.dealName))).toBeInTheDocument();
+
+        const section_wed = screen.getByTestId('wednesday');
+        expect(within(section_wed).getByText(/wednesday/i)).toBeInTheDocument();
+        expect(within(section_wed).getByText((deal4.dealName))).toBeInTheDocument();
+
+        const section_fri = screen.getByTestId('friday');
+        expect(within(section_fri).getByText(/friday/i)).toBeInTheDocument();
+        expect(within(section_fri).getByText((deal5.dealName))).toBeInTheDocument();
+        
     });
 
-
-    test('displays dish name, price, and restaurant name', () => {
-        renderComponent();
-        mockDeals.forEach((promo) => {
-            expect(screen.getByText(promo.dealName)).toBeInTheDocument();
-            expect(screen.getByText(`$${promo.dealPrice}`)).toBeInTheDocument();
-            expect(screen.getByText(promo.restaurantName)).toBeInTheDocument();
-        });
-    });
     
-    test('displays "No promotions available." if no promotions exist', () => {
-        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={[]}
-                        loadTodayDeals={loadTodayDeals}
-                        loading={false}
-                        error={false}
-                        uuid={null} />);
-        expect(screen.getByText(/No promotions available/i)).toBeInTheDocument();
+    test('displays "No promotions available on {day name}" if no promotions exist', () => {
+        renderComponent();
+        const section = screen.getByTestId('saturday');
+        expect(within(section).getAllByText(/saturday/i)[0]).toBeInTheDocument();
+        expect(within(section).getByText(/no promotions available/i)).toBeInTheDocument();
+        
     });
 
 
     test('displays error message if promotions fail to load', () => {
-        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={[]}
-                        loadTodayDeals={loadTodayDeals}
+        const loadWeekDeals= jest.fn().mockName('loadWeekDeals');
+        render(<WeekDeal weekDeals={[]}
+                        loadWeekDeals={loadWeekDeals}
                         loading={false}
                         error={true}
                         uuid={null} />);
         expect(screen.getByText(/Something went wrong while loading deals. Please try again./i)).toBeInTheDocument();
     });
 
-    test('limits to 12 promotions by default and shows "See more" for extra', () => {
-        const manyPromos = Array.from({ length: 20 }, (_, i) => ({
+    test('displays loading message while deals are loading', () => {
+        const loadWeekDeals = jest.fn().mockName('loadWeekDeals');
+        render(<WeekDeal weekDeals={[]}
+                        loadWeekDeals={loadWeekDeals}
+                        loading={true}
+                        error={false}
+                        uuid={null} />);
+        expect(screen.getByText(/Loading weekly deals/i)).toBeInTheDocument();
+    });
+
+    test('limits to 6 promotions by default and shows "See more" for extra', () => {
+        const manyPromos = Array.from({ length: 10 }, (_, i) => ({
             dealID: i,
             dealName: `Promo ${i}`,
             dealDescription: `Desctiption ${i}`,
@@ -165,16 +187,18 @@ describe('TodayDeal', () => {
             startTime: '11:30:00',
             endTime: '16:00:00',
         }));
-        const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={manyPromos}
-                        loadTodayDeals={loadTodayDeals}
+        const manyPromosObject = {Monday: manyPromos}
+        const loadWeekDeals = jest.fn().mockName('loadWeekDeals');
+        render(<WeekDeal weekDeals={manyPromosObject}
+                        loadWeekDeals={loadWeekDeals}
                         loading={false}
                         error={false}
                         uuid={null} />);
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 6; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }
-        expect(screen.queryByText('Promo 12')).not.toBeInTheDocument();
+        expect(screen.getByText(/show more/i)).toBeInTheDocument();
+        expect(screen.queryByText('Promo 6')).not.toBeInTheDocument();
     });
 });
 
