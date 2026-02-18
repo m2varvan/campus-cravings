@@ -10,9 +10,9 @@ const Deals = ({uuid}) => {
     const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false)
     const [todayDealsError, setTodayDealsError] = React.useState(false)
 
-    const [weekDeals, setWeekDeals] = React.useState([])
-    const [loadingWeekDeals, setLoadingWeekDeals] = (false)
-    const [WeekDealsError, setWeekDealsError] = (false)
+    const [weekDeals, setWeekDeals] = React.useState({})
+    const [loadingWeekDeals, setLoadingWeekDeals] = React.useState(false)
+    const [WeekDealsError, setWeekDealsError] = React.useState(false)
 
     // API to load today's deals
     const loadTodayDeals = async () => {
