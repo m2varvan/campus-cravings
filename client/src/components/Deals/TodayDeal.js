@@ -101,12 +101,12 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
             {!loading && !error && todayDeals.length > 0 && (
                 <>
                     <Grid container>
-
                         {/* Iterate through deals array and render a each deal in a deal component */}
                         {todayDeals.slice(0, visibleCount).map((deal) => (
-                            <Deal key={deal.dealID} uuid={uuid} deal={deal} />
+                            <Grid item xs={12} sm={6} lg={4}>
+                                <Deal key={deal.dealID} uuid={uuid} deal={deal} />
+                            </Grid>
                         ))}
-
                     </Grid>
 
                     {/* Show More Button */}

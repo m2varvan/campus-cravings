@@ -87,7 +87,15 @@ describe('WeekDeal', () => {
         avgValueRating: 0,
     };
 
-    const mockDeals = [deal1, deal2, deal3, deal4, deal5];
+    const mockDeals = {
+        Monday: [deal1, deal2],
+        Tuesday: [deal3],
+        Wednesday: [deal4],
+        Thursday: [],
+        Friday: [deal5],
+        Saturday: [],
+        Sunday: []
+    };
 
     let loadWeekDeals
 
@@ -133,10 +141,10 @@ describe('WeekDeal', () => {
     });
 
     
-    test('displays "No promotions available for {day name}" if no promotions exist', () => {
+    test('displays "No promotions available on {day name}" if no promotions exist', () => {
         renderComponent();
         const section = screen.getByTestId('saturday');
-        expect(within(section).getByText(/saturday/i)).toBeInTheDocument();
+        expect(within(section).getAllByText(/saturday/i)[0]).toBeInTheDocument();
         expect(within(section).getByText(/no promotions available/i)).toBeInTheDocument();
         
     });
@@ -179,8 +187,9 @@ describe('WeekDeal', () => {
             startTime: '11:30:00',
             endTime: '16:00:00',
         }));
+        const manyPromosObject = {Monday: manyPromos}
         const loadWeekDeals = jest.fn().mockName('loadWeekDeals');
-        render(<WeekDeal weekDeals={manyPromos}
+        render(<WeekDeal weekDeals={manyPromosObject}
                         loadWeekDeals={loadWeekDeals}
                         loading={false}
                         error={false}

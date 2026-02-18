@@ -12,7 +12,6 @@ const Deal = ({uuid, deal}) => {
 
     return(
         <>
-        <Grid item xs={12} sm={6} lg={4}>
             <Box
                 onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 data-testid={`expand-dealID-${deal.dealID}`}
@@ -59,7 +58,6 @@ const Deal = ({uuid, deal}) => {
                 
                 </Box>
             </Box>
-        </Grid>
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} deal={deal} handleClose={() => setOpenDetails(false)} open={openDetails} />
