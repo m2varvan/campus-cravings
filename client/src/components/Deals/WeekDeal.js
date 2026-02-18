@@ -4,6 +4,7 @@ import WeekDayDeal from './WeekDayDeal'
 
 const WeekDeal = ({uuid, weekDeals, loadWeekDeals, loading, error}) => {
 
+    // Load all deals for week view
     React.useEffect(() => {
         loadWeekDeals();
     }, [])
@@ -48,7 +49,11 @@ const WeekDeal = ({uuid, weekDeals, loadWeekDeals, loading, error}) => {
             <Grid container justifyContent={'center'} >
                 {/*For each day of week, RenderWeekDayDeals* */}
                 {Object.keys(weekDeals).map((dayOfWeek, index) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={index} data-testid={dayOfWeek.toLocaleLowerCase()}>
+                    <Grid item 
+                            xs={12} sm={6} md={4} lg={3} 
+                            key={index} 
+                            data-testid={dayOfWeek.toLocaleLowerCase()} 
+                            >
                         <WeekDayDeal
                             uuid={uuid}
                             day={dayOfWeek}

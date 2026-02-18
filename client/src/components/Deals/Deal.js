@@ -1,4 +1,4 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
 
@@ -17,7 +17,7 @@ const Deal = ({uuid, deal, size='lg'}) => {
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
-                    p: size==='lg' ? 2 : 1,
+                    p: size==='lg' ? 2 : 1, // If large size, more padding
                     m: 1,
                     borderRadius: 1,
                 }}

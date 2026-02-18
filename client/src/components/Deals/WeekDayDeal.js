@@ -4,7 +4,7 @@ import { Typography, Box, Button } from '@mui/material';
 
 const WeekDayDeal = ({uuid, day, dealList}) => {
 
-    // Variables and functions to show only 6 by default
+    // Variables and functions to show only deals 6 by default
     const defaultVisible = 6
     const [visibleCount, setVisibleCount] = useState(defaultVisible);
     const handleShowMore = () => {
@@ -24,6 +24,7 @@ const WeekDayDeal = ({uuid, day, dealList}) => {
                 borderRadius: 2,
                 p: 1,
                 m: 1,
+                height: 550, // Set height so boxes are same size
                 }}
             >
                 {/* Day Title */}

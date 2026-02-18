@@ -121,7 +121,7 @@ app.post('/api/dealhours', (req, res) => {
         
 });
 
-// Route to get deals valid for current day
+// Route to get all valid deals
 app.get('/api/weekdeals', (req, res) => {
     const connection = mysql.createConnection(config)
 
@@ -156,6 +156,7 @@ app.get('/api/weekdeals', (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch promotions'});
         }
         
+        // Create object to sort deals by day of week
         const dealsByDay = {
             Monday: [],
             Tuesday: [],
@@ -166,6 +167,7 @@ app.get('/api/weekdeals', (req, res) => {
             Sunday: []
         };
 
+        // Iterate through results and append to correct day of week array. 
         results.map(deal => {
             dealsByDay[deal.day_of_week].push(
                 {dealID: deal.deal_id,
