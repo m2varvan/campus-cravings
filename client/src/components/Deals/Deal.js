@@ -27,7 +27,7 @@ const Deal = ({uuid, deal}) => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
 
                 {/* Name and Restaurant Name */}
-                <Box sx={{width: '80%'}}>
+                <Box sx={{width: '75%'}}>
                    <Typography
                         variant="h6"
                         sx={{
@@ -49,7 +49,11 @@ const Deal = ({uuid, deal}) => {
                         ${deal.dealPrice}
                     </Typography>
                     <Typography variant="body2">
-                        ⭐{avgRating} ({deal.numRatings && 0})
+                        {deal.numRatings ?
+                        '⭐ ' + avgRating + '/5 ' + (deal.numRatings)
+                        :
+                        'No ratings yet' // In italics
+                        }
                     </Typography>
                 </Box>
                 
