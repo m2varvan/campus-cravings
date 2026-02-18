@@ -132,7 +132,7 @@ app.get('/api/weekdeals', (req, res) => {
             d.deal_name, 
             d.description, 
             d.deal_price, 
-            d.edited_at, 
+            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
             r.restaurant_name, 
             dh.day_of_week,
             GROUP_CONCAT(dh.start_time) AS start_times,
