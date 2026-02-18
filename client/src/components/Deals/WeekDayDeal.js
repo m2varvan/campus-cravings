@@ -16,29 +16,34 @@ const WeekDayDeal = ({uuid, day, dealList}) => {
 
     return (
         <>
-            
+            {/* Outlined Box */}
             <Box
                 sx={{
                 border: '3px solid',
                 borderColor: 'secondary.dark',
                 borderRadius: 2,
-                p: 2,
+                p: 1,
                 m: 1,
-                maxHeight: 880,    // scrollable height
-                overflowY: 'auto',
                 }}
             >
                 {/* Day Title */}
                 <Typography variant="h5">{day}</Typography>
 
-                {/* No promotions */}
+                {/* Scrollable Box for deals */}
+                <Box sx={{
+                    maxHeight: 485, // scrollable height
+                    overflowY: 'auto',
+                    }}
+                >
+
+                {/* No promotions message */}
                 {dealList.length === 0 ? (
                 <Typography>No promotions available on {day}.</Typography>
                 ) : (
                 <>
                     {/* Visible deals */}
                     {dealList.slice(0, visibleCount).map((deal) => (
-                    <Deal key={deal.dealID} uuid={uuid} deal={deal} />
+                        <Deal key={deal.dealID} uuid={uuid} deal={deal} size={'sm'} />
                     ))}
 
                     {/* Show More button */}
@@ -68,6 +73,7 @@ const WeekDayDeal = ({uuid, day, dealList}) => {
                     )}
                 </>
                 )}
+                </Box>
             </Box>
         </>
     );
