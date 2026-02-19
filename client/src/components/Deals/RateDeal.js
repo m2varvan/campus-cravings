@@ -21,7 +21,7 @@ const RateDeal = ({uuid, deal, updateRatings}) => {
     // API to delete a rating
     const deleteRating = async (ratingID) => {
         try {
-            const res = await fetch('/api/deleterating', {
+            const res = await fetch('/api/delete/rating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -54,7 +54,7 @@ const RateDeal = ({uuid, deal, updateRatings}) => {
 
             console.log('DealID', deal.dealID)
 
-            const res = await fetch('/api/userrating', {
+            const res = await fetch('/api/user/rating', {
                 method: 'POST',
                 headers : {'Content-Type': 'application/json'},
                 body: JSON.stringify({ dealID: deal.dealID, userID: uuid})

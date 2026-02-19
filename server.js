@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, "client/build")));
 // API Routes
 
 // Route to get deals valid for current day
-app.get('/api/todaydeals', (req, res) => {
+app.get('/api/today/deals', (req, res) => {
     const connection = mysql.createConnection(config)
 
     const sql = `
@@ -85,7 +85,7 @@ app.get('/api/todaydeals', (req, res) => {
 });
 
 // API to get the deal availability for a specific deal
-app.post('/api/dealhours', (req, res) => {
+app.post('/api/deal/hours', (req, res) => {
 
     const connection = mysql.createConnection(config); 
     const {dealID} = req.body;
@@ -131,7 +131,7 @@ app.post('/api/dealhours', (req, res) => {
 });
 
 // Route to get all valid deals
-app.get('/api/weekdeals', (req, res) => {
+app.get('/api/week/deals', (req, res) => {
 
     const connection = mysql.createConnection(config)
 
@@ -214,7 +214,7 @@ app.get('/api/weekdeals', (req, res) => {
 });
 
 // API to get a user's reviews for a deal
-app.post('/api/userrating', (req, res) => {
+app.post('/api/user/rating', (req, res) => {
 
     const connection = mysql.createConnection(config); 
     const {dealID, userID} = req.body
@@ -262,7 +262,7 @@ app.post('/api/userrating', (req, res) => {
 });
 
 // API to add a new rating
-app.post('/api/addrating', (req, res) => {
+app.post('/api/add/rating', (req, res) => {
     
     const connection = mysql.createConnection(config);
     const { dealID, userID, tasteRating, valueRating, portionRating } = req.body;
@@ -295,7 +295,7 @@ app.post('/api/addrating', (req, res) => {
 
 
 // API to edit a rating
-app.post('/api/editrating', (req, res) => {
+app.post('/api/edit/rating', (req, res) => {
     
     const connection = mysql.createConnection(config);
     const {dealID, userID, tasteRating, valueRating, portionRating, ratingID} = req.body
@@ -336,7 +336,7 @@ app.post('/api/editrating', (req, res) => {
 
   
 
-  app.post('/api/deleterating', (req, res) => {
+  app.post('/api/delete/rating', (req, res) => {
     
     const connection = mysql.createConnection(config);
     const {ratingID, dealID, userID} = req.body

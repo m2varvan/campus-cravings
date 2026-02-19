@@ -75,7 +75,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
       setLoadingHours(true);
       setDealHoursError(false);
 
-      const res = await fetch('/api/dealhours', {
+      const res = await fetch('/api/deal/hours', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealID: deal.dealID }),

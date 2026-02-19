@@ -17,7 +17,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
                 setErrorMsg('Ratings must be between 0 and 5');
                 return
             }
-            const res = await fetch('/api/addrating', {
+            const res = await fetch('/api/add/rating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -53,7 +53,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
                 return
             }
 
-            const res = await fetch('/api/editrating', {
+            const res = await fetch('/api/edit/rating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

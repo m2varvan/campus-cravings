@@ -18,7 +18,7 @@ const Deals = ({uuid}) => {
     const loadTodayDeals = async () => {
         try {
             setLoadingTodayDeals(true)
-            const response = await fetch('/api/todaydeals');
+            const response = await fetch('/api/today/deals');
 
             if (!response.ok) {
                 throw new Error (`Server error: $(response.status)`);
@@ -40,7 +40,7 @@ const Deals = ({uuid}) => {
     const loadWeekDeals = async () => {
         try {
             setLoadingWeekDeals(true)
-            const response = await fetch('/api/weekdeals');
+            const response = await fetch('/api/week/deals');
 
             if (!response.ok) {
                 throw new Error (`Server error: $(response.status)`);
