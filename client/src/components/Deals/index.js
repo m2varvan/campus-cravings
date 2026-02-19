@@ -58,6 +58,12 @@ const Deals = ({uuid}) => {
         }
     };
 
+    // Function to reload all deals
+    const reloadDeals = () => {
+        loadWeekDeals();
+        loadTodayDeals();
+    }
+
     return(
         <Grid container p={4} display={'flex'}> 
             {/* Page Title */}
@@ -68,14 +74,16 @@ const Deals = ({uuid}) => {
                     todayDeals={todayDeals}
                     loading={loadingTodayDeals}
                     error={todayDealsError}
-                    loadTodayDeals={loadTodayDeals}/>
+                    loadTodayDeals={loadTodayDeals}
+                    reloadDeals={reloadDeals}/>
 
             {/* Weekly Deals */}
             <WeekDeal uuid={uuid}
                     weekDeals={weekDeals}
                     loading={loadingWeekDeals}
                     error={WeekDealsError}
-                    loadWeekDeals={loadWeekDeals}/>
+                    loadWeekDeals={loadWeekDeals}
+                    reloadDeals={reloadDeals}/>
         </Grid>
     )
 };

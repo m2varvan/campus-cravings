@@ -2,7 +2,7 @@ import React from "react";
 import { Typography, Box, Button, Alert } from "@mui/material";
 import RateDealButtons from "./RateDealButtons";
 
-const RateDeal = ({uuid, deal}) => {
+const RateDeal = ({uuid, deal, updateRatings}) => {
 
     // States to load the user's ratings
     const [loadingRatings, setLoadingRatings] = React.useState(false)
@@ -16,6 +16,7 @@ const RateDeal = ({uuid, deal}) => {
     // State with success are error messages
     const [successMsg, setSuccessMsg] = React.useState('');
     const [errorMsg, setErrorMsg] = React.useState('');
+
 
     // API to delete a rating
     const deleteRating = async (ratingID) => {
@@ -35,7 +36,8 @@ const RateDeal = ({uuid, deal}) => {
             setUserRating(null);
             setErrorMsg('')
             setSuccessMsg('Rating deleted successfully!')
-            loadUserRating();
+            loadUserRating(); // Update the user's rating
+            updateRatings(); // Update the average rating
 
         } catch (err) {
             console.error(err);
@@ -120,6 +122,7 @@ const RateDeal = ({uuid, deal}) => {
                         setErrorMsg={setErrorMsg}
                         setSuccessMsg={setSuccessMsg}
                         refreshRatings={loadUserRating}
+                        updateRatings={updateRatings}
                         />
                     :
                     <>
@@ -155,6 +158,7 @@ const RateDeal = ({uuid, deal}) => {
                     setErrorMsg={setErrorMsg}
                     setSuccessMsg={setSuccessMsg}
                     refreshRatings={loadUserRating}
+                    updateRatings={updateRatings}
                     />
                 :
                 <>

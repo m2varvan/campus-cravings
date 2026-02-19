@@ -361,4 +361,38 @@ app.post('/api/editrating', (req, res) => {
 
   });
 
+// API to get deal ratings
+app.post('/api/deal/ratings', (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { dealID } = req.body;
+
+  const sql = `
+    SELECT 
+      AVG(value_score) AS avg_value_rating,
+      AVG(taste_score) AS avg_taste_rating,
+      AVG(portion_score) AS avg_portion_rating,
+      COUNT(rating_id) AS num_ratings
+    FROM ratings
+    WHERE deal_id = ?;
+  `;
+
+  connection.query(sql, [dealID], (error, results) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to fetch deal ratings' });
+    }
+
+    const row = results[0];
+    res.json({
+      dealValueRating: row.avg_value_rating ? parseFloat(row.avg_value_rating) : 0,
+      dealTasteRating: row.avg_taste_rating ? parseFloat(row.avg_taste_rating) : 0,
+      dealPortionRating: row.avg_portion_rating ? parseFloat(row.avg_portion_rating) : 0,
+      numRatings: row.num_ratings ? parseInt(row.num_ratings, 10) : 0,
+    });
+  });
+
+  connection.end();
+});
+
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

@@ -1,7 +1,7 @@
 import { Typography, Button, Box, Rating } from '@mui/material';
 import React, { useState } from 'react';
 
-const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg, setSuccessMsg, refreshRatings }) => {
+const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg, setSuccessMsg, refreshRatings, updateRatings }) => {
 
     // States to hold values of rating buttons
     const [taste, setTaste] = useState(prevRating ? prevRating.tasteRating : 2.5);
@@ -34,7 +34,8 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
             setSuccessMsg('Rating submitted successfully!');
             setErrorMsg('');
             setShowButtons(false);
-            refreshRatings();
+            refreshRatings(); // Update the user's rating
+            updateRatings(); // Update the average rating
 
         } catch (err) {
             setErrorMsg(err.message);
@@ -45,7 +46,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
     // API call to edit a rating
     const onEditRating = async () => {
         try {
-            
+
             // Check that taste, value and portion ratings are valid
             if ((taste < 0 || taste > 5) ||(portion < 0 || portion > 5) || (value < 0 || value > 5)) {
                 setErrorMsg('Ratings must be between 0 and 5');
@@ -70,7 +71,8 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
             setSuccessMsg('Rating updated successfully!');
             setErrorMsg('');
             setShowButtons(false);
-            refreshRatings();
+            refreshRatings(); // Update the user's rating
+            updateRatings(); // Update the average rating
 
         } catch (err) {
             setErrorMsg(err.message);

@@ -4,7 +4,7 @@ import { Typography, Grid, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
-const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
+const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals, reloadDeals}) => {
 
     // Load today's deals on render
     React.useEffect(() => {
@@ -104,7 +104,10 @@ const TodayDeal = ({ uuid, todayDeals, loading, error, loadTodayDeals}) => {
                         {/* Iterate through deals array and render a each deal in a deal component */}
                         {todayDeals.slice(0, visibleCount).map((deal) => (
                             <Grid item xs={12} sm={6} lg={4}>
-                                <Deal key={deal.dealID} uuid={uuid} deal={deal} />
+                                <Deal key={deal.dealID} 
+                                    uuid={uuid} 
+                                    deal={deal} 
+                                    reloadDeals={reloadDeals}  />
                             </Grid>
                         ))}
                     </Grid>
