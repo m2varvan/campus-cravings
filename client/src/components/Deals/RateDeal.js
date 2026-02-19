@@ -100,7 +100,7 @@ const RateDeal = ({uuid, deal}) => {
                             },
                         }}
                         >
-                        Submit your Rating
+                        Submit a Rating
                     </Button>
                     </>
                     }
@@ -122,19 +122,19 @@ const RateDeal = ({uuid, deal}) => {
                 <>
                 {/* Value Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Your Value Rating</Typography>
+                    <Typography variant="body2">My Value Rating</Typography>
                     <Typography variant="body2">⭐ {userRating.valueRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Taste Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Your Taste Rating</Typography>
+                    <Typography variant="body2">My Taste Rating</Typography>
                     <Typography variant="body2">⭐ {userRating.tasteRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Portion Size Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Your Portion Size Rating </Typography>
+                    <Typography variant="body2">My Portion Size Rating </Typography>
                     <Typography variant="body2">⭐ {userRating.portionRating.toFixed(1)}/5</Typography>
                 </Box>
 

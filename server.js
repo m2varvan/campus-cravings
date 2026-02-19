@@ -132,6 +132,7 @@ app.post('/api/dealhours', (req, res) => {
 
 // Route to get all valid deals
 app.get('/api/weekdeals', (req, res) => {
+
     const connection = mysql.createConnection(config)
 
     const sql = `
@@ -238,7 +239,7 @@ app.post('/api/userrating', (req, res) => {
     connection.query(sql, vals, (error, result) => {
     if (error) {
       console.error('Database error:', error.message);
-      return res.status(500).json({ error: 'Failed to load hours' });
+      return res.status(500).json({ error: 'Failed to load ratings' });
     }
 
     const userReview = result.map(review => ({
@@ -263,54 +264,73 @@ app.post('/api/userrating', (req, res) => {
 // API to add a new rating
 app.post('/api/addrating', (req, res) => {
     
-    const connection = createConnection(config);
-    const {dealID, userID, tasteRating, valueRating, portionRating} = req.body()
+    const connection = mysql.createConnection(config);
+    const { dealID, userID, tasteRating, valueRating, portionRating } = req.body;
 
     const sql = `
-        
-    `
+        INSERT INTO ratings (deal_id, user_id, taste_score, value_score, portion_score)
+        VALUES (?, ?, ?, ?, ?);
+    `;
+
     const vals = [
-        
-    ]
+        parseInt(dealID),
+        userID,
+        parseFloat(tasteRating),
+        parseFloat(valueRating),
+        parseFloat(portionRating)       
+    ];
 
-    // Connnect to SQL Database and delete 
     connection.query(sql, vals, (error, result) => {
-    if (error) {
-      console.error('Database error:', error.message);
-      return res.status(500).json({ error: 'Failed to load hours' });
-    }   
-    });
+        if (error) {
+            console.error('Database error:', error.message);
+            return res.status(500).json({ error: 'Failed to add rating' });
+        }
 
-    // Return status 201 to indicate success
-    res.status(201).json();
+        res.status(201).json({ message: 'Rating added successfully' });
+        
+    });
     connection.end();
 
-  });
+});
+
 
 // API to edit a rating
 app.post('/api/editrating', (req, res) => {
     
-    const connection = createConnection(config);
-    const {dealID, userID, tasteRating, valueRating, portionRating} = req.body()
+    const connection = mysql.createConnection(config);
+    const {dealID, userID, tasteRating, valueRating, portionRating, ratingID} = req.body
 
     const sql = `
-        
+        UPDATE ratings
+        SET 
+            taste_score = ?,
+            value_score = ?,
+            portion_score = ?,
+            updated_at = NOW()
+        WHERE deal_id = ? AND user_id = ? AND rating_id;
     `
     const vals = [
-        
+        parseFloat(tasteRating),
+        parseFloat(valueRating),
+        parseFloat(portionRating),
+        parseInt(dealID),
+        userID,
+        parseInt(ratingID) 
     ]
 
     // Connnect to SQL Database and delete 
     connection.query(sql, vals, (error, result) => {
     if (error) {
       console.error('Database error:', error.message);
-      return res.status(500).json({ error: 'Failed to load hours' });
-    }   
-    });
-
+      return res.status(500).json({ error: 'Failed to edit rating' });
+    } 
+    
     // Return status 201 to indicate success
     res.status(201).json();
+    });
+
     connection.end();
+
 
 });
 
@@ -318,25 +338,25 @@ app.post('/api/editrating', (req, res) => {
 
   app.post('/api/deleterating', (req, res) => {
     
-    const connection = createConnection(config);
-    const {ratingID, dealID, userID} = req.body()
+    const connection = mysql.createConnection(config);
+    const {ratingID, dealID, userID} = req.body
 
     const sql = `
         DELETE FROM ratings
         WHERE deal_id = ? AND user_id = ? AND rating_id = ?;
     `
-    const vals = [ratingID, dealID, userID]
+    const vals =  [dealID, userID, ratingID]
 
     // Connnect to SQL Database and delete 
     connection.query(sql, vals, (error, result) => {
     if (error) {
       console.error('Database error:', error.message);
-      return res.status(500).json({ error: 'Failed to load hours' });
-    }   
-    });
-
+      return res.status(500).json({ error: 'Failed to delete rating' });
+    } 
+    
     // Return status 201 to indicate success
     res.status(201).json();
+    });
     connection.end();
 
   });
