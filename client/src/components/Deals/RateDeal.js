@@ -1,24 +1,52 @@
 import React from "react";
-import { Typography, Box, Button } from "@mui/material";
+import { Typography, Box, Button, Alert } from "@mui/material";
 import RateDealButtons from "./RateDealButtons";
 
 const RateDeal = ({uuid, deal}) => {
 
-    console.log(deal.dealID)
 
+    // States to load the user's ratings
     const [loadingRatings, setLoadingRatings] = React.useState(false)
     const [loadRatingsError, setLoadRatingsError] = React.useState(false)
     const [userRating, setUserRating] = React.useState(null)
+    const [initialLoad, setInitialLoad] = React.useState(true);
 
+    // State to show/hide rating star buttons
     const [showButtons, setShowButtons] = React.useState(false)
 
-    const deleteRating = async () => {
-        // Delete user rating
+    // State with success are error messages
+    const [successMsg, setSuccessMsg] = React.useState('');
+    const [errorMsg, setErrorMsg] = React.useState('');
+
+    const deleteRating = async (ratingID) => {
+        try {
+            const res = await fetch('/api/deleterating', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dealID: deal.dealID,
+                    userID: uuid,
+                    ratingID: ratingID
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to delete');
+
+            setUserRating(null);
+            setErrorMsg('')
+            setSuccessMsg('Rating deleted successfully!')
+            loadUserRating();
+
+        } catch (err) {
+            console.error(err);
+            setErrorMsg('Failed to delete rating')
+            setSuccessMsg('')
+        }
     };
     
     const loadUserRating = async () => {
         try{
-            setLoadingRatings(true)
+            if (initialLoad) setLoadingRatings(true);
             setLoadRatingsError(false)
 
             console.log('DealID', deal.dealID)
@@ -48,6 +76,7 @@ const RateDeal = ({uuid, deal}) => {
             setLoadRatingsError(true)
         } finally {
             setLoadingRatings(false)
+            setInitialLoad(false);
         }
     }
 
@@ -57,6 +86,11 @@ const RateDeal = ({uuid, deal}) => {
             loadUserRating();
         }
     }, [uuid, deal.dealID]);
+
+    React.useEffect(() => {
+        
+    })
+
 
     return(
          <Box sx={{ width: '50%' }}>
@@ -86,6 +120,9 @@ const RateDeal = ({uuid, deal}) => {
                         dealID={deal.dealID}
                         prevRating={userRating}
                         setShowButtons={setShowButtons}
+                        setErrorMsg={setErrorMsg}
+                        setSuccessMsg={setSuccessMsg}
+                        refreshRatings={loadUserRating}
                         />
                     :
                     <>
@@ -93,6 +130,7 @@ const RateDeal = ({uuid, deal}) => {
                     <Button
                         onClick={()=>setShowButtons(true)}
                         sx={{
+                            my: 1,
                             backgroundColor: 'primary.light',
                             color: 'secondary.dark',
                             '&:hover': {
@@ -117,6 +155,9 @@ const RateDeal = ({uuid, deal}) => {
                     dealID={deal.dealID}
                     prevRating={userRating}
                     setShowButtons={setShowButtons}
+                    setErrorMsg={setErrorMsg}
+                    setSuccessMsg={setSuccessMsg}
+                    refreshRatings={loadUserRating}
                     />
                 :
                 <>
@@ -142,7 +183,7 @@ const RateDeal = ({uuid, deal}) => {
                     Rated on: {userRating.ratingDate}
                 </Typography>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1}}>
                     <Button
                         onClick={()=>setShowButtons(true)}
                         sx={{
@@ -156,7 +197,7 @@ const RateDeal = ({uuid, deal}) => {
                         Edit your Rating
                     </Button>
                     <Button
-                        onClick={null}
+                        onClick={() => deleteRating(userRating.ratingID)}
                         sx={{
                             backgroundColor: 'primary.light',
                             color: 'secondary.dark',
@@ -173,6 +214,9 @@ const RateDeal = ({uuid, deal}) => {
                 
             </>
             )}
+
+        {successMsg && <Alert severity="success">{successMsg}</Alert>}
+        {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
         </Box>
 
 

@@ -1,14 +1,13 @@
 import { Typography, Button, Box, Rating, Alert } from '@mui/material';
 import React, { useState } from 'react';
 
-const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons }) => {
+const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg, setSuccessMsg, refreshRatings }) => {
 
     const [taste, setTaste] = useState(prevRating ? prevRating.tasteRating : 2.5);
     const [value, setValue] = useState(prevRating ? prevRating.valueRating : 2.5);
     const [portion, setPortion] = useState(prevRating ? prevRating.portionRating : 2.5);
 
-    const [successMsg, setSuccessMsg] = useState('');
-    const [errorMsg, setErrorMsg] = useState('');
+    
 
     const onSubmitRating = async () => {
         try {
@@ -28,6 +27,8 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons }) => {
 
             setSuccessMsg('Rating submitted successfully!');
             setErrorMsg('');
+            setShowButtons(false);
+            refreshRatings();
 
         } catch (err) {
             setErrorMsg(err.message);
@@ -54,6 +55,8 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons }) => {
 
             setSuccessMsg('Rating updated successfully!');
             setErrorMsg('');
+            setShowButtons(false);
+            refreshRatings();
 
         } catch (err) {
             setErrorMsg(err.message);
@@ -100,7 +103,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons }) => {
             />
         </Box>
         
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1 }}>
             <Button
                 onClick={prevRating ? onEditRating : onSubmitRating}
                 sx={{
@@ -127,9 +130,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons }) => {
                 Cancel
             </Button>
         </Box>
-        
-        {successMsg && <Alert severity="success">{successMsg}</Alert>}
-        {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
+
         </>
     );
 };
