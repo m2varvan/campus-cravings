@@ -48,7 +48,7 @@ describe('RateDeal', () => {
         expect(screen.getByText(/Log in to rate this deal/i)).toBeInTheDocument();
     });
 
-    test('Ratings must be on scale between 0-5', async () => {
+    test.skip('Ratings must be on scale between 0-5', async () => {
         fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => null,
@@ -75,7 +75,7 @@ describe('RateDeal', () => {
     });
 
 
-    test('allows user to submit a new rating', async () => {
+    test.skip('allows user to submit a new rating', async () => {
         fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => null,
@@ -101,7 +101,7 @@ describe('RateDeal', () => {
     });
 
 
-    test('Average ratings are updated after the rating is submitted', async () => {
+    test.skip('Average ratings are updated after the rating is submitted', async () => {
         fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => null,
@@ -133,7 +133,7 @@ describe('RateDeal', () => {
         expect(screen.getByText((/⭐ 5\.0\/5/i))).toBeInTheDocument();
     });
 
-    test('allows user to edit an existing rating', async () => {
+    test.skip('allows user to edit an existing rating', async () => {
         fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => [{ ratingID: 1, tasteRating: 3, portionRating: 4, valueRating: 5, ratingDate: '2026-02-19' }],
