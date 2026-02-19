@@ -10,8 +10,6 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     // Calculate average rating
     const avgRating = ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1);
 
-    const [localDeal, setLocalDeal] = React.useState(deal);
-
     return(
         <>
             <Box
@@ -79,7 +77,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} 
-                    deal={localDeal} 
+                    deal={deal} 
                     handleClose={() => setOpenDetails(false)} 
                     open={openDetails} 
                     reloadDeals={reloadDeals} />

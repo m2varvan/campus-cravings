@@ -23,6 +23,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
   const [dealRatingsError, setDealRatingsError] = React.useState(false);
   const [loadingRatings, setLoadingRatings] = React.useState(false);
 
+  // Local states to store rating information
   const [tasteRating, setTasteRating] = React.useState(deal.dealTasteRating.toFixed(1));
   const [valueRating, setValueRating] = React.useState(deal.dealValueRating.toFixed(1));
   const [portionRating, setPortionRating] = React.useState(deal.dealPortionRating.toFixed(1));

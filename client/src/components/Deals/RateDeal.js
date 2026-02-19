@@ -197,7 +197,7 @@ const RateDeal = ({uuid, deal, updateRatings}) => {
                             },
                         }}
                         >
-                        Edit your Rating
+                        Edit my Rating
                     </Button>
                     <Button
                         onClick={() => deleteRating(userRating.ratingID)}
@@ -209,7 +209,7 @@ const RateDeal = ({uuid, deal, updateRatings}) => {
                             },
                         }}
                         >
-                        Delete your Rating
+                        Delete my Rating
                     </Button>
                 </Box>
                 </>

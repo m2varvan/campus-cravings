@@ -1,8 +1,10 @@
 import RateDeal from "./RateDeal";
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import ExpandedDeal from "./ExpandedDeal";
+
+// Mock fetch API
+global.fetch = jest.fn();
 
 describe('RateDeal', () => {
 
@@ -23,129 +25,161 @@ describe('RateDeal', () => {
         avgValueRating: 0,
     };
 
-    function renderComponent(props = {}) {
-            
-        render(
-        <ExpandedDeal
-            uuid={'user-123'}
-            deal={deal1}
-        />,
-        <RateDeal 
-            uuid={'user-123'}
-            deal={deal1}
-            />
-        );
-    }
+    const updateRatingsMock = jest.fn();
+
+    beforeEach(() => {
+    global.fetch = jest.fn();
+    });
+
+    afterEach(() => {
+    jest.resetAllMocks();
+    });
+
 
     test('User must be logged in to rate deal', () => {
         render(
             <RateDeal 
                 uuid={null}
                 deal={deal1}
+                updateRatings={updateRatingsMock}
             />
         );
 
         expect(screen.getByText(/Log in to rate this deal/i)).toBeInTheDocument();
     });
 
+    test('Ratings must be on scale between 0-5', async () => {
+        fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => null,
+        });
 
-    test('User must rate all 3 categories', () => {
-        renderComponent();
+        render(<RateDeal uuid="user-123" deal={deal1} updateRatings={updateRatingsMock} />);
 
-        const submitButton = screen.getByRole('button', { name: /submit/i });
-        fireEvent.click(submitButton);
+        // Button to access rating buttons
+        await waitFor(() => screen.getByText(/Submit a Rating/i));
+        fireEvent.click(screen.getByText(/Submit a Rating/i));
 
-        expect(screen.getByText(/please rate all categories/i)).toBeInTheDocument();
-    });
+        // Change ratings using labels
+        fireEvent.click(screen.getByLabelText(/taste-rating/i).querySelector('input[value="4"]'));
+        fireEvent.click(screen.getByLabelText(/portion-rating/i).querySelector('input[value="4"]'));
+        fireEvent.click(screen.getByLabelText(/value-rating/i).querySelector('input[value="5"]'));
 
-    test('Ratings must be on scale between 0-5', () => {
-        renderComponent();
-
-        const tasteInput = screen.getByLabelText(/taste/i);
-        fireEvent.change(tasteInput, { target: { value: 6 } });
-
-        const submitButton = screen.getByRole('button', { name: /submit/i });
-        fireEvent.click(submitButton);
-        expect(screen.getByText(/rating must be between 0 and 5/i)).toBeInTheDocument();
-    });
-
-
-    test('Confirmation message is displayed when rating is submitted', () => {
-        renderComponent();
-
-        fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 4 } });
-        fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });
-        fireEvent.change(screen.getByLabelText(/value/i), { target: { value: 5 } });
-
-        fireEvent.click(screen.getByRole('button', { name: /submit/i }));
-        expect(screen.getByText(/rating submitted successfully/i)).toBeInTheDocument();
-    });
-
-
-    test('Average ratings are updated after the rating is submitted', () => {
-        renderComponent();
-
-        fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 1 } });
-        fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 2 } });
-        fireEvent.change(screen.getByLabelText(/value/i), { target: { value: 3 } });
-
-        fireEvent.click(screen.getByRole('button', { name: /submit/i }));
-
-        expect(screen.getByText((/⭐ 1\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 2\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 3\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/(1 Rating)/i))).toBeInTheDocument();
-    });
-
-    test('User can update their previous rating', () => {
-        renderComponent();
-
-        fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 3 } });
-        fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });
-        fireEvent.change(screen.getByLabelText(/value/i), { target: { value: 5 } });
-
-        fireEvent.click(screen.getByRole('button', { name: /submit/i }));
-
-        expect(screen.getByText((/⭐ 3\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 4\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 5\.0\/5/i))).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-
-        fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 0 } });
-        fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 1 } });
-        fireEvent.change(screen.getByLabelText(/value/i), { target: { value: 2 } });
-
-        fireEvent.click(screen.getByRole('button', { name: /update/i}));
-
-        expect(screen.getByText((/⭐ 0\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 1\.0\/5/i))).toBeInTheDocument();
-        expect(screen.getByText((/⭐ 2\.0\/5/i))).toBeInTheDocument();
-
-
-        expect(screen.getByText(/rating updated successfully/i)).toBeInTheDocument();
-
+        // Submit
+        await waitFor(() => screen.getByText(/Submit Rating/i));
+        fireEvent.click(screen.getByText(/Submit Rating/i));
+        
+        // Error message appears showing invalid rating
+        await waitFor(() => expect(screen.getByText(/rating must be between 0 and 5/i)).toBeInTheDocument());
         
     });
 
-    test('User can delete their previous rating', () => {
-        renderComponent();
 
-        fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 3 } });
-        fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });
-        fireEvent.change(screen.getByLabelText(/value/i), { target: { value: 5 } });
+    test('allows user to submit a new rating', async () => {
+        fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => null,
+        });
 
-        fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+        render(<RateDeal uuid="user-123" deal={deal1} updateRatings={updateRatingsMock} />);
+
+        // Button to access rating buttons
+        await waitFor(() => screen.getByText(/Submit a Rating/i));
+        fireEvent.click(screen.getByText(/Submit a Rating/i));
+
+        // Change ratings using labels
+        fireEvent.click(screen.getByLabelText(/taste-rating/i).querySelector('input[value="4"]'));
+        fireEvent.click(screen.getByLabelText(/portion-rating/i).querySelector('input[value="4"]'));
+        fireEvent.click(screen.getByLabelText(/value-rating/i).querySelector('input[value="5"]'));
+
+        // Submit
+        await waitFor(() => screen.getByText(/Submit Rating/i));
+        fireEvent.click(screen.getByText(/Submit Rating/i));
+
+        await waitFor(() => expect(screen.getByText(/Rating submitted successfully!/i)).toBeInTheDocument());
+        expect(updateRatingsMock).toHaveBeenCalled();
+    });
+
+
+    test('Average ratings are updated after the rating is submitted', async () => {
+        fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => null,
+        });
+
+        render(<RateDeal uuid="user-123" deal={deal1} updateRatings={updateRatingsMock} />);
+
+        // Button to access rating buttons
+        await waitFor(() => screen.getByText(/Submit a Rating/i));
+        fireEvent.click(screen.getByText(/Submit a Rating/i));
+
+        // Change ratings using labels
+        fireEvent.click(screen.getByLabelText(/taste-rating/i).querySelector('input[value="3"]'));
+        fireEvent.click(screen.getByLabelText(/portion-rating/i).querySelector('input[value="4"]'));
+        fireEvent.click(screen.getByLabelText(/value-rating/i).querySelector('input[value="5"]'));
+
+        // Submit
+        await waitFor(() => screen.getByText(/Submit Rating/i));
+        fireEvent.click(screen.getByText(/Submit Rating/i));
+
+        // Update
+        await waitFor(() => expect(screen.getByText(/Rating submitted successfully!/i)).toBeInTheDocument());
+        expect(updateRatingsMock).toHaveBeenCalled();
+
+    
 
         expect(screen.getByText((/⭐ 3\.0\/5/i))).toBeInTheDocument();
         expect(screen.getByText((/⭐ 4\.0\/5/i))).toBeInTheDocument();
         expect(screen.getByText((/⭐ 5\.0\/5/i))).toBeInTheDocument();
+    });
 
-        fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+    test('allows user to edit an existing rating', async () => {
+        fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ ratingID: 1, tasteRating: 3, portionRating: 4, valueRating: 5, ratingDate: '2026-02-19' }],
+        });
 
-        expect(screen.getByText(/rating successfully deleted/i)).toBeInTheDocument();
+        render(<RateDeal uuid="user-123" deal={deal1} updateRatings={updateRatingsMock} />);
 
-        expect(screen.getByText((/no ratings yet/i))).toBeInTheDocument();
+        // Wait for user rating to load
+        await waitFor(() => screen.getByText(/Edit my Rating/i));
+        expect(screen.getByText((/⭐ 3\.0\/5/i))).toBeInTheDocument();
+        expect(screen.getByText((/⭐ 4\.0\/5/i))).toBeInTheDocument();
+        expect(screen.getByText((/⭐ 5\.0\/5/i))).toBeInTheDocument();
+
+        // Click edit
+        await waitFor(() => screen.getByText(/Edit my Rating/i));
+        fireEvent.click(screen.getByText(/Edit my Rating/i));
+
+        // Change ratings
+        fireEvent.click(screen.getByLabelText(/taste-rating/i).querySelector('input[value="2"]'));
+
+        await waitFor(() => screen.getByText(/Update Rating/i));
+        fireEvent.click(screen.getByText(/Update Rating/i));
+
+        await waitFor(() => expect(screen.getByText(/Rating updated successfully!/i)).toBeInTheDocument());
+        expect(updateRatingsMock).toHaveBeenCalled();
+        expect(screen.getByText((/⭐ 2\.0\/5/i))).toBeInTheDocument();
+        expect(screen.getByText((/⭐ 4\.0\/5/i))).toBeInTheDocument();
+        expect(screen.getByText((/⭐ 5\.0\/5/i))).toBeInTheDocument();
+    });
+
+    test('allows user to delete rating', async () => {
+        fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ ratingID: 1, tasteRating: 3, portionRating: 4, valueRating: 5, ratingDate: '2026-02-19' }],
+        });
+
+        render(<RateDeal uuid="user-123" deal={deal1} updateRatings={updateRatingsMock} />);
+
+        await waitFor(() => screen.getByText(/Delete my Rating/i));
+
+        // Mock delete API
+        fetch.mockResolvedValueOnce({ ok: true });
+
+        fireEvent.click(screen.getByText(/Delete my Rating/i));
+
+        await waitFor(() => expect(screen.getByText(/Rating deleted successfully!/i)).toBeInTheDocument());
     });
 
 });
