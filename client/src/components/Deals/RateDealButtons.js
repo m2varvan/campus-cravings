@@ -1,16 +1,22 @@
-import { Typography, Button, Box, Rating, Alert } from '@mui/material';
+import { Typography, Button, Box, Rating } from '@mui/material';
 import React, { useState } from 'react';
 
 const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg, setSuccessMsg, refreshRatings }) => {
 
+    // States to hold values of rating buttons
     const [taste, setTaste] = useState(prevRating ? prevRating.tasteRating : 2.5);
     const [value, setValue] = useState(prevRating ? prevRating.valueRating : 2.5);
     const [portion, setPortion] = useState(prevRating ? prevRating.portionRating : 2.5);
 
-    
-
+    // API call to submit a new rating
     const onSubmitRating = async () => {
         try {
+
+            // Check that taste, value and portion ratings are valid
+            if ((taste < 0 || taste > 5) ||(portion < 0 || portion > 5) || (value < 0 || value > 5)) {
+                setErrorMsg('Ratings must be between 0 and 5');
+                return
+            }
             const res = await fetch('/api/addrating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -36,8 +42,16 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
         }
     };
 
+    // API call to edit a rating
     const onEditRating = async () => {
         try {
+            
+            // Check that taste, value and portion ratings are valid
+            if ((taste < 0 || taste > 5) ||(portion < 0 || portion > 5) || (value < 0 || value > 5)) {
+                setErrorMsg('Ratings must be between 0 and 5');
+                return
+            }
+
             const res = await fetch('/api/editrating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -67,7 +81,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
     return (
         <>
 
-        {/* Value Ratings */}
+        {/* Value Ratings Title and Buttons*/}
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography id="value-label" variant="body2">My Value Rating</Typography>
             <Rating
@@ -79,7 +93,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
             />
         </Box>
 
-        {/* Taste Ratings */}
+        {/* Taste Ratings Title and Buttons*/}
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography id="taste-label" variant="body2">My Taste Rating</Typography>
             <Rating
@@ -91,7 +105,7 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
             />
         </Box>
 
-        {/* Portion Size Ratings */}
+        {/* Portion Size Ratings Title and Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography id="portion-label" variant="body2">My Portion Size Rating</Typography>
             <Rating
@@ -102,8 +116,11 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
                 aria-label="portion-rating"
             />
         </Box>
-        
+
+        {/* Buttons to Submit/Edit and Cancel         */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1 }}>
+
+            {/* Submit/Edit Button */}
             <Button
                 onClick={prevRating ? onEditRating : onSubmitRating}
                 sx={{
@@ -116,7 +133,8 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
             >
                 {prevRating ? 'Update Rating' : 'Submit Rating'}
             </Button>
-
+            
+            {/* Cancel Button */}
             <Button
                 onClick={() => setShowButtons(false)}
                 sx={{
@@ -130,7 +148,6 @@ const RateDealButtons = ({ uuid, dealID, prevRating, setShowButtons, setErrorMsg
                 Cancel
             </Button>
         </Box>
-
         </>
     );
 };

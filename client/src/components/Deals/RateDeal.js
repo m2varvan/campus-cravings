@@ -4,7 +4,6 @@ import RateDealButtons from "./RateDealButtons";
 
 const RateDeal = ({uuid, deal}) => {
 
-
     // States to load the user's ratings
     const [loadingRatings, setLoadingRatings] = React.useState(false)
     const [loadRatingsError, setLoadRatingsError] = React.useState(false)
@@ -18,6 +17,7 @@ const RateDeal = ({uuid, deal}) => {
     const [successMsg, setSuccessMsg] = React.useState('');
     const [errorMsg, setErrorMsg] = React.useState('');
 
+    // API to delete a rating
     const deleteRating = async (ratingID) => {
         try {
             const res = await fetch('/api/deleterating', {
@@ -44,6 +44,7 @@ const RateDeal = ({uuid, deal}) => {
         }
     };
     
+    // API to load a user's rating
     const loadUserRating = async () => {
         try{
             if (initialLoad) setLoadingRatings(true);
@@ -87,31 +88,27 @@ const RateDeal = ({uuid, deal}) => {
         }
     }, [uuid, deal.dealID]);
 
-    React.useEffect(() => {
-        
-    })
-
 
     return(
          <Box sx={{ width: '50%' }}>
+
+            {/* Title */}
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                 My Ratings
             </Typography>
 
             {/* Login message is user in not logged in  */}
-            { !uuid &&
-                <Typography>Log in to rate this deal.</Typography>
-            }
+            { !uuid && <Typography>Log in to rate this deal.</Typography>}
 
             {/* Loading ratings message */}
-            {loadingRatings &&
-                <Typography>Loading your rating...</Typography>}
+            {loadingRatings && <Typography>Loading your rating...</Typography>}
 
             {/* Error loading ratings message */}
             {!loadingRatings && uuid && loadRatingsError &&
                 <Typography> An error occured loading your ratings. Please try again. </Typography> }
 
-            {/* If user has not submitted rating before*/}
+            {/* If user has not submitted rating before show message saying so and button to 
+            submit a rating*/}
             {uuid && !loadingRatings && !loadRatingsError && !userRating && (
                 <>
                     {showButtons ?
@@ -126,7 +123,7 @@ const RateDeal = ({uuid, deal}) => {
                         />
                     :
                     <>
-                    <Typography>You have not submitted a rating for this deal.</Typography>
+                    <Typography>No rating submitted for this deal.</Typography>
                     <Button
                         onClick={()=>setShowButtons(true)}
                         sx={{
@@ -146,7 +143,7 @@ const RateDeal = ({uuid, deal}) => {
                 </>
             )}
 
-            {/* Show user's previous rating and option to update rating */}
+            {/* If a user has rated the deal before, show user's previous rating and option to edit or delete rating */}
             {uuid && !loadingRatings && !loadRatingsError && userRating && (
             <>
                 {showButtons ?
@@ -179,10 +176,12 @@ const RateDeal = ({uuid, deal}) => {
                     <Typography variant="body2">⭐ {userRating.portionRating.toFixed(1)}/5</Typography>
                 </Box>
 
+                {/* Time/Date stamp for rating */}
                 <Typography variant="caption" color="text.secondary">
                     Rated on: {userRating.ratingDate}
                 </Typography>
-
+                
+                {/* Edit and Delete Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', my: 1}}>
                     <Button
                         onClick={()=>setShowButtons(true)}
@@ -215,13 +214,11 @@ const RateDeal = ({uuid, deal}) => {
             </>
             )}
 
+        {/* Alerts to show success or error */}
         {successMsg && <Alert severity="success">{successMsg}</Alert>}
         {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
         </Box>
-
-
     );
-
 };
 
 export default RateDeal;
