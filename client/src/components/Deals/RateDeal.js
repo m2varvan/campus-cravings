@@ -3,6 +3,41 @@ import { Typography, Box } from "@mui/material";
 
 const RateDeal = ({uuid, deal}) => {
 
+    const [loadingRatings, setLoadingRatings] = React.useState(false)
+    const [loadLoadRatingsError, setLoadRatingsError] = React.useState(false)
+    const [userRatings, setUserRatings] = React.useState({})
+    
+    const loadUserRating = async () => {
+        try{
+            setLoadingRatings(true)
+            setLoadRatingsError(false)
+
+            const res = await fetch('/api/userrating', {
+                method: 'POST',
+                headers : {'Content-Type': 'application/json'},
+                body: JSON.stringify({ dealID: deal.dealID, userID: uuid})
+                });
+            
+            if (!res.ok) throw new Error(res.statusText);
+            
+            const data = await res.json();
+            console.log(data);
+            setUserRatings(data);
+        } catch (error) {
+            console.error('Failed to get user ratings:', error);
+            setLoadRatingsError(true)
+        } finally {
+            setLoadingRatings(false)
+        }
+    }
+
+
+    // If uuid is not null, load user ratings on render
+    React.useEffect(() => {
+        uuid && loadUserRating();
+
+    }, [])
+
     return(
          <Box sx={{ width: '50%' }}>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>

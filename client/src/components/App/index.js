@@ -42,7 +42,7 @@ const App = () => {
     }
   });
 
-  const uuid = null;
+  const uuid = 'user-123';
 
   return (
     <ThemeProvider theme={theme}>

@@ -2,6 +2,7 @@ import RateDeal from "./RateDeal";
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
+import ExpandedDeal from "./ExpandedDeal";
 
 describe('RateDeal', () => {
 
@@ -22,6 +23,20 @@ describe('RateDeal', () => {
         avgValueRating: 0,
     };
 
+    function renderComponent(props = {}) {
+            
+        render(
+        <ExpandedDeal
+            uuid={'user-123'}
+            deal={deal1}
+        />,
+        <RateDeal 
+            uuid={'user-123'}
+            deal={deal1}
+            />
+        );
+    }
+
     test('User must be logged in to rate deal', () => {
         render(
             <RateDeal 
@@ -35,12 +50,7 @@ describe('RateDeal', () => {
 
 
     test('User must rate all 3 categories', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         const submitButton = screen.getByRole('button', { name: /submit/i });
         fireEvent.click(submitButton);
@@ -49,12 +59,7 @@ describe('RateDeal', () => {
     });
 
     test('Ratings must be on scale between 0-5', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         const tasteInput = screen.getByLabelText(/taste/i);
         fireEvent.change(tasteInput, { target: { value: 6 } });
@@ -66,12 +71,7 @@ describe('RateDeal', () => {
 
 
     test('Confirmation message is displayed when rating is submitted', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 4 } });
         fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });
@@ -83,12 +83,7 @@ describe('RateDeal', () => {
 
 
     test('Average ratings are updated after the rating is submitted', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 1 } });
         fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 2 } });
@@ -103,12 +98,7 @@ describe('RateDeal', () => {
     });
 
     test('User can update their previous rating', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 3 } });
         fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });
@@ -139,12 +129,7 @@ describe('RateDeal', () => {
     });
 
     test('User can delete their previous rating', () => {
-        render(
-            <RateDeal 
-                uuid={'user-123'}
-                deal={deal1}
-            />
-        );
+        renderComponent();
 
         fireEvent.change(screen.getByLabelText(/taste/i), { target: { value: 3 } });
         fireEvent.change(screen.getByLabelText(/portion/i), { target: { value: 4 } });

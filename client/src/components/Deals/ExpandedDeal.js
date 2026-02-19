@@ -40,7 +40,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose }) => {
       }
 
     catch (err) {
-      console.error('Search failed:', err);
+      console.error('Failed to get deal hours:', err);
       setDealHoursError(true)
     }
     finally {
@@ -182,7 +182,11 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose }) => {
 
                 {/* Title */}
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Average Ratings ({deal.numRatings} Ratings)
+                  {deal.numRatings === 1 ?
+                  'Average Ratings ('+ deal.numRatings+ ' Rating)'
+                  :
+                  'Average Ratings ('+ deal.numRatings+ ' Ratings)'
+                  }
                 </Typography>
 
                 {/* If there are no ratings, display message saying no ratings yet. Otherwise display ratings */}
