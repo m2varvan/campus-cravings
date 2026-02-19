@@ -4,6 +4,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
+import { createConnection } from 'net';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -245,17 +246,99 @@ app.post('/api/userrating', (req, res) => {
         valueRating: parseFloat(review.value_score),
         portionRating: parseFloat(review.portion_score),
         ratingDate: review.updated_at,
-        ratingID: review.rating_id
+        ratingID: parseInt(review.rating_id)
+
+    
     }));
 
     // Return review
     res.json(userReview);
+
   })
 
   connection.end();
 
+});
 
+// API to add a new rating
+app.post('/api/addrating', (req, res) => {
+    
+    const connection = createConnection(config);
+    const {dealID, userID, tasteRating, valueRating, portionRating} = req.body()
 
-})
+    const sql = `
+        
+    `
+    const vals = [
+        
+    ]
+
+    // Connnect to SQL Database and delete 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load hours' });
+    }   
+    });
+
+    // Return status 201 to indicate success
+    res.status(201).json();
+    connection.end();
+
+  });
+
+// API to edit a rating
+app.post('/api/editrating', (req, res) => {
+    
+    const connection = createConnection(config);
+    const {dealID, userID, tasteRating, valueRating, portionRating} = req.body()
+
+    const sql = `
+        
+    `
+    const vals = [
+        
+    ]
+
+    // Connnect to SQL Database and delete 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load hours' });
+    }   
+    });
+
+    // Return status 201 to indicate success
+    res.status(201).json();
+    connection.end();
+
+});
+
+  
+
+  app.post('/api/deleterating', (req, res) => {
+    
+    const connection = createConnection(config);
+    const {ratingID, dealID, userID} = req.body()
+
+    const sql = `
+        DELETE FROM ratings
+        WHERE deal_id = ? AND user_id = ? AND rating_id = ?;
+    `
+    const vals = [ratingID, dealID, userID]
+
+    // Connnect to SQL Database and delete 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load hours' });
+    }   
+    });
+
+    // Return status 201 to indicate success
+    res.status(201).json();
+    connection.end();
+
+  });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
