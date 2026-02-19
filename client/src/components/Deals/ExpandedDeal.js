@@ -208,8 +208,8 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose }) => {
 
                 {/* Portion Size Ratings */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2">Average Portion Size Rating </Typography>
-                <Typography variant="body2">⭐ {deal.dealPortionRating.toFixed(1)}/5</Typography>
+                  <Typography variant="body2">Average Portion Size Rating </Typography>
+                  <Typography variant="body2">⭐ {deal.dealPortionRating.toFixed(1)}/5</Typography>
                 </Box>
 
                 {/* Overall Rating */}
@@ -230,7 +230,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose }) => {
 
             {/* My Ratings */}
            <RateDeal uuid={uuid}
-                    dial={deal}/>
+                    deal={deal}/>
         </Box>
 
 

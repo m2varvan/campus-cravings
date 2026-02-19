@@ -66,7 +66,7 @@ const Deal = ({uuid, deal, size='lg'}) => {
                     <Box sx={{ textAlign: 'right' }}>
                         <Typography variant="body2">
                             {deal.numRatings ?
-                            '⭐ ' + avgRating + '/5 ' + (deal.numRatings)
+                            '⭐ ' + avgRating + '/5  (' + deal.numRatings + ')'
                             :
                             'No ratings yet'
                             }

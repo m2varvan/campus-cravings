@@ -63,10 +63,18 @@ app.get('/api/todaydeals', (req, res) => {
             dayOfWeek: deal.day_of_week,
             dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
             dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
-            dealValueRating: deal.avg_value_rating ? deal.avg_value_rating.toFixed(1): 0,
-            dealTasteRating: deal.avg_taste_rating ? deal.avg_taste_rating.toFixed(1) : 0,
-            dealPortionRating: deal.avg_portion_rating ? deal.avg_portion_rating.toFixed(1) : 0,
-            numRatings: deal.number_or_ratings || 0
+            dealValueRating: deal.avg_value_rating 
+                ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1)) 
+                : 0,
+            dealTasteRating: deal.avg_taste_rating 
+                ? parseFloat(parseFloat(deal.avg_taste_rating).toFixed(1)) 
+                : 0,
+            dealPortionRating: deal.avg_portion_rating 
+                ? parseFloat(parseFloat(deal.avg_portion_rating).toFixed(1)) 
+                : 0,
+            numRatings: deal.number_of_ratings 
+                ? parseInt(deal.number_of_ratings, 10) 
+                : 0,
         }));
 
         res.json(todayDeals);
@@ -180,10 +188,19 @@ app.get('/api/weekdeals', (req, res) => {
                 dayOfWeek: deal.day_of_week,
                 dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
                 dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
-                dealValueRating: deal.avg_value_rating ? deal.avg_value_rating.toFixed(1): 0,
-                dealTasteRating: deal.avg_taste_rating ? deal.avg_taste_rating.toFixed(1) : 0,
-                dealPortionRating: deal.avg_portion_rating ? deal.avg_portion_rating.toFixed(1) : 0,
-                numRatings: deal.number_or_ratings || 0
+                dealValueRating: deal.avg_value_rating 
+                    ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1)) 
+                    : 0,
+                dealTasteRating: deal.avg_taste_rating 
+                    ? parseFloat(parseFloat(deal.avg_taste_rating).toFixed(1)) 
+                    : 0,
+                dealPortionRating: deal.avg_portion_rating 
+                    ? parseFloat(parseFloat(deal.avg_portion_rating).toFixed(1)) 
+                    : 0,
+                numRatings: deal.number_of_ratings 
+                    ? parseInt(deal.number_of_ratings, 10) 
+                    : 0,
+
             }
             )
         });
@@ -193,5 +210,52 @@ app.get('/api/weekdeals', (req, res) => {
 
     connection.end();
 });
+
+// API to get a user's reviews for a deal
+app.post('/api/userrating', (req, res) => {
+
+    const connection = mysql.createConnection(config); 
+    const {dealID, userID} = req.body
+
+    const sql = `
+        SELECT 
+            value_score, 
+            taste_score, 
+            portion_score, 
+            DATE_FORMAT(r.updated_at, '%Y-%m-%d %H:%i') AS updated_at,
+            rating_id
+        FROM ratings r
+        JOIN users u ON u.id = r.user_id
+        JOIN deals d ON d.deal_id = r.deal_id
+        WHERE r.deal_id = ?
+        AND r.user_id = ?;
+        `
+
+    const vals =[dealID, userID]
+
+    // Connnect to SQL Database and insert review. Handle any errors. 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load hours' });
+    }
+
+    const userReview = result.map(review => ({
+        tasteRating: parseFloat(review.taste_score),
+        valueRating: parseFloat(review.value_score),
+        portionRating: parseFloat(review.portion_score),
+        ratingDate: review.updated_at,
+        ratingID: review.rating_id
+    }));
+
+    // Return review
+    res.json(userReview);
+  })
+
+  connection.end();
+
+
+
+})
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
