@@ -96,7 +96,12 @@ const RestaurantList = ({ uuid }) => {
                 width: "100%",
                 textAlign: "center",
               }}
-            ></Box>
+            >
+              {" "}
+              <Typography variant={"h6"} color="error">
+                No Restaurants Available.
+              </Typography>
+            </Box>
           )}
 
         {/* Show restaurants */}

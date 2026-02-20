@@ -70,7 +70,7 @@ const Restaurant = ({ uuid, restaurant }) => {
             </Box>
           </Box>
 
-          {/* Optional: Street Address preview */}
+          {/* Street Address preview */}
           <Box sx={{ mt: 1 }}>
             <Typography variant="caption" color="text.secondary">
               {restaurant.street_address} {restaurant.unit || ""}
