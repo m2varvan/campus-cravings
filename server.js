@@ -69,7 +69,6 @@ app.get('/api/todaydeals', (req, res) => {
             numRatings: deal.number_or_ratings || 0
         }));
 
-        console.log(todayDeals)
         res.json(todayDeals);
     });
 
@@ -106,7 +105,7 @@ app.post('/api/dealhours', (req, res) => {
       return res.status(500).json({ error: 'Failed to load hours' });
     }
 
-    // Return hours
+    
     const dealHours = result.map(day => ({
         dealID: day.deal_id,
         dayOfWeek: day.day_of_week,
@@ -114,8 +113,8 @@ app.post('/api/dealhours', (req, res) => {
         dealEndTime: day.end_times ? day.end_times.split(',') : [],
     }));
 
-        console.log(dealHours)
-        res.json(dealHours);
+    // Return hours
+    res.json(dealHours);
   })
 
   connection.end();
@@ -137,12 +136,78 @@ app.get('/api/get-restaurants', (req, res) => {
             return res.status(500).json({ error: 'Failed to fetch restaurants'});
         }
         res.json(results);
+// Route to get all valid deals
+app.get('/api/weekdeals', (req, res) => {
+    const connection = mysql.createConnection(config)
+
+    const sql = `
+        SELECT 
+            d.deal_id, 
+            d.restaurant_id, 
+            d.deal_name, 
+            d.description, 
+            d.deal_price, 
+            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
+            r.restaurant_name, 
+            dh.day_of_week,
+            GROUP_CONCAT(dh.start_time) AS start_times,
+            GROUP_CONCAT(dh.end_time) AS end_times,
+            AVG(rt.taste_score) AS avg_taste_rating,
+            AVG(rt.value_score) AS avg_value_rating,
+            AVG(rt.portion_score) AS avg_portion_rating,
+            COUNT(rt.rating_id) AS number_of_ratings
+        FROM deals d
+        RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
+        JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+        LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+        WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
+        AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
+        GROUP BY d.deal_id, dh.day_of_week;
+    `
+
+    connection.query(sql, (error, results) => {
+        if (error) {
+            console.error('Database error:', error.message);
+            return res.status(500).json({ error: 'Failed to fetch promotions'});
+        }
+        
+        // Create object to sort deals by day of week
+        const dealsByDay = {
+            Monday: [],
+            Tuesday: [],
+            Wednesday: [],
+            Thursday: [],
+            Friday: [],
+            Saturday: [],
+            Sunday: []
+        };
+
+        // Iterate through results and append to correct day of week array. 
+        results.map(deal => {
+            dealsByDay[deal.day_of_week].push(
+                {dealID: deal.deal_id,
+                restaurantID: deal.restaurant_id,
+                restaurantName: deal.restaurant_name,
+                dealName: deal.deal_name,
+                dealDescription: deal.description || 'n/a',
+                dealPrice: deal.deal_price.toFixed(2),
+                dealEditData: deal.edited_at_formatted,
+                dayOfWeek: deal.day_of_week,
+                dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
+                dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
+                dealValueRating: deal.avg_value_rating ? deal.avg_value_rating.toFixed(1): 0,
+                dealTasteRating: deal.avg_taste_rating ? deal.avg_taste_rating.toFixed(1) : 0,
+                dealPortionRating: deal.avg_portion_rating ? deal.avg_portion_rating.toFixed(1) : 0,
+                numRatings: deal.number_or_ratings || 0
+            }
+            )
+        });
+
+        res.json(dealsByDay);
     });
 
     connection.end();
 });
-
-
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
 

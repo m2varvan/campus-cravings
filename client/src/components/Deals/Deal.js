@@ -1,8 +1,8 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
 
-const Deal = ({uuid, deal}) => {
+const Deal = ({uuid, deal, size='lg'}) => {
 
     // State to open dialog box with deal details
     const [openDetails, setOpenDetails] = React.useState(false);
@@ -12,50 +12,68 @@ const Deal = ({uuid, deal}) => {
 
     return(
         <>
-        <Grid item xs={12} sm={6} lg={4}>
             <Box
                 onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
-                    p: 2,
+                    p: size==='lg' ? 2 : 1, // If large size, more padding
                     m: 1,
                     borderRadius: 1,
                 }}
             >
                 {/* Deal name and price on opposite ends */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+                    {/* Name and Restaurant Name */}
+                    <Box sx={{width: '70%'}}>
+                    <Typography
+                            variant= {size === 'lg' ? "h6": 'subtitle1'}
+                            sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {deal.dealName}
+                        </Typography>
+                    </Box>
+                    
+                    {/* Price and Average Rating */}
+                    <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant={size === 'lg' ? "h6": 'subtitle1'}>
+                            ${deal.dealPrice}
+                        </Typography>
+                    </Box>
+                </Box>
 
-                {/* Name and Restaurant Name */}
-                <Box sx={{width: '80%'}}>
-                   <Typography
-                        variant="h6"
-                        sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {deal.dealName}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                        {deal.restaurantName}
-                    </Typography>
-                </Box>
-                
-                {/* Price and Average Rating */}
-                <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="h6">
-                        ${deal.dealPrice}
-                    </Typography>
-                    <Typography variant="body2">
-                        ⭐{avgRating} ({deal.numRatings && 0})
-                    </Typography>
-                </Box>
-                
+                {/* Restaurant name and ratings on opposite ends */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+                    {/* Restaurant Name */}
+                    <Box sx={{width: '60%'}}>
+                        <Typography 
+                            variant="body2" 
+                            sx={{
+                                fontStyle: 'italic',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                        }}>
+                            {deal.restaurantName}
+                        </Typography>
+                    </Box>
+                    
+                    {/*Average Rating */}
+                    <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2">
+                            {deal.numRatings ?
+                            '⭐ ' + avgRating + '/5 ' + (deal.numRatings)
+                            :
+                            'No ratings yet'
+                            }
+                        </Typography>
+                    </Box>
                 </Box>
             </Box>
-        </Grid>
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} deal={deal} handleClose={() => setOpenDetails(false)} open={openDetails} />
