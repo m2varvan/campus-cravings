@@ -121,6 +121,21 @@ app.post('/api/dealhours', (req, res) => {
         
 });
 
+// API endpoint to get all restaurant info
+app.get('/api/get-restaurants', (req, res) => {
+    const connection = mysql.createConnection(config)
+
+    const user_query = `
+        SELECT * FROM restaurants
+           
+    `
+
+    connection.query(user_query, (error, results) => {
+        if (error) {
+            console.error('Database error:', error.message);
+            return res.status(500).json({ error: 'Failed to fetch restaurants'});
+        }
+        res.json(results);
 // Route to get all valid deals
 app.get('/api/weekdeals', (req, res) => {
     const connection = mysql.createConnection(config)
@@ -195,3 +210,5 @@ app.get('/api/weekdeals', (req, res) => {
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
+
+
