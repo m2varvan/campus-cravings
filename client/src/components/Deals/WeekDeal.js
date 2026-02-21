@@ -2,7 +2,7 @@ import { Typography, Grid, Box, CircularProgress } from "@mui/material";
 import React from "react";
 import WeekDayDeal from './WeekDayDeal'
 
-const WeekDeal = ({uuid, weekDeals, loadWeekDeals, loading, error}) => {
+const WeekDeal = ({uuid, weekDeals, loadWeekDeals, loading, error, reloadDeals}) => {
 
     // Load all deals for week view
     React.useEffect(() => {
@@ -58,6 +58,7 @@ const WeekDeal = ({uuid, weekDeals, loadWeekDeals, loading, error}) => {
                             uuid={uuid}
                             day={dayOfWeek}
                             dealList={weekDeals[dayOfWeek]}
+                            reloadDeals={reloadDeals}
                         />
                     </Grid>
                 ))}

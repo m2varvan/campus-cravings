@@ -12,9 +12,9 @@ describe('Showing Deals', () => {
         startTime: '11:30:00',
         endTime: '16:00:00',
         numRatings: 0,
-        avgTasteRating: 0,
-        avgPortionRating: 0,
-        avgValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        dealValueRating: 0,
     };
     const deal2 = {
         dealID: 2,
@@ -28,9 +28,9 @@ describe('Showing Deals', () => {
         startTime: '11:00:00',
         endTime: '14:00:00',
         numRatings: 0,
-        avgTasteRating: 0,
-        avgPortionRating: 0,
-        avgValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        dealValueRating: 0,
     };
     const deal3 = {
         dealID: 20,
@@ -44,9 +44,9 @@ describe('Showing Deals', () => {
         startTime: '11:00:00',
         endTime: '21:00:00',
         numRatings: 0,
-        avgTasteRating: 0,
-        avgPortionRating: 0,
-        avgValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        dealValueRating: 0,
     };
     const deal4 = {
         dealID: 4,
@@ -60,9 +60,9 @@ describe('Showing Deals', () => {
         startTime: '15:00:00',
         endTime: '17:00:00',
         numRatings: 0,
-        avgTasteRating: 0,
-        avgPortionRating: 0,
-        avgValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        dealValueRating: 0,
     }
     const deal5 = {
         dealID: 5,
@@ -76,9 +76,9 @@ describe('Showing Deals', () => {
         startTime: '11:00:00',
         endTime: '21:00:00',
         numRatings: 0,
-        avgTasteRating: 0,
-        avgPortionRating: 0,
-        avgValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        dealValueRating: 0,
     };
 
     

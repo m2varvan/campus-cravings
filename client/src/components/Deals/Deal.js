@@ -2,7 +2,7 @@ import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
 
-const Deal = ({uuid, deal, size='lg'}) => {
+const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
     // State to open dialog box with deal details
     const [openDetails, setOpenDetails] = React.useState(false);
@@ -66,7 +66,7 @@ const Deal = ({uuid, deal, size='lg'}) => {
                     <Box sx={{ textAlign: 'right' }}>
                         <Typography variant="body2">
                             {deal.numRatings ?
-                            '⭐ ' + avgRating + '/5 ' + (deal.numRatings)
+                            '⭐ ' + avgRating + '/5  (' + deal.numRatings + ')'
                             :
                             'No ratings yet'
                             }
@@ -76,7 +76,11 @@ const Deal = ({uuid, deal, size='lg'}) => {
             </Box>
         
         {/* Dialog with expanded deal information */}
-        <ExpandedDeal uuid={uuid} deal={deal} handleClose={() => setOpenDetails(false)} open={openDetails} />
+        <ExpandedDeal uuid={uuid} 
+                    deal={deal} 
+                    handleClose={() => setOpenDetails(false)} 
+                    open={openDetails} 
+                    reloadDeals={reloadDeals} />
         </>
 
     )

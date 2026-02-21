@@ -2,7 +2,7 @@ import Deal from './Deal';
 import React, {useState} from 'react';
 import { Typography, Box, Button } from '@mui/material';
 
-const WeekDayDeal = ({uuid, day, dealList}) => {
+const WeekDayDeal = ({uuid, day, dealList, reloadDeals}) => {
 
     // Variables and functions to show only deals 6 by default
     const defaultVisible = 6
@@ -44,7 +44,7 @@ const WeekDayDeal = ({uuid, day, dealList}) => {
                 <>
                     {/* Visible deals */}
                     {dealList.slice(0, visibleCount).map((deal) => (
-                        <Deal key={deal.dealID} uuid={uuid} deal={deal} size={'sm'} />
+                        <Deal key={deal.dealID} uuid={uuid} deal={deal} size={'sm'} reloadDeals={reloadDeals}/>
                     ))}
 
                     {/* Show More button */}
