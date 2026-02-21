@@ -307,7 +307,7 @@ app.post('/api/edit/rating', (req, res) => {
             value_score = ?,
             portion_score = ?,
             updated_at = NOW()
-        WHERE deal_id = ? AND user_id = ? AND rating_id;
+        WHERE deal_id = ? AND user_id = ? AND rating_id = ?;
     `
     const vals = [
         parseFloat(tasteRating),
