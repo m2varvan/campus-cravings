@@ -445,3 +445,29 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
 
     connection.end();
 });
+
+app.post('/api/deal/:dealID/reviews', (req, res) => {
+    const { reviewText, uuid } = req.body;
+
+    if (!uuid) {
+        return res.status(401).json({ error: 'Login required' });
+    }
+
+    const connection = mysql.createConnection(config);
+
+    const sql = `
+        INSERT INTO reviews (deal_id, user_uuid, review_text)
+        VALUES (?, ?, ?)
+    `;
+
+    connection.query(sql, [req.params.dealID, uuid, reviewText], (error) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Failed to submit review' });
+        }
+
+        res.status(201).json({ success: true });
+    });
+
+    connection.end();
+});
