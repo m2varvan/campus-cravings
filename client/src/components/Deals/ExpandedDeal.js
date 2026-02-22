@@ -12,8 +12,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import RateDeal from './RateDeal';
-import ReviewList from './ReviewList';
-import ReviewDeal from './ReviewDeal';
+import Review from '../Review';
 
 const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
   // Deal hours states
@@ -251,6 +250,8 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
           {/* My Ratings */}
           <RateDeal uuid={uuid} deal={deal} updateRatings={updateRatings} />
         </Box>
+
+          <Review uuid={uuid} dealID={deal.dealID} />
 
         <Divider sx={{ my: 2 }} />
 
