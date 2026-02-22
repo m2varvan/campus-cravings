@@ -422,3 +422,4 @@ app.post('/api/deal/ratings', (req, res) => {
 
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
+
