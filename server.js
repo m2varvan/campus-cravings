@@ -423,8 +423,9 @@ app.post('/api/deal/ratings', (req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
 
-app.post('/api/deal/reviews', (req, res) => {
-  const { dealID } = req.body;
+app.get('/api/deal/:dealID/reviews', (req, res) => {
+  const { dealID } = req.params;
+  const connection = mysql.createConnection(config);
 
   const sql = `
     SELECT 
@@ -432,14 +433,15 @@ app.post('/api/deal/reviews', (req, res) => {
       user_id,
       title,
       body,
-      helpful_votes,
       DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at_formatted
     FROM reviews
     WHERE deal_id = ?
     ORDER BY created_at DESC
   `;
 
-  db.query(sql, [dealID], (err, results) => {
+  connection.query(sql, [dealID], (err, results) => {
+    connection.end();
+
     if (err) {
       console.error(err);
       return res.status(500).json({ error: 'Failed to fetch reviews' });
@@ -464,7 +466,11 @@ app.post('/api/add/review', (req, res) => {
     VALUES (?, ?, ?, ?)
   `;
 
-  db.query(sql, [userID, dealID, title, body], (err, result) => {
+  const connection = mysql.createConnection(config); // <-- FIXED
+
+  connection.query(sql, [userID, dealID, title, body], (err, result) => {
+    connection.end();
+
     if (err) {
       console.error(err);
       return res.status(500).json({ error: 'Failed to add review' });
