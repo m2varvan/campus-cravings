@@ -12,6 +12,8 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import RateDeal from './RateDeal';
+import ReviewList from './ReviewList';
+import ReviewDeal from './ReviewDeal';
 
 const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
   // Deal hours states
@@ -251,6 +253,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
         </Box>
 
         <Divider sx={{ my: 2 }} />
+
       </DialogContent>
 
       {/* Last Updated & Close Button */}
