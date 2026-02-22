@@ -423,3 +423,25 @@ app.post('/api/deal/ratings', (req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
 
+app.get('/api/deal/:dealID/reviews', (req, res) => {
+    const connection = mysql.createConnection(config);
+
+    const sql = `
+        SELECT review_id, user_uuid, review_text,
+        DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as created_at
+        FROM reviews
+        WHERE deal_id = ?
+        ORDER BY created_at DESC
+    `;
+
+    connection.query(sql, [req.params.dealID], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Failed to fetch reviews' });
+        }
+
+        res.json(results);
+    });
+
+    connection.end();
+});
