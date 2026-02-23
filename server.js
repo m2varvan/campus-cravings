@@ -1,10 +1,11 @@
-import mysql from "mysql";
-import config from "./config.js";
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-import bodyParser from "body-parser";
-import { createConnection } from "net";
+import mysql from 'mysql';
+import config from './config.js';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
+import { createConnection } from 'net';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -634,6 +635,38 @@ app.delete('/api/review/:reviewID', (req, res) => {
 
   connection.end();
 
+});
+
+app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
+
+
+app.post('/api/signup', (req, res) =>{
+    const connection = mysql.createConnection(config);
+
+    const{ username, firstName, lastName, profilePhoto } = req.body
+    const id = crypto.randomUUID();
+
+    const checkQuery = "SELECT * FROM users WHERE username = ?";
+    connection.query(checkQuery, [username], (err, data) => {
+        if (err) {
+            console.error("Select Error:", err)
+            return res.status(500).json("User search failed");
+        }
+
+        if (data.length > 0) {
+            return res.status(409).json("This email is already has an account.");
+        }
+        const insertQuery = "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";   
+        const values = [id, username, firstName, lastName, profilePhoto];
+        connection.query(insertQuery, values, (err, result) => {
+            connection.end();
+            if (err) {
+                console.error("Select Error:", err)
+                return res.status(500).json("User entry failed");
+            } 
+            return res.status(200).json("User has been created.")
+        })   
+    })
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
