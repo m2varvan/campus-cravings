@@ -485,3 +485,53 @@ app.post('/api/add/review', (req, res) => {
     });
   });
 });
+
+app.put('/api/review/:reviewID', (req, res) => {
+  const { reviewID } = req.params;
+  const { title, body } = req.body;
+
+  if (!title || !body) {
+    return res.status(400).json({ error: 'Title and body are required' });
+  }
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    UPDATE reviews
+    SET title = ?, body = ?
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [title, body, reviewID], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to update review' });
+    }
+
+    res.json({ success: true });
+  });
+});
+
+app.delete('/api/review/:reviewID', (req, res) => {
+  const { reviewID } = req.params;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    DELETE FROM reviews
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [reviewID], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to delete review' });
+    }
+
+    res.json({ success: true });
+  });
+});
