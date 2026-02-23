@@ -92,7 +92,7 @@ describe('ExpandedDeal', () => {
             json: () => []
         });
         renderComponent();
-        expect(global.fetch).toHaveBeenCalledWith('/api/dealhours', expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith('/api/deal/hours', expect.any(Object));
     });
 
     test('shows correct deal availability', async () => {

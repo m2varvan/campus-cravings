@@ -62,7 +62,7 @@ describe('Deal', () => {
 
     test('ratings are displayed consistently with a star and (one decimal point)/5 on deal card', () => {
         renderComponent();
-        expect(screen.getByText((/⭐ 4\.0\/5/i)))
+        expect(screen.getByText((/⭐ 4\.0\/5/i))).toBeInTheDocument();
     })
 
     test('average ratings are correctly calculated', () => {

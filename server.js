@@ -4,6 +4,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
+import { createConnection } from 'net';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,8 +19,8 @@ app.use(express.static(path.join(__dirname, "client/build")));
 // API Routes
 
 // Route to get deals valid for current day
-app.get("/api/todaydeals", (req, res) => {
-  const connection = mysql.createConnection(config);
+app.get('/api/today/deals', (req, res) => {
+    const connection = mysql.createConnection(config)
 
   const sql = `
         SELECT 
@@ -52,28 +53,30 @@ app.get("/api/todaydeals", (req, res) => {
       return res.status(500).json({ error: "Failed to fetch promotions" });
     }
 
-    const todayDeals = results.map((deal) => ({
-      dealID: deal.deal_id,
-      restaurantID: deal.restaurant_id,
-      restaurantName: deal.restaurant_name,
-      dealName: deal.deal_name,
-      dealDescription: deal.description || "n/a",
-      dealPrice: deal.deal_price.toFixed(2),
-      dealEditData: deal.edited_at_formatted,
-      dayOfWeek: deal.day_of_week,
-      dealStartTime: deal.start_times ? deal.start_times.split(",") : [],
-      dealEndTime: deal.end_times ? deal.end_times.split(",") : [],
-      dealValueRating: deal.avg_value_rating
-        ? deal.avg_value_rating.toFixed(1)
-        : 0,
-      dealTasteRating: deal.avg_taste_rating
-        ? deal.avg_taste_rating.toFixed(1)
-        : 0,
-      dealPortionRating: deal.avg_portion_rating
-        ? deal.avg_portion_rating.toFixed(1)
-        : 0,
-      numRatings: deal.number_or_ratings || 0,
-    }));
+        const todayDeals = results.map(deal => ({
+            dealID: deal.deal_id,
+            restaurantID: deal.restaurant_id,
+            restaurantName: deal.restaurant_name,
+            dealName: deal.deal_name,
+            dealDescription: deal.description || 'n/a',
+            dealPrice: deal.deal_price.toFixed(2),
+            dealEditData: deal.edited_at_formatted,
+            dayOfWeek: deal.day_of_week,
+            dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
+            dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
+            dealValueRating: deal.avg_value_rating 
+                ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1)) 
+                : 0,
+            dealTasteRating: deal.avg_taste_rating 
+                ? parseFloat(parseFloat(deal.avg_taste_rating).toFixed(1)) 
+                : 0,
+            dealPortionRating: deal.avg_portion_rating 
+                ? parseFloat(parseFloat(deal.avg_portion_rating).toFixed(1)) 
+                : 0,
+            numRatings: deal.number_of_ratings 
+                ? parseInt(deal.number_of_ratings, 10) 
+                : 0,
+        }));
 
     res.json(todayDeals);
   });
@@ -82,9 +85,10 @@ app.get("/api/todaydeals", (req, res) => {
 });
 
 // API to get the deal availability for a specific deal
-app.post("/api/dealhours", (req, res) => {
-  const connection = mysql.createConnection(config);
-  const { dealID } = req.body;
+app.post('/api/deal/hours', (req, res) => {
+
+    const connection = mysql.createConnection(config); 
+    const {dealID} = req.body;
 
   const sql = `
         SELECT 
@@ -124,26 +128,35 @@ app.post("/api/dealhours", (req, res) => {
 });
 
 // API endpoint to get all restaurant info
-app.get("/api/get-restaurants", (req, res) => {
-  const connection = mysql.createConnection(config);
+app.get('/api/get-restaurants', (req, res) => {
+    const connection = mysql.createConnection(config);
 
-  const user_query = `
-        SELECT * FROM restaurants
-           
-    `;
+    connection.connect((err) => {
+        if (err) {
+            console.error('Connection error:', err.message);
+            return res.status(500).json({ error: 'Database connection failed' });
+        }
 
-  connection.query(user_query, (error, results) => {
-    if (error) {
-      console.error("Database error:", error.message);
-      return res.status(500).json({ error: "Failed to fetch restaurants" });
-    }
-    res.json(results);
-  });
+        const user_query = `SELECT * FROM restaurants`;
+
+        connection.query(user_query, (error, results) => {
+            if (error) {
+                console.error('Database error:', error.message);
+                connection.end();
+                return res.status(500).json({ error: 'Failed to fetch restaurants' });
+            }
+
+            res.json(results);
+            connection.end();
+        });
+    });
 });
 
+    
 // Route to get all valid deals
-app.get("/api/weekdeals", (req, res) => {
-  const connection = mysql.createConnection(config);
+app.get('/api/week/deals', (req, res) => {
+
+    const connection = mysql.createConnection(config)
 
   const sql = `
         SELECT 
@@ -187,31 +200,35 @@ app.get("/api/weekdeals", (req, res) => {
       Sunday: [],
     };
 
-    // Iterate through results and append to correct day of week array.
-    results.map((deal) => {
-      dealsByDay[deal.day_of_week].push({
-        dealID: deal.deal_id,
-        restaurantID: deal.restaurant_id,
-        restaurantName: deal.restaurant_name,
-        dealName: deal.deal_name,
-        dealDescription: deal.description || "n/a",
-        dealPrice: deal.deal_price.toFixed(2),
-        dealEditData: deal.edited_at_formatted,
-        dayOfWeek: deal.day_of_week,
-        dealStartTime: deal.start_times ? deal.start_times.split(",") : [],
-        dealEndTime: deal.end_times ? deal.end_times.split(",") : [],
-        dealValueRating: deal.avg_value_rating
-          ? deal.avg_value_rating.toFixed(1)
-          : 0,
-        dealTasteRating: deal.avg_taste_rating
-          ? deal.avg_taste_rating.toFixed(1)
-          : 0,
-        dealPortionRating: deal.avg_portion_rating
-          ? deal.avg_portion_rating.toFixed(1)
-          : 0,
-        numRatings: deal.number_or_ratings || 0,
-      });
-    });
+        // Iterate through results and append to correct day of week array. 
+        results.map(deal => {
+            dealsByDay[deal.day_of_week].push(
+                {dealID: deal.deal_id,
+                restaurantID: deal.restaurant_id,
+                restaurantName: deal.restaurant_name,
+                dealName: deal.deal_name,
+                dealDescription: deal.description || 'n/a',
+                dealPrice: deal.deal_price.toFixed(2),
+                dealEditData: deal.edited_at_formatted,
+                dayOfWeek: deal.day_of_week,
+                dealStartTime: deal.start_times ? deal.start_times.split(',') : [],
+                dealEndTime: deal.end_times ? deal.end_times.split(',') : [],
+                dealValueRating: deal.avg_value_rating 
+                    ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1)) 
+                    : 0,
+                dealTasteRating: deal.avg_taste_rating 
+                    ? parseFloat(parseFloat(deal.avg_taste_rating).toFixed(1)) 
+                    : 0,
+                dealPortionRating: deal.avg_portion_rating 
+                    ? parseFloat(parseFloat(deal.avg_portion_rating).toFixed(1)) 
+                    : 0,
+                numRatings: deal.number_of_ratings 
+                    ? parseInt(deal.number_of_ratings, 10) 
+                    : 0,
+
+            }
+            )
+        });
 
     res.json(dealsByDay);
   });
@@ -219,4 +236,249 @@ app.get("/api/weekdeals", (req, res) => {
   connection.end();
 });
 
+// API to get a user's reviews for a deal
+app.post('/api/user/rating', (req, res) => {
+
+    const connection = mysql.createConnection(config); 
+    const {dealID, userID} = req.body
+
+    const sql = `
+        SELECT 
+            value_score, 
+            taste_score, 
+            portion_score, 
+            DATE_FORMAT(r.updated_at, '%Y-%m-%d %H:%i') AS updated_at,
+            rating_id
+        FROM ratings r
+        JOIN users u ON u.id = r.user_id
+        JOIN deals d ON d.deal_id = r.deal_id
+        WHERE r.deal_id = ?
+        AND r.user_id = ?;
+        `
+
+    const vals =[dealID, userID]
+
+    // Connnect to SQL Database and insert review. Handle any errors. 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to load ratings' });
+    }
+
+    const userReview = result.map(review => ({
+        tasteRating: parseFloat(review.taste_score),
+        valueRating: parseFloat(review.value_score),
+        portionRating: parseFloat(review.portion_score),
+        ratingDate: review.updated_at,
+        ratingID: parseInt(review.rating_id)
+
+    
+    }));
+
+    // Return review
+    res.json(userReview);
+
+  })
+
+  connection.end();
+
+});
+
+// API to add a new rating
+app.post('/api/add/rating', (req, res) => {
+    
+    const connection = mysql.createConnection(config);
+    const { dealID, userID, tasteRating, valueRating, portionRating } = req.body;
+
+    const sql = `
+        INSERT INTO ratings (deal_id, user_id, taste_score, value_score, portion_score)
+        VALUES (?, ?, ?, ?, ?);
+    `;
+
+    const vals = [
+        parseInt(dealID),
+        userID,
+        parseFloat(tasteRating),
+        parseFloat(valueRating),
+        parseFloat(portionRating)       
+    ];
+
+    connection.query(sql, vals, (error, result) => {
+        if (error) {
+            console.error('Database error:', error.message);
+            return res.status(500).json({ error: 'Failed to add rating' });
+        }
+
+        res.status(201).json({ message: 'Rating added successfully' });
+        
+    });
+    connection.end();
+
+});
+
+
+// API to edit a rating
+app.post('/api/edit/rating', (req, res) => {
+    
+    const connection = mysql.createConnection(config);
+    const {dealID, userID, tasteRating, valueRating, portionRating, ratingID} = req.body
+
+    const sql = `
+        UPDATE ratings
+        SET 
+            taste_score = ?,
+            value_score = ?,
+            portion_score = ?,
+            updated_at = NOW()
+        WHERE deal_id = ? AND user_id = ? AND rating_id = ?;
+    `
+    const vals = [
+        parseFloat(tasteRating),
+        parseFloat(valueRating),
+        parseFloat(portionRating),
+        parseInt(dealID),
+        userID,
+        parseInt(ratingID) 
+    ]
+
+    // Connnect to SQL Database and delete 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to edit rating' });
+    } 
+    
+    // Return status 201 to indicate success
+    res.status(201).json();
+    });
+
+    connection.end();
+
+
+});
+
+  
+
+  app.post('/api/delete/rating', (req, res) => {
+    
+    const connection = mysql.createConnection(config);
+    const {ratingID, dealID, userID} = req.body
+
+    const sql = `
+        DELETE FROM ratings
+        WHERE deal_id = ? AND user_id = ? AND rating_id = ?;
+    `
+    const vals =  [dealID, userID, ratingID]
+
+    // Connnect to SQL Database and delete 
+    connection.query(sql, vals, (error, result) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to delete rating' });
+    } 
+    
+    // Return status 201 to indicate success
+    res.status(201).json();
+    });
+    connection.end();
+
+  });
+
+// API to get deal ratings
+app.post('/api/deal/ratings', (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { dealID } = req.body;
+
+  const sql = `
+    SELECT 
+      AVG(value_score) AS avg_value_rating,
+      AVG(taste_score) AS avg_taste_rating,
+      AVG(portion_score) AS avg_portion_rating,
+      COUNT(rating_id) AS num_ratings
+    FROM ratings
+    WHERE deal_id = ?;
+  `;
+
+  connection.query(sql, [dealID], (error, results) => {
+    if (error) {
+      console.error('Database error:', error.message);
+      return res.status(500).json({ error: 'Failed to fetch deal ratings' });
+    }
+
+    const row = results[0];
+    res.json({
+      dealValueRating: row.avg_value_rating ? parseFloat(row.avg_value_rating) : 0,
+      dealTasteRating: row.avg_taste_rating ? parseFloat(row.avg_taste_rating) : 0,
+      dealPortionRating: row.avg_portion_rating ? parseFloat(row.avg_portion_rating) : 0,
+      numRatings: row.num_ratings ? parseInt(row.num_ratings, 10) : 0,
+    });
+  });
+
+  connection.end();
+});
+
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
+
+app.get('/api/deal/:dealID/reviews', (req, res) => {
+  const { dealID } = req.params;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      review_id,
+      user_id,
+      title,
+      body,
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at_formatted
+    FROM reviews
+    WHERE deal_id = ?
+    ORDER BY created_at DESC
+  `;
+
+  connection.query(sql, [dealID], (err, results) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/add/review', (req, res) => {
+  const { dealID, userID, title, body } = req.body;
+
+  if (!title?.trim() || !body?.trim()) {
+    return res.status(400).json({ error: 'Title and body required' });
+  }
+
+  if (title.length > 250 || body.length > 1000) {
+    return res.status(400).json({ error: 'Character limit exceeded' });
+  }
+
+  const sql = `
+    INSERT INTO reviews (user_id, deal_id, title, body)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  const connection = mysql.createConnection(config); // <-- FIXED
+
+  connection.query(sql, [userID, dealID, title, body], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to add review' });
+    }
+
+    res.json({
+      review_id: result.insertId,
+      user_id: userID,
+      title,
+      body,
+      created_at_formatted: new Date().toISOString()
+    });
+  });
+});
