@@ -470,9 +470,7 @@ app.post("/api/deal/ratings", (req, res) => {
   connection.end();
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
-
-app.get("/api/deal/:dealID/reviews", (req, res) => {
+app.get('/api/deal/:dealID/reviews', (req, res) => {
   const { dealID } = req.params;
   const connection = mysql.createConnection(config);
 
@@ -482,21 +480,25 @@ app.get("/api/deal/:dealID/reviews", (req, res) => {
       user_id,
       title,
       body,
-      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at_formatted
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(edited_at, '%Y-%m-%d %H:%i') AS edited_at
     FROM reviews
     WHERE deal_id = ?
     ORDER BY created_at DESC
   `;
 
   connection.query(sql, [dealID], (err, results) => {
-    connection.end();
 
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch reviews" });
     }
+
     res.json(results);
   });
+
+  connection.end();
+
 });
 
 app.post("/api/add/review", (req, res) => {
@@ -518,8 +520,7 @@ app.post("/api/add/review", (req, res) => {
   const connection = mysql.createConnection(config); // <-- FIXED
 
   connection.query(sql, [userID, dealID, title, body], (err, result) => {
-    connection.end();
-
+    
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to add review" });
@@ -530,7 +531,74 @@ app.post("/api/add/review", (req, res) => {
       user_id: userID,
       title,
       body,
-      created_at_formatted: new Date().toISOString(),
+      created_at: new Date(),
+      edited_at: null
     });
   });
+
+  connection.end();
+
+
 });
+
+app.put('/api/review/:reviewID', (req, res) => {
+  const { reviewID } = req.params;
+  const { title, body } = req.body;
+
+  if (!title?.trim() || !body?.trim()) {
+    return res.status(400).json({ error: 'Title and body are required' });
+  }
+
+  if (title.length > 250 || body.length > 1000) {
+    return res.status(400).json({ error: 'Character limit exceeded' });
+  }
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    UPDATE reviews
+    SET title = ?, body = ?, edited_at = NOW()
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [title, body, reviewID], (err) => {
+    
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to update review' });
+    }
+
+    res.json({ success: true });
+  });
+
+  connection.end();
+
+});
+
+app.delete('/api/review/:reviewID', (req, res) => {
+  const { reviewID } = req.params;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    DELETE FROM reviews
+    WHERE review_id = ?
+  `;
+
+  connection.query(sql, [reviewID], (err, result) => {
+    
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to delete review' });
+    }
+
+    res.json({ success: true });
+  });
+
+  connection.end();
+
+});
+
+app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
