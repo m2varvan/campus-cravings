@@ -433,8 +433,8 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
       user_id,
       title,
       body,
-      created_at,
-      edited_at
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(edited_at, '%Y-%m-%d %H:%i') AS edited_at
     FROM reviews
     WHERE deal_id = ?
     ORDER BY created_at DESC
@@ -483,7 +483,8 @@ app.post('/api/add/review', (req, res) => {
       user_id: userID,
       title,
       body,
-      created_at_formatted: new Date().toISOString()
+      created_at: new Date(),
+      edited_at: null
     });
   });
 });
@@ -504,7 +505,7 @@ app.put('/api/review/:reviewID', (req, res) => {
 
   const sql = `
     UPDATE reviews
-    SET title = ?, body = ?
+    SET title = ?, body = ?, edited_at = NOW()
     WHERE review_id = ?
   `;
 

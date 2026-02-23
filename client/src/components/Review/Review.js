@@ -149,6 +149,23 @@ useEffect(() => {
     setEditingReviewId(null);
   };
 
+  {/*
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+
+    const date = new Date(timestamp);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+  */}
+
   return (
     <Box mt={4}>
       <Divider sx={{ mb: 2 }} />
@@ -214,13 +231,12 @@ useEffect(() => {
 
           <Typography variant="caption" display="block" gutterBottom>
               Posted by {review.user_id} on{' '}
-              {new Date(review.created_at).toLocaleString()}
+              {review.created_at}
               {review.edited_at &&
                 new Date(review.edited_at).getTime() !==
                   new Date(review.created_at).getTime() && (
                   <>
-                    {' '} (Edited on{' '}
-                    {new Date(review.edited_at).toLocaleString()})
+                    {' '} (Edited on {review.edited_at})
                   </>
                 )}
             </Typography>
