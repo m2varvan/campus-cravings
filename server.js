@@ -5,7 +5,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import { createConnection } from 'net';
-import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -643,8 +642,7 @@ app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev 
 app.post('/api/signup', (req, res) =>{
     const connection = mysql.createConnection(config);
 
-    const{ username, firstName, lastName, profilePhoto } = req.body
-    const id = crypto.randomUUID();
+    const{ id, username, firstName, lastName, profilePhoto} = req.body
 
     const checkQuery = "SELECT * FROM users WHERE username = ?";
     connection.query(checkQuery, [username], (err, data) => {
@@ -654,7 +652,7 @@ app.post('/api/signup', (req, res) =>{
         }
 
         if (data.length > 0) {
-            return res.status(409).json("This email is already has an account.");
+            return res.status(409).json("This email already has an account.");
         }
         const insertQuery = "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";   
         const values = [id, username, firstName, lastName, profilePhoto];

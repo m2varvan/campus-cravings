@@ -85,11 +85,18 @@ const SignUp = () => {
         }
         if (Object.keys(newErrors).length === 0) {
             setLoading(true);
+            
+            const initials = ((firstName?.charAt(0) || '') + (lastName?.charAt(0) || '')).toUpperCase();
+            //UUID
+            const id = crypto.randomUUID();
+    
+            setProfilePhoto(initials);
+
             try {
                 const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username, firstName: firstName, lastName: lastName, profilePhoto: profilePhoto})
+                    body: JSON.stringify({ id: id, username: username, firstName: firstName, lastName: lastName, profilePhoto: initials})
                 })
 
                 if (!response.ok) {
@@ -99,13 +106,14 @@ const SignUp = () => {
                 }
 
                 setSubmitStatus(true)
+
                 setConfirmationMessage(
                 <>
                     <br />
-                    Your account has been created!!
+                    Your account has been created!! Redirecting to login...
                 </>
                 );
-                setError({})
+                setError({});
                 
             } catch (error) {
                 console.error("Error during signup:", error.message)
@@ -117,6 +125,15 @@ const SignUp = () => {
             setError(newErrors)
         }
     }
+
+    React.useEffect(() => {
+        if (submitStatus) {
+            const timer = setTimeout(() => {
+                navigate('/Login');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [submitStatus, navigate])
     
 
     return(
