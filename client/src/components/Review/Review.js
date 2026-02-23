@@ -8,6 +8,10 @@ function Review({ uuid, dealID }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
+
 useEffect(() => {
   setError('');
   fetch(`/api/deal/${dealID}/reviews`) // GET
@@ -62,6 +66,7 @@ useEffect(() => {
         return;
       }
 
+
       setReviews([newReview, ...reviews]);
       setTitle('');
       setBody('');
@@ -69,6 +74,53 @@ useEffect(() => {
     } catch {
       setError('Server error.');
     }
+  };
+
+  const handleDelete = async (reviewID) => {
+  const res = await fetch(`/api/review/${reviewID}`, {
+    method: 'DELETE'
+  });
+
+  if (res.ok) {
+    setReviews(reviews.filter(r => r.review_id !== reviewID));
+  } else {
+    alert('Failed to delete review');
+  }
+};
+
+  const handleEdit = (review) => {
+    setEditingReviewId(review.review_id);
+    setEditTitle(review.title);
+    setEditBody(review.body);
+  };
+
+  const handleSave = async (reviewID) => {
+    const res = await fetch(`/api/review/${reviewID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: editTitle,
+        body: editBody
+      })
+    });
+
+    if (res.ok) {
+      setReviews(reviews.map(r =>
+        r.review_id === reviewID
+          ? { ...r, title: editTitle, body: editBody }
+          : r
+      ));
+
+      setEditingReviewId(null);
+    } else {
+      alert('Failed to update review');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingReviewId(null);
   };
 
   return (
@@ -82,19 +134,84 @@ useEffect(() => {
         <Typography>No reviews yet.</Typography>
       )}
 
-      {reviews.map(review => (
-        <Box key={review.review_id} mb={2}>
+  {reviews.map(review => (
+    <Box key={review.review_id} mb={2}>
+
+      {editingReviewId === review.review_id ? (
+        <>
+          <TextField
+            fullWidth
+            label="Edit Title"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            sx={{ mb: 1 }}
+          />
+
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            label="Edit Review"
+            value={editBody}
+            onChange={(e) => setEditBody(e.target.value)}
+            sx={{ mb: 1 }}
+          />
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => handleSave(review.review_id)}
+            sx={{ mr: 1 }}
+          >
+            Save
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+        </>
+      ) : (
+        <>
           <Typography variant="subtitle1" fontWeight="bold">
             {review.title}
           </Typography>
+
           <Typography variant="body2" gutterBottom>
             {review.body}
           </Typography>
-          <Typography variant="caption">
-            Posted by {review.user_id} on {review.created_at_formatted}
+
+          <Typography variant="caption" display="block" gutterBottom>
+            Posted by {review.user_id} on {new Date(review.created_at).toLocaleString()}
           </Typography>
-        </Box>
-      ))}
+
+          {uuid === review.user_id && (
+            <>
+              <Button
+                size="small"
+                onClick={() => handleEdit(review)}
+                sx={{ mr: 1 }}
+              >
+                Edit
+              </Button>
+
+              <Button
+                size="small"
+                color="error"
+                onClick={() => handleDelete(review.review_id)}
+              >
+                Delete
+              </Button>
+            </>
+          )}
+        </>
+      )}
+
+    </Box>
+  ))}
 
       <Divider sx={{ my: 2 }} />
 
