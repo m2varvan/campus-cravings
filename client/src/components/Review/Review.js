@@ -95,27 +95,53 @@ useEffect(() => {
   };
 
   const handleSave = async (reviewID) => {
-    const res = await fetch(`/api/review/${reviewID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title: editTitle,
-        body: editBody
-      })
-    });
+    setError('');
+    setSuccess('');
 
-    if (res.ok) {
-      setReviews(reviews.map(r =>
-        r.review_id === reviewID
-          ? { ...r, title: editTitle, body: editBody }
-          : r
-      ));
+    if (!editTitle.trim() || !editBody.trim()) {
+      setError('Title and body are required.');
+      return;
+    }
+
+    if (editTitle.length > 250) {
+      setError('Title cannot exceed 250 characters.');
+      return;
+    }
+
+    if (editBody.length > 1000) {
+      setError('Review cannot exceed 1000 characters.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/review/${reviewID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          body: editBody
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to update review.');
+        return;
+      }
+
+      // Refresh reviews from server so edited_at is correct
+      const refreshed = await fetch(`/api/deal/${dealID}/reviews`);
+      const refreshedData = await refreshed.json();
+      setReviews(refreshedData);
 
       setEditingReviewId(null);
-    } else {
-      alert('Failed to update review');
+      setSuccess('Review updated successfully.');
+
+    } catch {
+      setError('Server error.');
     }
   };
 
@@ -144,6 +170,7 @@ useEffect(() => {
             label="Edit Title"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
+            inputProps={{ maxLength: 250 }}
             sx={{ mb: 1 }}
           />
 
@@ -154,6 +181,7 @@ useEffect(() => {
             label="Edit Review"
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
+            inputProps={{ maxLength: 1000 }}
             sx={{ mb: 1 }}
           />
 
@@ -185,8 +213,17 @@ useEffect(() => {
           </Typography>
 
           <Typography variant="caption" display="block" gutterBottom>
-            Posted by {review.user_id} on {new Date(review.created_at).toLocaleString()}
-          </Typography>
+              Posted by {review.user_id} on{' '}
+              {new Date(review.created_at).toLocaleString()}
+              {review.edited_at &&
+                new Date(review.edited_at).getTime() !==
+                  new Date(review.created_at).getTime() && (
+                  <>
+                    {' '} (Edited on{' '}
+                    {new Date(review.edited_at).toLocaleString()})
+                  </>
+                )}
+            </Typography>
 
           {uuid === review.user_id && (
             <>

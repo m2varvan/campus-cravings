@@ -433,7 +433,8 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
       user_id,
       title,
       body,
-      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at_formatted
+      created_at,
+      edited_at
     FROM reviews
     WHERE deal_id = ?
     ORDER BY created_at DESC
@@ -446,6 +447,7 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
       console.error(err);
       return res.status(500).json({ error: 'Failed to fetch reviews' });
     }
+
     res.json(results);
   });
 });
@@ -490,8 +492,12 @@ app.put('/api/review/:reviewID', (req, res) => {
   const { reviewID } = req.params;
   const { title, body } = req.body;
 
-  if (!title || !body) {
+  if (!title?.trim() || !body?.trim()) {
     return res.status(400).json({ error: 'Title and body are required' });
+  }
+
+  if (title.length > 250 || body.length > 1000) {
+    return res.status(400).json({ error: 'Character limit exceeded' });
   }
 
   const connection = mysql.createConnection(config);
@@ -502,7 +508,7 @@ app.put('/api/review/:reviewID', (req, res) => {
     WHERE review_id = ?
   `;
 
-  connection.query(sql, [title, body, reviewID], (err, result) => {
+  connection.query(sql, [title, body, reviewID], (err) => {
     connection.end();
 
     if (err) {
