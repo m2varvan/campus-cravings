@@ -420,9 +420,6 @@ app.post('/api/deal/ratings', (req, res) => {
   connection.end();
 });
 
-
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
-
 app.get('/api/deal/:dealID/reviews', (req, res) => {
   const { dealID } = req.params;
   const connection = mysql.createConnection(config);
@@ -441,7 +438,6 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
   `;
 
   connection.query(sql, [dealID], (err, results) => {
-    connection.end();
 
     if (err) {
       console.error(err);
@@ -450,6 +446,9 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
 
     res.json(results);
   });
+
+  connection.end();
+
 });
 
 app.post('/api/add/review', (req, res) => {
@@ -471,8 +470,7 @@ app.post('/api/add/review', (req, res) => {
   const connection = mysql.createConnection(config); // <-- FIXED
 
   connection.query(sql, [userID, dealID, title, body], (err, result) => {
-    connection.end();
-
+    
     if (err) {
       console.error(err);
       return res.status(500).json({ error: 'Failed to add review' });
@@ -487,6 +485,10 @@ app.post('/api/add/review', (req, res) => {
       edited_at: null
     });
   });
+
+  connection.end();
+
+
 });
 
 app.put('/api/review/:reviewID', (req, res) => {
@@ -510,7 +512,7 @@ app.put('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [title, body, reviewID], (err) => {
-    connection.end();
+    
 
     if (err) {
       console.error(err);
@@ -519,6 +521,9 @@ app.put('/api/review/:reviewID', (req, res) => {
 
     res.json({ success: true });
   });
+
+  connection.end();
+
 });
 
 app.delete('/api/review/:reviewID', (req, res) => {
@@ -532,7 +537,7 @@ app.delete('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [reviewID], (err, result) => {
-    connection.end();
+    
 
     if (err) {
       console.error(err);
@@ -541,4 +546,9 @@ app.delete('/api/review/:reviewID', (req, res) => {
 
     res.json({ success: true });
   });
+
+  connection.end();
+
 });
+
+app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
