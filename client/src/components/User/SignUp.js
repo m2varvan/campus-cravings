@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { useNavigate } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
 
 
 
@@ -15,11 +16,15 @@ const SignUp = () => {
     const [password, setPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
+    const [profilePhoto, setProfilePhoto] = React.useState('N/A')
 
     // Error handling
     const [error, setError] = React.useState({});
     const [confirmationMessage, setConfirmationMessage] = React.useState(null)
     const [submitStatus, setSubmitStatus] = React.useState(false)
+
+    // Loading State
+    const [loading, setLoading] = React.useState(false);
 
     // Handle Change functions
     const handleChangeUsername = (event) => {
@@ -40,14 +45,24 @@ const SignUp = () => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
 
+    // Password validity checker
+    const isValidPassword = (password) => {
+        return /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+    };
+
     // Handle Submit functions 
     const navigate = useNavigate()
     const handleSubmit1 = (event) => {
         navigate('/Login')
     };
 
-    const handleSubmit2 = (event) => {
+    const handleSubmit2 = async (event) => {
+        
+        if (loading) return;
+
         const newErrors = {};
+        setError({})
+        
         if (username.trim() === '') {
             newErrors.username = "Enter an email address";
             setConfirmationMessage(null)
@@ -57,6 +72,8 @@ const SignUp = () => {
         if (password.trim() === ''){
             newErrors.password = "Enter a password";
             setConfirmationMessage(null)
+        } else if (!isValidPassword(password)) {
+            newErrors.password = "Password must be at least 8 characters, include 1 uppercase letter and 1 number"
         }
         if (firstName.trim() === ''){
             newErrors.firstname = "Enter a first name";
@@ -67,18 +84,38 @@ const SignUp = () => {
             setConfirmationMessage(null)
         }
         if (Object.keys(newErrors).length === 0) {
-            setSubmitStatus(true)
-            setConfirmationMessage(
+            setLoading(true);
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, firstName, lastName, profilePhoto})
+                })
+
+                if (!response.ok) {
+                    const errorData = await response.json()
+                    setError({ username: errorData });
+                    return;
+                }
+
+                setSubmitStatus(true)
+                setConfirmationMessage(
                 <>
-                    Your account has been created <br />
-                    First Name: {firstName} <br />
-                    Last Name: {lastName} <br />
-                    Username: {username} <br />
-                    Password: {password} <br />
+                    <br />
+                    Your account has been created!!
                 </>
-            )
+                );
+                setError({})
+                
+            } catch (error) {
+                console.error("Error during signup:", error.message)
+                setError({ general: "Server connection failed. Try again later."})
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setError(newErrors)
         }
-        setError(newErrors)
     }
     
 
@@ -126,16 +163,21 @@ const SignUp = () => {
                             </Grid>
 
                             <Grid item sx={{ width: '80%' }}>
-                                <TextField id="password-input" label="Password" type="password" fullWidth margin='normal' autoComplete='current-password' value={password} onChange={handleChangePassword}></TextField>
+                                <TextField id="password-input" label="Password" type="password" fullWidth margin='normal' autoComplete='current-password' value={password} onChange={handleChangePassword} inputProps={{ maxLength: 20 }} helperText={`${password.length}/20 characters`}></TextField>
                                 {error.password && (
                                     <Typography color="error">{error.password}</Typography>
                                 )}
                             </Grid>
 
                             <Grid item sx={{ width: '80%' }}>
-                                <Button id="submit-button" variant='contained' fullWidth onClick={handleSubmit2}>Sign Up</Button>
+                                <Button id="submit-button" variant='contained' fullWidth onClick={handleSubmit2} disabled={loading}>{loading? <CircularProgress size={24} color="inherit" /> : "Sign Up"}</Button>
+                                {error.general && (
+                                    <Typography id="error-message" color="error" align="center" sx={{ mb: 2 }}>
+                                        {error.general}
+                                    </Typography>
+                                )}
                                 {submitStatus === true && (
-                                    <Typography id="confirmation-message" color="success.main">
+                                    <Typography id="confirmation-message" color="success.main" align="center">
                                         {confirmationMessage}
                                     </Typography>
                                 )}
