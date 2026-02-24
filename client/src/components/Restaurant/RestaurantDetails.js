@@ -17,6 +17,9 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
   const [loadingDealHours, setLoadingDealHours] = useState(false);
   const [dealHours, setDealHours] = useState([]);
   const [loadingDealHoursError, setLoadingDealHoursError] = useState(false);
+  const [restaurantHours, setRestaurantHours] = React.useState([]);
+  const [loadingHours, setLoadingHours] = React.useState(false);
+  const [hoursError, setHoursError] = React.useState(false);
 
   useEffect(() => {
     async function loadDeals() {
@@ -64,9 +67,31 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
         setLoadingDealHours(false);
       }
     }
+    const getRestaurantHours = async () => {
+      try {
+        setLoadingHours(true);
+        setHoursError(false);
 
+        const response = await fetch("/api/restaurant-hours", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurantID: restaurant.restaurant_id }),
+        });
+
+        if (!response.ok) throw new Error(response.statusText);
+
+        const data = await response.json();
+        setRestaurantHours(data);
+      } catch (err) {
+        console.error("Failed to load restaurant hours:", err);
+        setHoursError(true);
+      } finally {
+        setLoadingHours(false);
+      }
+    };
     loadDeals();
     loadDealHours();
+    getRestaurantHours();
   }, [restaurant]);
 
   const formatDate = (dateString) => {
@@ -76,7 +101,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
       day: "numeric",
     });
   };
-
+  console.log("restaurantHours:", restaurantHours);
   return (
     <Dialog
       fullWidth
@@ -169,12 +194,44 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
               : "Information is not available"}
           </Typography>
 
-          <Typography variant="body1" sx={{ mt: 1 }}>
-            <strong>Hours:</strong>{" "}
-            {restaurant.opening_time && restaurant.closing_time
-              ? `${restaurant.opening_time} - ${restaurant.closing_time}`
-              : "Information is not available"}
-          </Typography>
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600}>
+              Hours
+            </Typography>
+
+            {loadingHours && (
+              <Typography variant="body2" color="text.secondary">
+                Loading hours...
+              </Typography>
+            )}
+
+            {hoursError && (
+              <Typography variant="body2" color="error">
+                Failed to load hours.
+              </Typography>
+            )}
+
+            {!loadingHours && !hoursError && restaurantHours.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                No hours available.
+              </Typography>
+            )}
+
+            {!loadingHours &&
+              !hoursError &&
+              restaurantHours.length > 0 &&
+              restaurantHours.map((day, index) => (
+                <Typography key={index} variant="body2">
+                  <strong>{day.dayOfWeek}:</strong>{" "}
+                  {day.startTimes.map((start, i) => (
+                    <span key={i}>
+                      {start} - {day.endTimes[i]}
+                      {i < day.startTimes.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </Typography>
+              ))}
+          </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -251,14 +308,14 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
                     sx={{ ml: 2 }}
                     color="text.secondary"
                   >
-                    Information is not available
+                    No deals available at {restaurant.restaurant_name}
                   </Typography>
                 )}
               </Box>
             ))
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Information is not available
+              No deals available at {restaurant.restaurant_name}.
             </Typography>
           )}
         </Box>

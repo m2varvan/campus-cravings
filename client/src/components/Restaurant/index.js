@@ -17,9 +17,10 @@ const RestaurantList = ({ uuid }) => {
   const [loadingRestaurantsError, setLoadingRestaurantsError] = useState(false);
   const { id } = useParams();
 
-  // Variables and functions to show only 12 by default
-  const defaultVisible = 12;
+  // Variables and functions to show only 24 by default
+  const defaultVisible = 24;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
+
   const handleShowMore = () => {
     setVisibleCount(restaurants.length);
   };
@@ -50,6 +51,13 @@ const RestaurantList = ({ uuid }) => {
 
     loadRestaurants();
   }, []);
+
+  // created UseEffect hook to ensure expanded restaurant info shows for all restaurants, not just the defaultVisible ones
+  useEffect(() => {
+    if (id) {
+      setVisibleCount(restaurants.length);
+    }
+  }, [restaurants, id]);
 
   console.log(id);
 

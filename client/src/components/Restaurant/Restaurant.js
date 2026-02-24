@@ -37,7 +37,7 @@ const Restaurant = ({ uuid, restaurant, isOpen }) => {
             }}
           >
             {/* Name and location summary */}
-            <Box sx={{ width: "70%" }}>
+            <Box sx={{ width: "100%" }}>
               <Typography
                 variant="h6"
                 sx={{
