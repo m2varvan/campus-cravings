@@ -209,7 +209,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Cuisine + Hours Section */}
+        {/* Cuisine + Hours + Ratings Section */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" fontWeight={600}>
             Restaurant Details
@@ -222,193 +222,117 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
               : "Information is not available"}
           </Typography>
 
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Hours
-            </Typography>
-
-            {loadingHours && (
-              <Typography variant="body2" color="text.secondary">
-                Loading hours...
+          {/* Hours + Ratings side by side */}
+          <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
+            {/* Hours */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle1" fontWeight={600}>
+                Hours
               </Typography>
-            )}
 
-            {hoursError && (
-              <Typography variant="body2" color="error">
-                Failed to load hours.
-              </Typography>
-            )}
-
-            {!loadingHours && !hoursError && restaurantHours.length === 0 && (
-              <Typography variant="body2" color="text.secondary">
-                No hours available.
-              </Typography>
-            )}
-
-            {!loadingHours &&
-              !hoursError &&
-              restaurantHours.length > 0 &&
-              restaurantHours.map((day, index) => (
-                <Typography key={index} variant="body2">
-                  <strong>{day.dayOfWeek}:</strong>{" "}
-                  {day.startTimes.map((start, i) => (
-                    <span key={i}>
-                      {start} - {day.endTimes[i]}
-                      {i < day.startTimes.length - 1 ? ", " : ""}
-                    </span>
-                  ))}
+              {loadingHours && (
+                <Typography variant="body2" color="text.secondary">
+                  Loading hours...
                 </Typography>
-              ))}
+              )}
+
+              {hoursError && (
+                <Typography variant="body2" color="error">
+                  Failed to load hours.
+                </Typography>
+              )}
+
+              {!loadingHours && !hoursError && restaurantHours.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  No hours available.
+                </Typography>
+              )}
+
+              {!loadingHours &&
+                !hoursError &&
+                restaurantHours.length > 0 &&
+                restaurantHours.map((day, index) => (
+                  <Typography key={index} variant="body2">
+                    <strong>{day.dayOfWeek}:</strong>{" "}
+                    {day.startTimes.map((start, i) => (
+                      <span key={i}>
+                        {start} - {day.endTimes[i]}
+                        {i < day.startTimes.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </Typography>
+                ))}
+            </Box>
+
+            {/* Ratings */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle1" fontWeight={600}>
+                Ratings
+              </Typography>
+
+              {ratings &&
+              (ratings.avg_value_score ||
+                ratings.avg_taste_score ||
+                ratings.avg_portion_score) ? (
+                <>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2">Value</Typography>
+                    <Typography variant="body2">
+                      ⭐ {Number(ratings.avg_value_score).toFixed(2)}/5
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2">Taste</Typography>
+                    <Typography variant="body2">
+                      ⭐ {Number(ratings.avg_taste_score).toFixed(2)}/5
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2">Portion</Typography>
+                    <Typography variant="body2">
+                      ⭐ {Number(ratings.avg_portion_score).toFixed(2)}/5
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="body2" fontWeight={600}>
+                      Overall
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      ⭐{" "}
+                      {(
+                        (Number(ratings.avg_value_score || 0) +
+                          Number(ratings.avg_taste_score || 0) +
+                          Number(ratings.avg_portion_score || 0)) /
+                        3
+                      ).toFixed(2)}
+                      /5
+                    </Typography>
+                  </Box>
+                </>
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  No ratings yet
+                </Typography>
+              )}
+            </Box>
           </Box>
         </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Deals section */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            Current Deals
-          </Typography>
-
-          {deals && deals.length > 0 ? (
-            deals.map((deal, index) => (
-              <Box
-                key={index}
-                sx={{
-                  mt: 1,
-                  p: 1.5,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1,
-                }}
-              >
-                <Typography variant="body1" fontWeight={600}>
-                  {deal.deal_name || "Information is not available"}
-                </Typography>
-
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  <strong>Price:</strong>{" "}
-                  {deal.deal_price !== undefined && deal.deal_price !== null
-                    ? `$${deal.deal_price}`
-                    : "Information is not available"}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 0.5 }}
-                  color="text.secondary"
-                >
-                  <strong>Description:</strong>{" "}
-                  {deal.description || "Information is not available"}
-                </Typography>
-
-                {/* Deal hours */}
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1 }}
-                  color="text.secondary"
-                >
-                  <strong>Availability:</strong>
-                </Typography>
-
-                {dealHours[deal.deal_id] &&
-                dealHours[deal.deal_id].length > 0 ? (
-                  dealHours[deal.deal_id].map((hour, i) => (
-                    <Typography
-                      key={i}
-                      variant="body2"
-                      sx={{ ml: 2 }}
-                      color="text.secondary"
-                    >
-                      {hour.day_of_week}:{" "}
-                      {hour.start_times
-                        .split(",")
-                        .map(
-                          (start, idx) =>
-                            `${start} - ${hour.end_times.split(",")[idx]}`,
-                        )
-                        .join(", ")}
-                    </Typography>
-                  ))
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ ml: 2 }}
-                    color="text.secondary"
-                  >
-                    No deals available at {restaurant.restaurant_name}
-                  </Typography>
-                )}
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              No deals available at {restaurant.restaurant_name}.
-            </Typography>
-          )}
-        </Box>
-        
-        {/* Average rating */}
-        <Divider sx={{ my: 2 }} />
-
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            Ratings
-          </Typography>
-
-          {ratings &&
-          (ratings.avg_value_score ||
-            ratings.avg_taste_score ||
-            ratings.avg_portion_score) ? (
-            <>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2">Average Value Rating</Typography>
-                <Typography variant="body2">
-                  ⭐ {Number(ratings.avg_value_score).toFixed(2)}/5
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2">Average Taste Rating</Typography>
-                <Typography variant="body2">
-                  ⭐ {Number(ratings.avg_taste_score).toFixed(2)}/5
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2">
-                  Average Portion Size Rating
-                </Typography>
-                <Typography variant="body2">
-                  ⭐ {Number(ratings.avg_portion_score).toFixed(2)}/5
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" fontWeight={600}>
-                  Average Overall Rating
-                </Typography>
-                <Typography variant="body2" fontWeight={600}>
-                  ⭐{" "}
-                  {(
-                    (Number(ratings.avg_value_score || 0) +
-                      Number(ratings.avg_taste_score || 0) +
-                      Number(ratings.avg_portion_score || 0)) /
-                    3
-                  ).toFixed(2)}
-                  /5
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              No ratings yet
-            </Typography>
-          )}
-        </Box>
       </DialogContent>
-
-      <Divider sx={{ my: 2 }} />
 
       {/* Footer Info */}
       <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
