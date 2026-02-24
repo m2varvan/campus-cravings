@@ -238,7 +238,7 @@ app.post("/api/get-deals-by-restaurant", (req, res) => {
       return res.status(500).json({ error: "Database connection failed" });
     }
 
-    const user_query = `SELECT deal_name, description, deal_price FROM deals WHERE restaurant_id = ?`;
+    const user_query = `SELECT deal_id, deal_name, description, deal_price FROM deals WHERE restaurant_id = ?`;
 
     connection.query(user_query, [restaurant_id], (error, results) => {
       if (error) {
@@ -654,8 +654,6 @@ app.delete('/api/review/:reviewID', (req, res) => {
   connection.end();
 
 });
-
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
 
 
 app.post('/api/signup', (req, res) =>{

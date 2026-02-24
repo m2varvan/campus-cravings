@@ -9,6 +9,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const RestaurantDetails = ({ restaurant, open, handleClose }) => {
   const [loadingDeals, setLoadingDeals] = useState(false);
@@ -237,6 +238,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
         <Divider sx={{ my: 2 }} />
 
         {/* Deals Section */}
+        {/* Deals Section */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" fontWeight={600}>
             Current Deals
@@ -254,9 +256,31 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
                   borderRadius: 1,
                 }}
               >
-                <Typography variant="body1" fontWeight={600}>
-                  {deal.deal_name || "Information is not available"}
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body1" fontWeight={600}>
+                    {deal.deal_name || "Information is not available"}
+                  </Typography>
+
+                  <Typography
+                    component={Link}
+                    to={`/${deal.deal_id}`}
+                    variant="body2"
+                    sx={{
+                      color: "primary.dark",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontWeight: 500,
+                    }}
+                  >
+                    View Details
+                  </Typography>
+                </Box>
 
                 <Typography variant="body2" sx={{ mt: 0.5 }}>
                   <strong>Price:</strong>{" "}
@@ -273,44 +297,6 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
                   <strong>Description:</strong>{" "}
                   {deal.description || "Information is not available"}
                 </Typography>
-
-                {/* Deal Hours */}
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1 }}
-                  color="text.secondary"
-                >
-                  <strong>Availability:</strong>
-                </Typography>
-
-                {dealHours[deal.deal_id] &&
-                dealHours[deal.deal_id].length > 0 ? (
-                  dealHours[deal.deal_id].map((hour, i) => (
-                    <Typography
-                      key={i}
-                      variant="body2"
-                      sx={{ ml: 2 }}
-                      color="text.secondary"
-                    >
-                      {hour.day_of_week}:{" "}
-                      {hour.start_times
-                        .split(",")
-                        .map(
-                          (start, idx) =>
-                            `${start} - ${hour.end_times.split(",")[idx]}`,
-                        )
-                        .join(", ")}
-                    </Typography>
-                  ))
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{ ml: 2 }}
-                    color="text.secondary"
-                  >
-                    No deals available at {restaurant.restaurant_name}
-                  </Typography>
-                )}
               </Box>
             ))
           ) : (

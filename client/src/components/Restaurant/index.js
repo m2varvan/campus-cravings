@@ -59,8 +59,6 @@ const RestaurantList = ({ uuid }) => {
     }
   }, [restaurants, id]);
 
-  console.log(id);
-
   return (
     <Grid container p={4} display={"flex"}>
       {/* Page Title */}
