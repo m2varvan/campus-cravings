@@ -180,7 +180,7 @@ const SignUp = () => {
                             </Grid>
 
                             <Grid item sx={{ width: '80%' }}>
-                                <TextField id="password-input" label="Password" type="password" fullWidth margin='normal' autoComplete='current-password' value={password} onChange={handleChangePassword} inputProps={{ maxLength: 20 }} helperText={`${password.length}/20 characters`}></TextField>
+                                <TextField id="password-input" label="Password" type="password" fullWidth margin='normal' autoComplete='current-password' value={password} onChange={handleChangePassword} inputProps={{ maxLength: 50 }} helperText={`${password.length}/50 characters`}></TextField>
                                 {error.password && (
                                     <Typography color="error">{error.password}</Typography>
                                 )}

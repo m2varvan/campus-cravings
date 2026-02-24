@@ -551,9 +551,6 @@ app.delete('/api/review/:reviewID', (req, res) => {
 
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
-
-
 app.post('/api/signup', (req, res) =>{
     const connection = mysql.createConnection(config);
 
@@ -579,6 +576,27 @@ app.post('/api/signup', (req, res) =>{
             } 
             return res.status(200).json("User has been created.")
         })   
+    })
+});
+
+app.post('/api/login', (req, res) =>{
+    const connection = mysql.createConnection(config);
+
+    const{ username, password} = req.body
+
+    const checkQuery = "SELECT * FROM users WHERE username = ? AND id = ?";
+    const values = [username, password]
+    connection.query(checkQuery, values, (err, data) => {
+        if (err) {
+            console.error("Select Error:", err)
+            return res.status(500).json("User search failed");
+        }
+
+        if (data.length > 0) {
+            return res.status(200).json("Log In successfull.");
+        } else {
+          return res.status(500).json("Log In credentials given do not exists")
+        }
     })
 });
 
