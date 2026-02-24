@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { useNavigate } from 'react-router-dom';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Alert } from '@mui/material';
 
 const Login = () => {
 
@@ -75,7 +75,7 @@ const Login = () => {
                 setConfirmationMessage(
                     <>
                         <br />
-                        Login successful! Redirecting...
+                        <Alert severity="success">Login successful! Redirecting...</Alert>
                     </>
                 );
 
@@ -124,9 +124,7 @@ const Login = () => {
                             onChange={handleChangeUsername}
                         />
                         {error.username && (
-                            <Typography color="error">
-                                {error.username}
-                            </Typography>
+                            <Alert severity="error">{error.username}</Alert>
                         )}
                     </Grid>
 
@@ -141,9 +139,7 @@ const Login = () => {
                             onChange={handleChangePassword}
                         />
                         {error.password && (
-                            <Typography color="error">
-                                {error.password}
-                            </Typography>
+                            <Alert severity="error">{error.password}</Alert>
                         )}
                     </Grid>
 
