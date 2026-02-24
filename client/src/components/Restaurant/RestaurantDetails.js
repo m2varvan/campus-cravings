@@ -20,6 +20,9 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
   const [restaurantHours, setRestaurantHours] = React.useState([]);
   const [loadingHours, setLoadingHours] = React.useState(false);
   const [hoursError, setHoursError] = React.useState(false);
+  const [loadingRatings, setLoadingRatings] = useState(false);
+  const [ratings, setRatings] = useState({});
+  const [loadingRatingsError, setLoadingRatingsError] = useState(false);
 
   useEffect(() => {
     async function loadDeals() {
@@ -89,9 +92,34 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
         setLoadingHours(false);
       }
     };
+
+    async function loadRatings() {
+      try {
+        setLoadingRatings(true);
+        const response = await fetch("/api/restaurant-rating", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurant_id: restaurant.restaurant_id }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setRatings(data);
+      } catch (error) {
+        console.error("Failed to load restaurant ratings:", error);
+        setLoadingRatingsError(true);
+      } finally {
+        setLoadingRatings(false);
+      }
+    }
+
     loadDeals();
     loadDealHours();
     getRestaurantHours();
+    loadRatings();
   }, [restaurant]);
 
   const formatDate = (dateString) => {
@@ -236,7 +264,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Deals Section */}
+        {/* Deals section */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" fontWeight={600}>
             Current Deals
@@ -274,7 +302,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
                   {deal.description || "Information is not available"}
                 </Typography>
 
-                {/* Deal Hours */}
+                {/* Deal hours */}
                 <Typography
                   variant="body2"
                   sx={{ mt: 1 }}
@@ -319,7 +347,68 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
             </Typography>
           )}
         </Box>
+        
+        {/* Average rating */}
+        <Divider sx={{ my: 2 }} />
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
+            Ratings
+          </Typography>
+
+          {ratings &&
+          (ratings.avg_value_score ||
+            ratings.avg_taste_score ||
+            ratings.avg_portion_score) ? (
+            <>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="body2">Average Value Rating</Typography>
+                <Typography variant="body2">
+                  ⭐ {Number(ratings.avg_value_score).toFixed(2)}/5
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="body2">Average Taste Rating</Typography>
+                <Typography variant="body2">
+                  ⭐ {Number(ratings.avg_taste_score).toFixed(2)}/5
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="body2">
+                  Average Portion Size Rating
+                </Typography>
+                <Typography variant="body2">
+                  ⭐ {Number(ratings.avg_portion_score).toFixed(2)}/5
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="body2" fontWeight={600}>
+                  Average Overall Rating
+                </Typography>
+                <Typography variant="body2" fontWeight={600}>
+                  ⭐{" "}
+                  {(
+                    (Number(ratings.avg_value_score || 0) +
+                      Number(ratings.avg_taste_score || 0) +
+                      Number(ratings.avg_portion_score || 0)) /
+                    3
+                  ).toFixed(2)}
+                  /5
+                </Typography>
+              </Box>
+            </>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              No ratings yet
+            </Typography>
+          )}
+        </Box>
       </DialogContent>
+
+      <Divider sx={{ my: 2 }} />
 
       {/* Footer Info */}
       <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
