@@ -9,6 +9,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import RestaurantReview from '../Review/RestaurantReview';
 
 const RestaurantDetails = ({ restaurant, open, handleClose }) => {
   const [loadingDeals, setLoadingDeals] = useState(false);
@@ -319,6 +320,9 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
             </Typography>
           )}
         </Box>
+
+        <RestaurantReview restaurantID={restaurant.restaurant_id} />
+
       </DialogContent>
 
       {/* Footer Info */}
