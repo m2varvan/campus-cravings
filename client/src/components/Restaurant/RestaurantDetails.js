@@ -1,5 +1,4 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Box,
@@ -10,10 +9,91 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
 
 const RestaurantDetails = ({ restaurant, open, handleClose }) => {
-  // Helper to format the timestamp
+  const [loadingDeals, setLoadingDeals] = useState(false);
+  const [deals, setDeals] = useState([]);
+  const [loadingDealsError, setLoadingDealsError] = useState(false);
+  const [loadingDealHours, setLoadingDealHours] = useState(false);
+  const [dealHours, setDealHours] = useState([]);
+  const [loadingDealHoursError, setLoadingDealHoursError] = useState(false);
+  const [restaurantHours, setRestaurantHours] = React.useState([]);
+  const [loadingHours, setLoadingHours] = React.useState(false);
+  const [hoursError, setHoursError] = React.useState(false);
+
+  useEffect(() => {
+    async function loadDeals() {
+      try {
+        setLoadingDeals(true);
+        const response = await fetch("/api/get-deals-by-restaurant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurant_id: restaurant.restaurant_id }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setDeals(data);
+      } catch (error) {
+        console.error("Failed to load restaurants:", error);
+        setLoadingDealsError(true);
+      } finally {
+        setLoadingDeals(false);
+      }
+    }
+
+    async function loadDealHours() {
+      try {
+        setLoadingDealHours(true);
+        const response = await fetch("/api/deal-availability-by-restaurant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurant_id: restaurant.restaurant_id }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setDealHours(data);
+      } catch (error) {
+        console.error("Failed to load restaurants:", error);
+        setLoadingDealHoursError(true);
+      } finally {
+        setLoadingDealHours(false);
+      }
+    }
+    const getRestaurantHours = async () => {
+      try {
+        setLoadingHours(true);
+        setHoursError(false);
+
+        const response = await fetch("/api/restaurant-hours", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurantID: restaurant.restaurant_id }),
+        });
+
+        if (!response.ok) throw new Error(response.statusText);
+
+        const data = await response.json();
+        setRestaurantHours(data);
+      } catch (err) {
+        console.error("Failed to load restaurant hours:", err);
+        setHoursError(true);
+      } finally {
+        setLoadingHours(false);
+      }
+    };
+    loadDeals();
+    loadDealHours();
+    getRestaurantHours();
+  }, [restaurant]);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString(undefined, {
       year: "numeric",
@@ -21,7 +101,7 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
       day: "numeric",
     });
   };
-
+  console.log("restaurantHours:", restaurantHours);
   return (
     <Dialog
       fullWidth
@@ -94,40 +174,151 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
               Contact Information
             </Typography>
             <Typography variant="h6" color="primary.dark">
-              {restaurant.phone_number || "No phone listed"}
+              {restaurant.phone_number || "Information is not available"}
             </Typography>
           </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* ADD HOURS INTO RESTAURANT DB -- PLACEHOLDER FOR NOW */}
+        {/* Cuisine + Hours Section */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" fontWeight={600}>
-            About This Location
+            Restaurant Details
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            This restaurant is located in {restaurant.city}. For specific hours
-            of operation, please contact them directly at{" "}
-            {restaurant.phone_number} or visit their website.
+
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            <strong>Cuisine:</strong>{" "}
+            {restaurant.cuisine && restaurant.cuisine.trim() !== ""
+              ? restaurant.cuisine
+              : "Information is not available"}
           </Typography>
-        </Box>
 
-        <Divider sx={{ my: 2 }} />
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600}>
+              Hours
+            </Typography>
 
-        {/* ID Reference Section */}
-        <Box sx={{ display: "flex", gap: 3 }}>
-          <Box sx={{ width: "100%" }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Restaurant ID: {restaurant.restaurant_id}
-            </Typography>
-            <Typography variant="subtitle2" color="text.secondary">
-              Region: {restaurant.province}
-            </Typography>
+            {loadingHours && (
+              <Typography variant="body2" color="text.secondary">
+                Loading hours...
+              </Typography>
+            )}
+
+            {hoursError && (
+              <Typography variant="body2" color="error">
+                Failed to load hours.
+              </Typography>
+            )}
+
+            {!loadingHours && !hoursError && restaurantHours.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                No hours available.
+              </Typography>
+            )}
+
+            {!loadingHours &&
+              !hoursError &&
+              restaurantHours.length > 0 &&
+              restaurantHours.map((day, index) => (
+                <Typography key={index} variant="body2">
+                  <strong>{day.dayOfWeek}:</strong>{" "}
+                  {day.startTimes.map((start, i) => (
+                    <span key={i}>
+                      {start} - {day.endTimes[i]}
+                      {i < day.startTimes.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </Typography>
+              ))}
           </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
+
+        {/* Deals Section */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
+            Current Deals
+          </Typography>
+
+          {deals && deals.length > 0 ? (
+            deals.map((deal, index) => (
+              <Box
+                key={index}
+                sx={{
+                  mt: 1,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="body1" fontWeight={600}>
+                  {deal.deal_name || "Information is not available"}
+                </Typography>
+
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  <strong>Price:</strong>{" "}
+                  {deal.deal_price !== undefined && deal.deal_price !== null
+                    ? `$${deal.deal_price}`
+                    : "Information is not available"}
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 0.5 }}
+                  color="text.secondary"
+                >
+                  <strong>Description:</strong>{" "}
+                  {deal.description || "Information is not available"}
+                </Typography>
+
+                {/* Deal Hours */}
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1 }}
+                  color="text.secondary"
+                >
+                  <strong>Availability:</strong>
+                </Typography>
+
+                {dealHours[deal.deal_id] &&
+                dealHours[deal.deal_id].length > 0 ? (
+                  dealHours[deal.deal_id].map((hour, i) => (
+                    <Typography
+                      key={i}
+                      variant="body2"
+                      sx={{ ml: 2 }}
+                      color="text.secondary"
+                    >
+                      {hour.day_of_week}:{" "}
+                      {hour.start_times
+                        .split(",")
+                        .map(
+                          (start, idx) =>
+                            `${start} - ${hour.end_times.split(",")[idx]}`,
+                        )
+                        .join(", ")}
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 2 }}
+                    color="text.secondary"
+                  >
+                    No deals available at {restaurant.restaurant_name}
+                  </Typography>
+                )}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              No deals available at {restaurant.restaurant_name}.
+            </Typography>
+          )}
+        </Box>
       </DialogContent>
 
       {/* Footer Info */}
@@ -141,12 +332,11 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
           </Typography>
         </Box>
 
-        {/* Button to Close Dialog */}
         <Button
           onClick={handleClose}
           sx={{
             bgcolor: "primary.dark",
-            color: "white", // Adjusted for contrast
+            color: "white",
             px: 3,
             "&:hover": {
               bgcolor: "primary.main",

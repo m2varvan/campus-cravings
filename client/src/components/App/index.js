@@ -55,7 +55,7 @@ const App = () => {
               path="/Restaurant"
               element={<RestaurantList uuid={uuid} />}
             />
-            <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+            <Route path="/restaurant/:id" element={<RestaurantList />} />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<SignUp />} />
           </Routes>
