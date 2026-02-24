@@ -655,9 +655,6 @@ app.delete('/api/review/:reviewID', (req, res) => {
 
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
-
-
 app.post('/api/signup', (req, res) =>{
     const connection = mysql.createConnection(config);
 
