@@ -595,7 +595,7 @@ app.post('/api/login', (req, res) =>{
         if (data.length > 0) {
             return res.status(200).json("Log In successfull.");
         } else {
-          return res.status(500).json("Log In credentials given do not exists")
+          return res.status(409).json("Log In credentials given do not exists")
         }
     })
 });
