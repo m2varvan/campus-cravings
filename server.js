@@ -426,15 +426,18 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
 
   const sql = `
     SELECT 
-      review_id,
-      user_id,
-      title,
-      body,
-      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
-      DATE_FORMAT(edited_at, '%Y-%m-%d %H:%i') AS edited_at
-    FROM reviews
-    WHERE deal_id = ?
-    ORDER BY created_at DESC
+      r.review_id,
+      r.user_id,
+      u.username,
+      r.title,
+      r.body,
+      DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+      r.helpful_votes
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.deal_id = ?
+    ORDER BY r.created_at DESC
   `;
 
   connection.query(sql, [dealID], (err, results) => {
@@ -462,33 +465,49 @@ app.post('/api/add/review', (req, res) => {
     return res.status(400).json({ error: 'Character limit exceeded' });
   }
 
-  const sql = `
+  const insertSql = `
     INSERT INTO reviews (user_id, deal_id, title, body)
     VALUES (?, ?, ?, ?)
   `;
 
-  const connection = mysql.createConnection(config); // <-- FIXED
+  const connection = mysql.createConnection(config);
 
-  connection.query(sql, [userID, dealID, title, body], (err, result) => {
-    
+  connection.query(insertSql, [userID, dealID, title, body], (err, result) => {
     if (err) {
       console.error(err);
+      connection.end();
       return res.status(500).json({ error: 'Failed to add review' });
     }
 
-    res.json({
-      review_id: result.insertId,
-      user_id: userID,
-      title,
-      body,
-      created_at: new Date(),
-      edited_at: null
+    const reviewId = result.insertId;
+
+    // 🔥 Fetch back with formatted timestamps
+    const fetchSql = `
+      SELECT 
+        r.review_id,
+        r.user_id,
+        u.username,
+        r.title,
+        r.body,
+        DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
+        DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+        r.helpful_votes
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.review_id = ?
+    `;
+
+    connection.query(fetchSql, [reviewId], (err2, rows) => {
+      connection.end();
+
+      if (err2) {
+        console.error(err2);
+        return res.status(500).json({ error: 'Failed to fetch inserted review' });
+      }
+
+      res.json(rows[0]);
     });
   });
-
-  connection.end();
-
-
 });
 
 app.put('/api/review/:reviewID', (req, res) => {

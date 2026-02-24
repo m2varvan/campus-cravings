@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, Button, Divider } from '@mui/material';
+import { Box, Typography, TextField, Button, Divider, Alert } from '@mui/material';
 
 function Review({ uuid, dealID }) {
   const [reviews, setReviews] = useState([]);
@@ -7,10 +7,10 @@ function Review({ uuid, dealID }) {
   const [body, setBody] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
 useEffect(() => {
   setError('');
@@ -48,7 +48,7 @@ useEffect(() => {
     }
 
     try {
-      const res = await fetch('/api/add/review', { // <-- remove localhost
+      const res = await fetch('/api/add/review', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -83,8 +83,8 @@ useEffect(() => {
 
   if (res.ok) {
     setReviews(reviews.filter(r => r.review_id !== reviewID));
-  } else {
-    alert('Failed to delete review');
+    setSuccess('Review deleted successfully.');
+
   }
 };
 
@@ -149,26 +149,58 @@ useEffect(() => {
     setEditingReviewId(null);
   };
 
-  {/*
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
-
-    const date = new Date(timestamp);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
-  */}
-
   return (
     <Box mt={4}>
-      <Divider sx={{ mb: 2 }} />
+
+      <Divider sx={{ my: 2 }} />
+
+      <Typography
+      variant="h6" gutterBottom
+      sx={{ mb: 1 }}
+      >Write a Review</Typography>
+
+      {!uuid && (
+        <Typography color="error">
+          Please log in to submit a review.
+        </Typography>
+      )}
+
+      <TextField
+        fullWidth
+        label="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        inputProps={{ maxLength: 250 }}
+        disabled={!uuid}
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        fullWidth
+        multiline
+        minRows={4}
+        label="Review"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        inputProps={{ maxLength: 1000 }}
+        disabled={!uuid}
+        sx={{ mb: 2 }}
+      />
+
+      <Button
+        variant="contained"
+        onClick={handleSubmit}
+        disabled={!uuid}
+        
+      >
+        Submit Review
+      </Button>
+
+      {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+      
+      
+      <Divider sx={{ my: 2 }} />
       <Typography variant="h6" gutterBottom>
         Reviews
       </Typography>
@@ -177,7 +209,7 @@ useEffect(() => {
         <Typography>No reviews yet.</Typography>
       )}
 
-  {reviews.map(review => (
+  {(showAll ? reviews : reviews.slice(0, 3)).map((review) => (
     <Box key={review.review_id} mb={2}>
 
       {editingReviewId === review.review_id ? (
@@ -230,7 +262,7 @@ useEffect(() => {
           </Typography>
 
           <Typography variant="caption" display="block" gutterBottom>
-              Posted by {review.user_id} on{' '}
+              Posted by {review.username} on{' '}
               {review.created_at}
               {review.edited_at &&
                 new Date(review.edited_at).getTime() !==
@@ -266,57 +298,13 @@ useEffect(() => {
     </Box>
   ))}
 
-      <Divider sx={{ my: 2 }} />
-
-      <Typography variant="subtitle1">Write a Review</Typography>
-
-      {!uuid && (
-        <Typography color="error">
-          Please log in to submit a review.
-        </Typography>
-      )}
-
-      <TextField
-        fullWidth
-        label="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        inputProps={{ maxLength: 250 }}
-        disabled={!uuid}
-        sx={{ mb: 2 }}
-      />
-
-      <TextField
-        fullWidth
-        multiline
-        minRows={4}
-        label="Review"
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        inputProps={{ maxLength: 1000 }}
-        disabled={!uuid}
-        sx={{ mb: 2 }}
-      />
-
-      <Button
-        variant="contained"
-        onClick={handleSubmit}
-        disabled={!uuid}
-      >
-        Submit Review
-      </Button>
-
-      {error && (
-        <Typography color="error" mt={1}>
-          {error}
-        </Typography>
-      )}
-
-      {success && (
-        <Typography color="primary" mt={1}>
-          {success}
-        </Typography>
-      )}
+  {reviews.length > 3 && (
+  <Box textAlign="center" mt={2}>
+    <Button onClick={() => setShowAll(prev => !prev)}>
+      {showAll ? 'Show Less' : 'Show More'}
+    </Button>
+  </Box>
+  )}
     </Box>
   );
 }
