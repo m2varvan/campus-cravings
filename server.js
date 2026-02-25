@@ -274,29 +274,41 @@ app.post("/api/restaurant-hours", (req, res) => {
 });
 
 // API endpoint to get all deals from each restaurant
-app.post("/api/get-deals-by-restaurant", (req, res) => {
+app.post("/api/restaurant-deals", (req, res) => {
   const connection = mysql.createConnection(config);
-
   const { restaurant_id } = req.body;
 
-  connection.connect((err) => {
+  const dealsQuery = `
+      SELECT 
+          d.deal_id, 
+          d.restaurant_id, 
+          d.deal_name, 
+          d.description, 
+          d.deal_price, 
+          DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+          GROUP_CONCAT(DISTINCT dh.day_of_week) AS days_of_week,
+          AVG(rt.taste_score) AS avg_taste_rating,
+          AVG(rt.value_score) AS avg_value_rating,
+          AVG(rt.portion_score) AS avg_portion_rating,
+          COUNT(DISTINCT rt.rating_id) AS number_of_ratings
+      FROM deals d
+      RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
+      LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+      WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
+      AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
+      AND d.restaurant_id = ?
+      GROUP BY d.deal_id;
+  `;
+
+  connection.query(dealsQuery, [restaurant_id], (err, results) => {
+    connection.end();
+
     if (err) {
-      console.error("Connection error:", err.message);
-      return res.status(500).json({ error: "Database connection failed" });
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load deals" });
     }
 
-    const user_query = `SELECT deal_id, deal_name, description, deal_price FROM deals WHERE restaurant_id = ?`;
-
-    connection.query(user_query, [restaurant_id], (error, results) => {
-      if (error) {
-        console.error("Database error:", error.message);
-        connection.end();
-        return res.status(500).json({ error: "Failed to fetch restaurants" });
-      }
-
-      res.json(results);
-      connection.end();
-    });
+    res.json(results);
   });
 });
 
@@ -746,6 +758,39 @@ app.post('/api/login', (req, res) =>{
     })
 });
 
+app.post("/api/restaurant-info", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { restaurant_id } = req.body;
 
+  const detailsQuery = `
+    SELECT 
+      city,
+      closing_time,
+      DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i') AS updated_at,
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
+      phone_number,
+      cuisine,
+      postal_code,
+      province,
+      restaurant_id,
+      restaurant_name,
+      street_address, 
+      unit,
+      website_url
+    FROM restaurants 
+    WHERE restaurant_id = ?;
+  `;
+
+  connection.query(detailsQuery, [restaurant_id], (err, results) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load restaurant details" });
+    }
+
+    res.json(results[0] || null);
+  });
+});
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

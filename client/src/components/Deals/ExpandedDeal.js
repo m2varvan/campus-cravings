@@ -14,6 +14,8 @@ import React from 'react';
 import RateDeal from './RateDeal';
 import Review from '../Review';
 
+import RestaurantDetails from '../Restaurant/RestaurantDetails';
+
 const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
   // Deal hours states
   const [dealHours, setDealHours] = React.useState([]);
@@ -35,6 +37,9 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
 
   // Track if ratings were updated
   const [ratingsUpdated, setRatingsUpdated] = React.useState(false);
+
+  // States to open link to Restaurant Page
+  const [openRestaurant, setOpenRestaurant] = React.useState(false)
 
   // API to update ratings (reload averages)
   const updateRatings = async () => {
@@ -126,7 +131,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
 
         <Typography
           component={RouterLink}
-          to={`/restaurant/${deal.restaurantID}`}
+          onClick={() => setOpenRestaurant(true)}
           variant="body1"
           sx={{ color: 'primary.dark', textDecoration: 'underline', cursor: 'pointer' }}
         >
@@ -277,6 +282,12 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
           Close
         </Button>
       </DialogActions>
+      
+      {/* Dialog to open Restaurant Details */}
+      <RestaurantDetails 
+        restaurant_id={deal.restaurantID} 
+        open={openRestaurant} 
+        handleClose={() => setOpenRestaurant(false)} />
     </Dialog>
   );
 };

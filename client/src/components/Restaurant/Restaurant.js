@@ -35,7 +35,7 @@ const Restaurant = ({ uuid, restaurant, isOpen }) => {
               alignItems: "flex-start",
             }}
           >
-            {/* Name and location summary */}
+            {/* Name in box */}
             <Box sx={{ width: "100%" }}>
               <Typography
                 variant="h6"
@@ -56,7 +56,7 @@ const Restaurant = ({ uuid, restaurant, isOpen }) => {
       {/* Dialog with expanded restaurant information */}
       <RestaurantDetails
         uuid={uuid}
-        restaurant={restaurant}
+        restaurant_id={restaurant.restaurant_id}
         handleClose={() => setOpenDetails(false)}
         open={openDetails}
       />
