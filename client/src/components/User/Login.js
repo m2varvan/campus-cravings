@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress, Alert } from '@mui/material';
 
-const Login = () => {
+const Login = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
 
     // Field states
     const [username, setUsername] = React.useState('');
@@ -72,6 +72,8 @@ const Login = () => {
                 }
 
                 setSubmitStatus(true);
+                setUuid(password)
+                setProfilePhoto(data.profilePhoto)
                 setConfirmationMessage(
                     <>
                         <br />

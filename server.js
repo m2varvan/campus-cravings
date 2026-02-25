@@ -757,7 +757,10 @@ app.post('/api/login', (req, res) =>{
         }
 
         if (data.length > 0) {
-            return res.status(200).json("Log In successfull.");
+            return res.status(200).json({
+              message: "Log In successfull.", 
+              profilePhoto: data[0].profile_photo
+            });
         } else {
           return res.status(409).json("Log In credentials given do not exists")
         }
