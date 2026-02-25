@@ -699,25 +699,42 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { id, username, firstName, lastName, profilePhoto } = req.body;
+  const { id, email, username, firstName, lastName, profilePhoto } = req.body;
 
-  const checkQuery = "SELECT * FROM users WHERE username = ?";
-  connection.query(checkQuery, [username], (err, data) => {
+  const checkQuery = "SELECT email_address, username  FROM users WHERE email_address = ? OR username = ?";
+  connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
+      connection.end();
       return res.status(500).json("User search failed");
     }
 
-    if (data.length > 0) {
-      return res.status(409).json("This email already has an account.");
+    const emailExists = data.some(user => user.email_address === email);
+    if (emailExists) {
+      connection.end();
+      return res.status(409).json({
+        field: "email", 
+        message: "This email already has an account"
+      });
     }
+
+    const usernameExists = data.some(user => user.username === username);
+    if (usernameExists) {
+      connection.end();
+      return res.status(409).json({
+        field: "username", 
+        message: "This username is already taken."
+      });
+    }
+
     const insertQuery =
-      "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";
-    const values = [id, username, firstName, lastName, profilePhoto];
+      "INSERT INTO users (id, email_address, first_name, last_name, profile_photo, username) VALUES (?, ?, ?, ?, ?, ?)";
+    const values = [id, email, firstName, lastName, profilePhoto, username];
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
       if (err) {
         console.error("Select Error:", err);
+        connection.end()
         return res.status(500).json("User entry failed");
       }
       return res.status(200).json("User has been created.");
@@ -728,11 +745,12 @@ app.post("/api/signup", (req, res) => {
 app.post('/api/login', (req, res) =>{
     const connection = mysql.createConnection(config);
 
-    const{ username, password} = req.body
+    const{ email, password} = req.body
 
-    const checkQuery = "SELECT * FROM users WHERE username = ? AND id = ?";
-    const values = [username, password]
+    const checkQuery = "SELECT * FROM users WHERE email_address = ? AND id = ?";
+    const values = [email, password]
     connection.query(checkQuery, values, (err, data) => {
+        connection.end();
         if (err) {
             console.error("Select Error:", err)
             return res.status(500).json("User search failed");

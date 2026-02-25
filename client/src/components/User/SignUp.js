@@ -135,7 +135,10 @@ const SignUp = () => {
 
                 if (!response.ok) {
                     const errorData = await response.json()
-                    setError({ username: errorData });
+
+                    if (errorData.field) {
+                        setError({ [errorData.field]: errorData.message })
+                    }
                     return;
                 }
 
