@@ -17,7 +17,6 @@ Object.defineProperty(global, 'crypto', {
     },
 });
 
-// CHANGE 2: Mock useNavigate to track redirects
 const mockedUsedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
    ...jest.requireActual('react-router-dom'),
@@ -66,8 +65,7 @@ describe('SignUp Componenet', () => {
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
 
-        // CHANGE 6: Verify fetch was called with the calculated initials and mock UUID
-        await screen.findByText(/Your account has been created!!/i);
+        await screen.findByText(/Your account has been created!! Redirecting to login../i);
         
         const expectedBody = JSON.stringify({
             id: 'test-uuid-1234',
@@ -137,7 +135,6 @@ describe('SignUp Componenet', () => {
         // Wait for the success message to appear
         await screen.findByText(/Your account has been created!!/i);
 
-        // CHANGE 5: Fast-forward time by 3 seconds inside act()
         act(() => {
             jest.advanceTimersByTime(3000);
         });

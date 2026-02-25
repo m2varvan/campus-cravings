@@ -1,10 +1,10 @@
-import mysql from 'mysql';
-import config from './config.js';
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import bodyParser from 'body-parser';
-import { createConnection } from 'net';
+import mysql from "mysql";
+import config from "./config.js";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import bodyParser from "body-parser";
+import { createConnection } from "net";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -191,6 +191,53 @@ app.get("/api/get-restaurants", (req, res) => {
   });
 });
 
+// API to get the avg rating for a restaurant's deals
+app.post("/api/restaurant-rating", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { restaurant_id } = req.body;
+
+  const sql = `
+    SELECT
+      d.restaurant_id,
+      AVG(r.value_score) AS avg_value_score,
+      AVG(r.taste_score) AS avg_taste_score,
+      AVG(r.portion_score) AS avg_portion_score,
+      COUNT(r.rating_id) AS total_ratings
+    FROM deals d
+    LEFT JOIN ratings r ON d.deal_id = r.deal_id
+    WHERE d.restaurant_id = ?
+    GROUP BY d.restaurant_id;
+  `;
+
+  connection.query(sql, [restaurant_id], (error, result) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to load ratings" });
+    }
+
+    if (result.length === 0) {
+      // No ratings found for this restaurant
+      connection.end();
+      return res.json({
+        avg_value_score: 0,
+        avg_taste_score: 0,
+        avg_portion_score: 0,
+        total_ratings: 0,
+      });
+    }
+
+    // Return the averages
+    const ratingData = result[0];
+    connection.end();
+    return res.json({
+      avg_value_score: Number(ratingData.avg_value_score) || 0,
+      avg_taste_score: Number(ratingData.avg_taste_score) || 0,
+      avg_portion_score: Number(ratingData.avg_portion_score) || 0,
+      total_ratings: ratingData.total_ratings || 0,
+    });
+  });
+});
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -505,7 +552,7 @@ app.post("/api/deal/ratings", (req, res) => {
   connection.end();
 });
 
-app.get('/api/deal/:dealID/reviews', (req, res) => {
+app.get("/api/deal/:dealID/reviews", (req, res) => {
   const { dealID } = req.params;
   const connection = mysql.createConnection(config);
 
@@ -526,7 +573,6 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
   `;
 
   connection.query(sql, [dealID], (err, results) => {
-
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch reviews" });
@@ -536,7 +582,6 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
   });
 
   connection.end();
-
 });
 
 app.post("/api/add/review", (req, res) => {
@@ -561,12 +606,12 @@ app.post("/api/add/review", (req, res) => {
     if (err) {
       console.error(err);
       connection.end();
-      return res.status(500).json({ error: 'Failed to add review' });
+      return res.status(500).json({ error: "Failed to add review" });
     }
 
     const reviewId = result.insertId;
 
-    // 🔥 Fetch back with formatted timestamps
+    // Fetch back with formatted timestamps
     const fetchSql = `
       SELECT 
         r.review_id,
@@ -587,7 +632,9 @@ app.post("/api/add/review", (req, res) => {
 
       if (err2) {
         console.error(err2);
-        return res.status(500).json({ error: 'Failed to fetch inserted review' });
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch inserted review" });
       }
 
       res.json(rows[0]);
@@ -595,16 +642,16 @@ app.post("/api/add/review", (req, res) => {
   });
 });
 
-app.put('/api/review/:reviewID', (req, res) => {
+app.put("/api/review/:reviewID", (req, res) => {
   const { reviewID } = req.params;
   const { title, body } = req.body;
 
   if (!title?.trim() || !body?.trim()) {
-    return res.status(400).json({ error: 'Title and body are required' });
+    return res.status(400).json({ error: "Title and body are required" });
   }
 
   if (title.length > 250 || body.length > 1000) {
-    return res.status(400).json({ error: 'Character limit exceeded' });
+    return res.status(400).json({ error: "Character limit exceeded" });
   }
 
   const connection = mysql.createConnection(config);
@@ -616,21 +663,18 @@ app.put('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [title, body, reviewID], (err) => {
-    
-
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update review' });
+      return res.status(500).json({ error: "Failed to update review" });
     }
 
     res.json({ success: true });
   });
 
   connection.end();
-
 });
 
-app.delete('/api/review/:reviewID', (req, res) => {
+app.delete("/api/review/:reviewID", (req, res) => {
   const { reviewID } = req.params;
 
   const connection = mysql.createConnection(config);
@@ -641,47 +685,67 @@ app.delete('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [reviewID], (err, result) => {
-    
-
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to delete review' });
+      return res.status(500).json({ error: "Failed to delete review" });
     }
 
     res.json({ success: true });
   });
 
   connection.end();
-
 });
 
+app.post("/api/signup", (req, res) => {
+  const connection = mysql.createConnection(config);
 
-app.post('/api/signup', (req, res) =>{
+  const { id, username, firstName, lastName, profilePhoto } = req.body;
+
+  const checkQuery = "SELECT * FROM users WHERE username = ?";
+  connection.query(checkQuery, [username], (err, data) => {
+    if (err) {
+      console.error("Select Error:", err);
+      return res.status(500).json("User search failed");
+    }
+
+    if (data.length > 0) {
+      return res.status(409).json("This email already has an account.");
+    }
+    const insertQuery =
+      "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";
+    const values = [id, username, firstName, lastName, profilePhoto];
+    connection.query(insertQuery, values, (err, result) => {
+      connection.end();
+      if (err) {
+        console.error("Select Error:", err);
+        return res.status(500).json("User entry failed");
+      }
+      return res.status(200).json("User has been created.");
+    });
+  });
+});
+
+app.post('/api/login', (req, res) =>{
     const connection = mysql.createConnection(config);
 
-    const{ id, username, firstName, lastName, profilePhoto} = req.body
+    const{ username, password} = req.body
 
-    const checkQuery = "SELECT * FROM users WHERE username = ?";
-    connection.query(checkQuery, [username], (err, data) => {
+    const checkQuery = "SELECT * FROM users WHERE username = ? AND id = ?";
+    const values = [username, password]
+    connection.query(checkQuery, values, (err, data) => {
         if (err) {
             console.error("Select Error:", err)
             return res.status(500).json("User search failed");
         }
 
         if (data.length > 0) {
-            return res.status(409).json("This email already has an account.");
+            return res.status(200).json("Log In successfull.");
+        } else {
+          return res.status(409).json("Log In credentials given do not exists")
         }
-        const insertQuery = "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";   
-        const values = [id, username, firstName, lastName, profilePhoto];
-        connection.query(insertQuery, values, (err, result) => {
-            connection.end();
-            if (err) {
-                console.error("Select Error:", err)
-                return res.status(500).json("User entry failed");
-            } 
-            return res.status(200).json("User has been created.")
-        })   
     })
 });
+
+
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
