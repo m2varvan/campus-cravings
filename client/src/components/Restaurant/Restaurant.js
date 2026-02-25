@@ -2,9 +2,10 @@ import { Typography, Box, Grid } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
 
-const Restaurant = ({ uuid, restaurant, isOpen }) => {
+const Restaurant = ({ uuid, restaurant }) => {
+  
   // State to open box with restaurant details
-  const [openDetails, setOpenDetails] = useState(isOpen);
+  const [openDetails, setOpenDetails] = useState(false);
 
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;

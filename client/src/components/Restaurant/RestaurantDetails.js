@@ -295,6 +295,9 @@ const loadRestaurantDetails = async () => {
             </Box>
           </DialogContent>
 
+          
+        </>
+      )}
           {/* Footer */}
           <DialogActions sx={{ justifyContent: "space-between" }}>
             <Box>
@@ -319,8 +322,6 @@ const loadRestaurantDetails = async () => {
               Close
               </Button>
           </DialogActions>
-        </>
-      )}
     </Dialog>
   );
 };
