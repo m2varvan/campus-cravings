@@ -9,6 +9,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const RestaurantDetails = ({ restaurant, open, handleClose }) => {
   const [loadingDeals, setLoadingDeals] = useState(false);
@@ -264,6 +265,50 @@ const RestaurantDetails = ({ restaurant, open, handleClose }) => {
                 ))}
             </Box>
 
+        {/* Deals Section */}
+        {/* Deals Section */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
+            Current Deals
+          </Typography>
+
+          {deals && deals.length > 0 ? (
+            deals.map((deal, index) => (
+              <Box
+                key={index}
+                sx={{
+                  mt: 1,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body1" fontWeight={600}>
+                    {deal.deal_name || "Information is not available"}
+                  </Typography>
+
+                  <Typography
+                    component={Link}
+                    to={`/${deal.deal_id}`}
+                    variant="body2"
+                    sx={{
+                      color: "primary.dark",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontWeight: 500,
+                    }}
+                  >
+                    View Details
+                  </Typography>
+                </Box>
             {/* Ratings */}
             <Box sx={{ flex: 1 }}>
               <Typography variant="subtitle1" fontWeight={600}>

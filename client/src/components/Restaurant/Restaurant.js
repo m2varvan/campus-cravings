@@ -9,7 +9,6 @@ const Restaurant = ({ uuid, restaurant, isOpen }) => {
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;
 
-  console.log(isOpen);
   return (
     <>
       <Grid item xs={12} sm={6} lg={4}>
