@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import Login from './Login';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -106,7 +106,6 @@ describe('LogIn Componenet', () => {
         // Wait for the success message to appear
         await screen.findByText(/Login successful! Redirecting../i);
 
-        // CHANGE 5: Fast-forward time by 3 seconds inside act()
         act(() => {
             jest.advanceTimersByTime(3000);
         });
