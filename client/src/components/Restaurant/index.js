@@ -9,13 +9,11 @@ import {
   Button,
 } from "@mui/material";
 import Restaurant from "./Restaurant";
-import { useParams } from "react-router-dom";
 
 const RestaurantList = ({ uuid }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [loadingRestaurantsError, setLoadingRestaurantsError] = useState(false);
-  const { id } = useParams();
 
   // Variables and functions to show only 24 by default
   const defaultVisible = 24;
@@ -52,14 +50,7 @@ const RestaurantList = ({ uuid }) => {
     loadRestaurants();
   }, []);
 
-  // created UseEffect hook to ensure expanded restaurant info shows for all restaurants, not just the defaultVisible ones
-  useEffect(() => {
-    if (id) {
-      setVisibleCount(restaurants.length);
-    }
-  }, [restaurants, id]);
 
-  console.log(id);
 
   return (
     <Grid container p={4} display={"flex"}>
@@ -128,11 +119,6 @@ const RestaurantList = ({ uuid }) => {
                     key={restaurant.restaurant_id}
                     uuid={uuid}
                     restaurant={restaurant}
-                    isOpen={
-                      id
-                        ? String(restaurant.restaurant_id) === String(id)
-                        : false
-                    }
                   />
                 ))}
               </Grid>

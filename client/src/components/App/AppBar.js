@@ -16,12 +16,25 @@ const pages = [
   { label: 'Deals', path: '/', id: 'nav-promotions' },
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
-const settings = [
-  { label: 'Login', path: '/Login', id: 'nav-login' },
-  { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
-];
 
-const SiteAppBar = () => {
+const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+  let settings;
+
+  const handleSignOut = () => {
+    setUuid(null);
+    setProfilePhoto('U');
+  };
+
+  if (uuid == null) {
+    settings = [
+      { label: 'Login', path: '/Login', id: 'nav-login' },
+      { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
+    ];
+  } else {
+    settings = [
+      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+    ];
+  }
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
 
@@ -105,7 +118,7 @@ const SiteAppBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="User Settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="test" src="/static/images/avatar/2.jpg" />
+                <Avatar>{profilePhoto}</Avatar>
               </IconButton>
             </Tooltip>
             <Menu
@@ -128,7 +141,11 @@ const SiteAppBar = () => {
                 <MenuItem
                   key={setting.label}
                   onClick={() => {
-                    handleNavigate(setting.path);
+                    if (setting.action) {
+                      setting.action()
+                    } else if (setting.path) {
+                        handleNavigate(setting.path);
+                    }
                     handleCloseUserMenu();
                   }}
                   id={setting.id}
