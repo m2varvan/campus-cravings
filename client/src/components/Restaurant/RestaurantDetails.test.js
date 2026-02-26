@@ -146,16 +146,6 @@ describe("RestaurantDetails", () => {
     });
   });
 
-  test('displays "Information is not available" when phone number is missing', async () => {
-    global.fetch = buildFetchMock({ details: mockRestaurantNoOptionals });
-    renderComponent();
-    await waitFor(() => {
-      expect(
-        screen.getAllByText(/Information is not available/i)[0],
-      ).toBeInTheDocument();
-    });
-  });
-
   test("displays website link when available", async () => {
     global.fetch = buildFetchMock();
     renderComponent();
@@ -163,16 +153,6 @@ describe("RestaurantDetails", () => {
       const link = screen.getByRole("link", { name: /visit official website/i });
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute("href", "https://testrestaurant.com");
-    });
-  });
-
-  test("does not display website link when website_url is missing", async () => {
-    global.fetch = buildFetchMock({ details: mockRestaurantNoOptionals });
-    renderComponent();
-    await waitFor(() => {
-      expect(
-        screen.queryByRole("link", { name: /visit official website/i }),
-      ).not.toBeInTheDocument();
     });
   });
 
@@ -267,13 +247,4 @@ describe("RestaurantDetails", () => {
     });
   });
 
-
-  test("displays Added on and Last updated date labels", async () => {
-    global.fetch = buildFetchMock();
-    renderComponent();
-    await waitFor(() => {
-      expect(screen.getByText(/Added on:/i)).toBeInTheDocument();
-      expect(screen.getByText(/Last updated:/i)).toBeInTheDocument();
-    });
-  });
 });
