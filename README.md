@@ -54,8 +54,7 @@ Steps:
    6. Next, copy and paste the following. Make sure that you change `<your-user-name>` to your actual UW username (without the angle brackets). 
    
    ```
-	ssh -o ServerAliveInterval=30 -L 3306:localhost:3306 <your-user-name>@mse-msci-245.uwaterloo.ca
-   ```
+ssh -o ServerAliveInterval=30 -L 3306:localhost:3306 ahide@mse-msci-245.uwaterloo.ca   ```
 
    You should see the prompt change to a line like this:
 
