@@ -8,6 +8,18 @@ require("@testing-library/jest-dom");
 const React = require("react");
 const Restaurant = require("./Restaurant").default;
 
+jest.mock("./RestaurantDetails", () => {
+  const mockReact = require("react");
+  return function MockRestaurantDetails({ open, handleClose }) {
+    if (!open) return null;
+    return mockReact.createElement(
+      "div",
+      { role: "dialog" },
+      mockReact.createElement("button", { onClick: handleClose }, "Close"),
+    );
+  };
+});
+
 describe("Restaurant", () => {
   const mockRestaurant = {
     restaurant_id: 1,
@@ -24,13 +36,6 @@ describe("Restaurant", () => {
     updated_at: "2024-06-01T00:00:00Z",
   };
 
-  beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([]),
-    });
-  });
-
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -40,7 +45,6 @@ describe("Restaurant", () => {
       React.createElement(Restaurant, {
         uuid: null,
         restaurant: mockRestaurant,
-        isOpen: false,
         ...props,
       }),
     );
@@ -55,28 +59,21 @@ describe("Restaurant", () => {
 
   test("returns null if restaurant is undefined", () => {
     const { container } = render(
-      React.createElement(Restaurant, {
-        uuid: null,
-        restaurant: undefined,
-        isOpen: false,
-      }),
+      React.createElement(Restaurant, { uuid: null, restaurant: undefined }),
     );
     expect(container.firstChild).toBeNull();
   });
 
-  test("opens RestaurantDetails dialog when card is clicked", async () => {
+  test("dialog is not visible before card is clicked", () => {
     renderComponent();
-    const card = screen.getByTestId(
-      `expand-restaurantID-${mockRestaurant.restaurant_id}`,
-    );
-    fireEvent.click(card);
-    await waitFor(() => {
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
-    });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  test("renders with dialog already open when isOpen is true", async () => {
-    renderComponent({ isOpen: true });
+  test("opens RestaurantDetails dialog when card is clicked", async () => {
+    renderComponent();
+    fireEvent.click(
+      screen.getByTestId(`expand-restaurantID-${mockRestaurant.restaurant_id}`),
+    );
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
@@ -85,17 +82,15 @@ describe("Restaurant", () => {
   test("closes dialog when Close button is clicked", async () => {
     renderComponent();
 
-    const card = screen.getByTestId(
-      `expand-restaurantID-${mockRestaurant.restaurant_id}`,
+    fireEvent.click(
+      screen.getByTestId(`expand-restaurantID-${mockRestaurant.restaurant_id}`),
     );
-    fireEvent.click(card);
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    const closeButton = screen.getByRole("button", { name: /close/i });
-    fireEvent.click(closeButton);
+    fireEvent.click(screen.getByRole("button", { name: /close/i }));
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
