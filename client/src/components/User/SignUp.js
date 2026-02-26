@@ -11,8 +11,10 @@ import { CircularProgress, Alert } from '@mui/material';
 const SignUp = () => {
 
     // Text field states
+    const [email, setEmail] = React.useState('');
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [profilePhoto, setProfilePhoto] = React.useState('N/A')
@@ -26,12 +28,18 @@ const SignUp = () => {
     const [loading, setLoading] = React.useState(false);
 
     // Handle Change functions
+    const handleChangeEmail = (event) => {
+        setEmail(event.target.value)
+    };
     const handleChangeUsername = (event) => {
         setUsername(event.target.value)
     };
     const handleChangePassword = (event) => {
         setPassword(event.target.value)
     };
+    const handleChangeConfirmPassword = (event) => {
+        setConfirmPassword(event.target.value)
+    }
     const handleChangeFirstName = (event) => {
         setFirstName(event.target.value)
     };
@@ -42,6 +50,10 @@ const SignUp = () => {
     // Email validity checker
     const isValidEmail = (email) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    const isValidUsername = (username) => {
+        return /^[a-zA-Z0-9_]{8,}$/.test(username);
     };
 
     // Password validity checker
@@ -62,12 +74,18 @@ const SignUp = () => {
 
         const newErrors = {};
         setError({})
+
+        if (email.trim() === '') {
+            newErrors.email = "Enter an email address"
+        } else if (!isValidEmail(email)) {
+            newErrors.email = "Enter a valid email address"
+        };
         
         if (username.trim() === '') {
-            newErrors.username = "Enter an email address";
+            newErrors.username = "Enter a username";
             setConfirmationMessage(null)
-        } else if (!isValidEmail(username)) {
-            newErrors.username = "Enter a valid email address"
+        } else if (!isValidUsername(username)) {
+            newErrors.username = "Username must be at least 8 characters and contain only letters, numbers, or underscores"
         };
 
         if (password.trim() === ''){
@@ -75,7 +93,13 @@ const SignUp = () => {
             setConfirmationMessage(null)
         } else if (!isValidPassword(password)) {
             newErrors.password = "Password must be at least 8 characters, include 1 uppercase letter and 1 number"
-        }
+        };
+
+        if (confirmPassword.trim() === '') {
+            newErrors.confirmPassword = "Confirm your password";
+        } else if (password !== confirmPassword) {
+            newErrors.confirmPassword = "Passwords do not match"
+        };
 
         if (firstName.trim() === ''){
             newErrors.firstname = "Enter a first name";
@@ -101,6 +125,7 @@ const SignUp = () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: id,
+                        email: email,
                         username: username,
                         firstName: firstName,
                         lastName: lastName,
@@ -110,7 +135,10 @@ const SignUp = () => {
 
                 if (!response.ok) {
                     const errorData = await response.json()
-                    setError({ username: errorData });
+
+                    if (errorData.field) {
+                        setError({ [errorData.field]: errorData.message })
+                    }
                     return;
                 }
 
@@ -196,18 +224,33 @@ const SignUp = () => {
 
                             <Grid item sx={{ width: '80%' }}>
                                 <TextField
-                                    id="username-input"
+                                    id="email-input"
                                     label="Email Address"
+                                    variant='outlined'
                                     type="email"
+                                    fullWidth
+                                    margin='normal'
+                                    value={email}
+                                    onChange={handleChangeEmail}
+                                />
+                                {error.email && <Alert severity="error">{error.email}</Alert>}
+                            </Grid>
+
+                            <Grid item sx={{ width: '80%' }}>
+                                <TextField
+                                    id="username-input"
+                                    label="Username"
                                     variant='outlined'
                                     fullWidth
                                     margin='normal'
-                                    autoComplete='username'
+                                    inputProps={{ maxLength: 20 }}
+                                    helperText={`${username.length}/20 characters`} 
                                     value={username}
                                     onChange={handleChangeUsername}
                                 />
                                 {error.username && (
-                                    <Alert severity="error">{error.username}</Alert>                                )}
+                                    <Alert severity="error">{error.username}</Alert>
+                                )}
                             </Grid>
 
                             <Grid item sx={{ width: '80%' }}>
@@ -226,6 +269,18 @@ const SignUp = () => {
                                 {error.password && (
                                     <Alert severity="error">{error.password}</Alert>
                                 )}
+                            </Grid>
+
+                            <Grid item sx={{ width: '80%' }}>
+                                <TextField
+                                    label="Confirm Password"
+                                    type="password"
+                                    fullWidth
+                                    margin='normal'
+                                    value={confirmPassword}
+                                    onChange={handleChangeConfirmPassword}
+                                />
+                                {error.confirmPassword && <Alert severity="error">{error.confirmPassword}</Alert>}
                             </Grid>
 
                             <Grid item sx={{ width: '80%' }}>

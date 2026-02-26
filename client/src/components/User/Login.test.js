@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import Login from './Login';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -51,16 +51,19 @@ describe('LogIn Componenet', () => {
         expect(screen.getByText(/Enter your password/i)).toBeInTheDocument();
     });
 
-    test('form submits successfullywith correct ID and initials', async () => {
+    test('form submits successfully with correct ID and initials', async () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
 
-        fireEvent.click(screen.getByRole('button', { name: /Login/i }));
-
-        await screen.findByText(/Login successful! Redirecting.../i);
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+        });
         
+        const successMsg = await screen.findByTestId('login-success');
+        expect(successMsg).toHaveTextContent('Login successful! Redirecting...');
+
         const expectedBody = JSON.stringify({
-            username: 'test@gmail.com',
+            email: 'test@gmail.com',
             password: 'Mperson123'
         });
 
@@ -106,7 +109,6 @@ describe('LogIn Componenet', () => {
         // Wait for the success message to appear
         await screen.findByText(/Login successful! Redirecting../i);
 
-        // CHANGE 5: Fast-forward time by 3 seconds inside act()
         act(() => {
             jest.advanceTimersByTime(3000);
         });

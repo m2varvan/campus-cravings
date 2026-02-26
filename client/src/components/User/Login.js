@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress, Alert } from '@mui/material';
 
-const Login = () => {
+const Login = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
 
     // Field states
     const [username, setUsername] = React.useState('');
@@ -61,7 +61,7 @@ const Login = () => {
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ email: username, password: password })
                 });
 
                 const data = await response.json();
@@ -72,12 +72,8 @@ const Login = () => {
                 }
 
                 setSubmitStatus(true);
-                setConfirmationMessage(
-                    <>
-                        <br />
-                        <Alert severity="success">Login successful! Redirecting...</Alert>
-                    </>
-                );
+                setUuid(password)
+                setProfilePhoto(data.profilePhoto);
 
             } catch (err) {
                 console.error("Login error:", err.message);
@@ -169,14 +165,13 @@ const Login = () => {
 
                         {/* Confirmation */}
                         {submitStatus && (
-                            <Typography
-                                color="success.main"
-                                align="center"
-                                sx={{ mt: 2 }}
-                            >
-                                {confirmationMessage}
-                            </Typography>
-                        )}
+                            <>
+                                <br />
+                                <Alert severity="success" data-testid="login-success">
+                                Login successful! Redirecting...
+                                </Alert>
+                            </>
+                            )}
 
                         {/* Sign Up Option */}
                         <Typography
