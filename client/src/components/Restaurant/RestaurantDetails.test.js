@@ -85,8 +85,7 @@ describe("RestaurantDetails", () => {
     jest.resetAllMocks();
   });
 
-  // --- Basic display ---
-
+  //displays basic info
   test("displays restaurant name", () => {
     global.fetch = jest
       .fn()
@@ -123,7 +122,7 @@ describe("RestaurantDetails", () => {
       .mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
     renderComponent(mockRestaurantNoOptionals);
     expect(
-      screen.getByText(/Information is not available/i),
+      screen.getAllByText(/Information is not available/i)[0],
     ).toBeInTheDocument();
   });
 
@@ -161,12 +160,11 @@ describe("RestaurantDetails", () => {
       .mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
     renderComponent(mockRestaurantNoOptionals);
     expect(
-      screen.getByText(/Information is not available/i),
+      screen.getAllByText(/Information is not available/i)[0],
     ).toBeInTheDocument();
   });
 
-  // --- Close button ---
-
+  //close button
   test("calls handleClose when Close button is clicked", () => {
     global.fetch = jest
       .fn()
@@ -176,8 +174,7 @@ describe("RestaurantDetails", () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  // --- Restaurant Hours ---
-
+  //hours
   test("shows loading message while restaurant hours are loading", () => {
     global.fetch = jest.fn(() => new Promise(() => {}));
     renderComponent();
@@ -223,8 +220,7 @@ describe("RestaurantDetails", () => {
     });
   });
 
-  // --- Deals ---
-
+  //deals
   test('shows "No deals available" when there are no deals', async () => {
     global.fetch = jest
       .fn()
@@ -315,8 +311,7 @@ describe("RestaurantDetails", () => {
     });
   });
 
-  // --- Dates ---
-
+  //dates
   test("displays formatted created_at and updated_at date labels", () => {
     global.fetch = jest
       .fn()
