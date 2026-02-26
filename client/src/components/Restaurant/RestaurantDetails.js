@@ -26,67 +26,69 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
   // States to open/close expanded deal
   const [openDeal, setOpenDeal] = useState(false)
 
-const loadRestaurantDetails = async () => {
-    try {
-      setLoading(true);
-      setError(false);
 
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ restaurant_id }),
-      };
+  // Function to load all restaurant details
+  const loadRestaurantDetails = async () => {
+      try {
+        setLoading(true);
+        setError(false);
 
-      // Run all requests in parallel
-      const [
-        dealsRes,
-        hoursRes,
-        ratingsRes,
-        detailsRes
-      ] = await Promise.all([
-        fetch("/api/restaurant-deals", options),
-        fetch("/api/restaurant-hours", options),
-        fetch("/api/restaurant-rating", options),
-        fetch("/api/restaurant-info", options),
-      ]);
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ restaurant_id }),
+        };
 
-      // Check all responses
-      if (
-        !dealsRes.ok ||
-        !hoursRes.ok ||
-        !ratingsRes.ok ||
-        !detailsRes.ok
-      ) {
-        throw new Error("One or more requests failed");
+        // Run all requests
+        const [
+          dealsRes,
+          hoursRes,
+          ratingsRes,
+          detailsRes
+        ] = await Promise.all([
+          fetch("/api/restaurant-deals", options),
+          fetch("/api/restaurant-hours", options),
+          fetch("/api/restaurant-rating", options),
+          fetch("/api/restaurant-info", options),
+        ]);
+
+        // Check all responses
+        if (
+          !dealsRes.ok ||
+          !hoursRes.ok ||
+          !ratingsRes.ok ||
+          !detailsRes.ok
+        ) {
+          throw new Error("One or more requests failed");
+        }
+
+        // Parse JSON
+        const [deals, hours, ratings, details] = await Promise.all([
+          dealsRes.json(),
+          hoursRes.json(),
+          ratingsRes.json(),
+          detailsRes.json(),
+        ]);
+
+        // Debugging
+        console.log("Deals:", deals);
+        console.log("Hours:", hours);
+        console.log("Ratings:", ratings);
+        console.log("Details:", details);
+
+        // Set states
+        setDeals(deals || []);
+        setRestaurantHours(hours || []);
+        setRatings(ratings || {});
+        setRestaurant(details || {});
+      } catch (error) {
+        console.error("Failed to load restaurant data:", error);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
-
-      // Parse JSON in parallel
-      const [deals, hours, ratings, details] = await Promise.all([
-        dealsRes.json(),
-        hoursRes.json(),
-        ratingsRes.json(),
-        detailsRes.json(),
-      ]);
-
-      // Debugging
-      console.log("Deals:", deals);
-      console.log("Hours:", hours);
-      console.log("Ratings:", ratings);
-      console.log("Details:", details);
-
-      // Set state
-      setDeals(deals || []);
-      setRestaurantHours(hours || []);
-      setRatings(ratings || {});
-      setRestaurant(details || {});
-    } catch (error) {
-      console.error("Failed to load restaurant data:", error);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {
