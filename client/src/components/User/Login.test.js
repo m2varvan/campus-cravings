@@ -51,16 +51,19 @@ describe('LogIn Componenet', () => {
         expect(screen.getByText(/Enter your password/i)).toBeInTheDocument();
     });
 
-    test('form submits successfullywith correct ID and initials', async () => {
+    test('form submits successfully with correct ID and initials', async () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
 
-        fireEvent.click(screen.getByRole('button', { name: /Login/i }));
-
-        await screen.findByText(/Login successful! Redirecting.../i);
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+        });
         
+        const successMsg = await screen.findByTestId('login-success');
+        expect(successMsg).toHaveTextContent('Login successful! Redirecting...');
+
         const expectedBody = JSON.stringify({
-            username: 'test@gmail.com',
+            email: 'test@gmail.com',
             password: 'Mperson123'
         });
 

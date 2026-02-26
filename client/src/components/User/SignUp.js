@@ -243,6 +243,8 @@ const SignUp = () => {
                                     variant='outlined'
                                     fullWidth
                                     margin='normal'
+                                    inputProps={{ maxLength: 20 }}
+                                    helperText={`${username.length}/20 characters`} 
                                     value={username}
                                     onChange={handleChangeUsername}
                                 />

@@ -55,13 +55,18 @@ describe('SignUp Componenet', () => {
         expect(screen.getByText(/Enter a password/i)).toBeInTheDocument();
         expect(screen.getByText(/Enter a first name/i)).toBeInTheDocument();
         expect(screen.getByText(/Enter a last name/i)).toBeInTheDocument();
+        expect(screen.getByText(/Enter a username/i)).toBeInTheDocument();
+        expect(screen.getByText(/Confirm your password/i)).toBeInTheDocument();
     });
 
     test('form submits successfullywith correct ID and initials', async () => {
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
+
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
 
@@ -69,7 +74,8 @@ describe('SignUp Componenet', () => {
         
         const expectedBody = JSON.stringify({
             id: 'test-uuid-1234',
-            username: 'test@gmail.com',
+            email: 'test@gmail.com',
+            username: 'm2varvan',
             firstName: 'Muhammad',
             lastName: 'Varvani',
             profilePhoto: 'MV'
@@ -84,7 +90,10 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvanigmail.' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: {value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
+
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
@@ -96,7 +105,9 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: {value: 'mypassword' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'mypassword' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'mypassword'}});
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
@@ -104,19 +115,52 @@ describe('SignUp Componenet', () => {
         expect(screen.getByText(/Password must be at least 8 characters, include 1 uppercase letter and 1 number/i)).toBeInTheDocument()
     });
 
+    test('shows an error message if the username does not meet the standard', () => {
+        fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
+        fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
+        fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'mvarv' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword1' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword1'}});
+
+        const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
+        fireEvent.click(signUpButton);
+
+        expect(screen.getByText(/Username must be at least 8 characters and contain only letters, numbers, or underscores/i)).toBeInTheDocument()
+    });
+
+    test('shows an error message if the password does not match the confirm password section', () => {
+        fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
+        fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
+        fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword1' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword12'}});
+
+        const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
+        fireEvent.click(signUpButton);
+
+        expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument()
+    });
+
     test('shows error when email is already taken', async () => {
         global.fetch.mockImplementationOnce(() =>
             Promise.resolve({
                 ok: false, 
                 status: 409, 
-                json: () => Promise.resolve("This email already has an account.")
+                json: () => Promise.resolve({
+                    field: 'email',
+                    message: "This email already has an account."
+                })
             })
         )
 
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'existing@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: {value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword123' }});
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));    
 
@@ -124,11 +168,39 @@ describe('SignUp Componenet', () => {
         expect(errorMsg).toBeInTheDocument();
     });
 
+    test('shows error when username is already taken', async () => {
+        global.fetch.mockImplementationOnce(() =>
+            Promise.resolve({
+                ok: false, 
+                status: 409, 
+                json: () => Promise.resolve({
+                    field: 'username',
+                    message: "This username is already taken."
+                })
+            })
+        )
+
+        fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
+        fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
+        fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'existing@gmail.com' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword123' }});
+
+        fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));    
+
+        const errorMsg = await screen.findByText(/This username is already taken./i);
+        expect(errorMsg).toBeInTheDocument();
+    });
+
     test('redirects to /Login after 3 seconds on successful signup', async () => {
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
+        
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
 

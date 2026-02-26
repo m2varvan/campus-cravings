@@ -73,13 +73,7 @@ const Login = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
 
                 setSubmitStatus(true);
                 setUuid(password)
-                setProfilePhoto(data.profilePhoto)
-                setConfirmationMessage(
-                    <>
-                        <br />
-                        <Alert severity="success">Login successful! Redirecting...</Alert>
-                    </>
-                );
+                setProfilePhoto(data.profilePhoto);
 
             } catch (err) {
                 console.error("Login error:", err.message);
@@ -171,14 +165,13 @@ const Login = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
 
                         {/* Confirmation */}
                         {submitStatus && (
-                            <Typography
-                                color="success.main"
-                                align="center"
-                                sx={{ mt: 2 }}
-                            >
-                                {confirmationMessage}
-                            </Typography>
-                        )}
+                            <>
+                                <br />
+                                <Alert severity="success" data-testid="login-success">
+                                Login successful! Redirecting...
+                                </Alert>
+                            </>
+                            )}
 
                         {/* Sign Up Option */}
                         <Typography
