@@ -686,4 +686,3 @@ app.post('/api/signup', (req, res) =>{
     })
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
