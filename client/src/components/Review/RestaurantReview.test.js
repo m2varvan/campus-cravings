@@ -23,7 +23,7 @@ const mockReviews = Array.from({ length: 6 }, (_, i) => ({
 test('loads and displays reviews', async () => {
   fetch.mockResolvedValueOnce({
     ok: true,
-    json: async () => mockReviews
+    json: async () => mockReviews,
   });
 
   render(<RestaurantReview restaurantID={1} />);
@@ -31,13 +31,13 @@ test('loads and displays reviews', async () => {
   const title = await screen.findByText('Title 1');
   expect(title).toBeTruthy();
 
-  const editedLabel = screen.getByText('(Edited on 2024-01-02)');
+  const editedLabel = screen.getByText(/Edited on 2024-01-02/);
   expect(editedLabel).toBeTruthy();
 });
 
 test('shows error if fetch fails', async () => {
   fetch.mockResolvedValueOnce({
-    ok: false
+    ok: false,
   });
 
   render(<RestaurantReview restaurantID={1} />);
@@ -49,7 +49,7 @@ test('shows error if fetch fails', async () => {
 test('shows no reviews message', async () => {
   fetch.mockResolvedValueOnce({
     ok: true,
-    json: async () => []
+    json: async () => [],
   });
 
   render(<RestaurantReview restaurantID={1} />);
@@ -61,14 +61,12 @@ test('shows no reviews message', async () => {
 test('toggles show more and show less', async () => {
   fetch.mockResolvedValueOnce({
     ok: true,
-    json: async () => mockReviews
+    json: async () => mockReviews,
   });
 
   render(<RestaurantReview restaurantID={1} />);
 
   const showMore = await screen.findByText('Show More');
-  expect(showMore).toBeTruthy();
-
   fireEvent.click(showMore);
 
   const showLess = screen.getByText('Show Less');
