@@ -125,47 +125,6 @@ app.post("/api/deal/hours", (req, res) => {
   connection.end();
 });
 
-// API to get the deal availability all deals in a restaurant
-app.post("/api/deal-availability-by-restaurant", (req, res) => {
-  const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
-
-  const sql = `
-          SELECT 
-          dh.deal_id,
-          dh.day_of_week,
-          GROUP_CONCAT(TIME_FORMAT(dh.start_time, '%H:%i') ORDER BY dh.start_time) AS start_times,
-          GROUP_CONCAT(TIME_FORMAT(dh.end_time, '%H:%i') ORDER BY dh.end_time) AS end_times
-          FROM deal_hours dh
-          JOIN deals d ON dh.deal_id = d.deal_id
-          WHERE d.restaurant_id = ?
-          AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
-          AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
-          GROUP BY dh.deal_id, dh.day_of_week
-          ORDER BY 
-          dh.deal_id,
-          FIELD(dh.day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');`;
-
-  connection.query(sql, [restaurant_id], (error, result) => {
-    if (error) {
-      console.error("Database error:", error.message);
-      return res.status(500).json({ error: "Failed to load hours" });
-    }
-
-    const dealHours = result.map((day) => ({
-      dealID: day.deal_id,
-      dayOfWeek: day.day_of_week,
-      dealStartTime: day.start_times ? day.start_times.split(",") : [],
-      dealEndTime: day.end_times ? day.end_times.split(",") : [],
-    }));
-
-    // Return hours
-    res.json(dealHours);
-  });
-
-  connection.end();
-});
-
 // API endpoint to get all restaurant info
 app.get("/api/get-restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -279,25 +238,27 @@ app.post("/api/restaurant-deals", (req, res) => {
   const { restaurant_id } = req.body;
 
   const dealsQuery = `
-      SELECT 
-          d.deal_id, 
-          d.restaurant_id, 
-          d.deal_name, 
-          d.description, 
-          d.deal_price, 
-          DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
-          GROUP_CONCAT(DISTINCT dh.day_of_week) AS days_of_week,
-          AVG(rt.taste_score) AS avg_taste_rating,
-          AVG(rt.value_score) AS avg_value_rating,
-          AVG(rt.portion_score) AS avg_portion_rating,
-          COUNT(DISTINCT rt.rating_id) AS number_of_ratings
-      FROM deals d
-      RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
-      LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
-      WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
+    SELECT 
+        d.deal_id, 
+        d.restaurant_id, 
+        d.deal_name, 
+        d.description, 
+        d.deal_price,
+        r.restaurant_name,
+        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+        GROUP_CONCAT(DISTINCT dh.day_of_week) AS days_of_week,
+        AVG(rt.taste_score) AS avg_taste_rating,
+        AVG(rt.value_score) AS avg_value_rating,
+        AVG(rt.portion_score) AS avg_portion_rating,
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings
+    FROM deals d
+    LEFT JOIN deal_hours dh ON d.deal_id = dh.deal_id
+    LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+    WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
       AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
       AND d.restaurant_id = ?
-      GROUP BY d.deal_id;
+    GROUP BY d.deal_id;
   `;
 
   connection.query(dealsQuery, [restaurant_id], (err, results) => {
@@ -308,9 +269,30 @@ app.post("/api/restaurant-deals", (req, res) => {
       return res.status(500).json({ error: "Failed to load deals" });
     }
 
-    res.json(results);
+    // Format results
+    const formattedResults = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name || "n/a",
+      dealDescription: deal.description || "n/a",
+      dealPrice: parseFloat(deal.deal_price).toFixed(2),
+      dealEditDate: deal.edited_at,
+      daysOfWeek: deal.days_of_week ? deal.days_of_week.split(",") : [],
+      dealValueRating:
+        deal.avg_value_rating !== null
+          ? parseFloat(deal.avg_value_rating.toFixed(1))
+          : 0,
+      dealTasteRating:
+        deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
+      dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
+      numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings) : 0,
+    }));
+
+    res.json(formattedResults);
   });
 });
+
 
 // Route to get all valid deals
 app.get("/api/week/deals", (req, res) => {

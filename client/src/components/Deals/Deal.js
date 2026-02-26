@@ -2,10 +2,10 @@ import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
 
-const Deal = ({uuid, deal, size='lg', reloadDeals, isOpen}) => {
+const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
     // State to open dialog box with deal details
-    const [openDetails, setOpenDetails] = React.useState(isOpen);
+    const [openDetails, setOpenDetails] = React.useState(false);
 
     // Calculate average rating
     const avgRating = ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1);

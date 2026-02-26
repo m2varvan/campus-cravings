@@ -85,7 +85,7 @@ describe('Showing Deals', () => {
     
     it("Shows Monday's Deals from the server", () => {
 
-        cy.intercept('GET', '/api/todaydeals', [
+        cy.intercept('GET', '/api/today/deals', [
             deal1, deal2, deal3, deal4, deal5
         ]);
 

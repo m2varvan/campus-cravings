@@ -9,9 +9,9 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import ExpandedDeal from "../Deals/ExpandedDeal";
 
-const RestaurantDetails = ({ restaurant_id, open, handleClose }) => {
+const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
 
   // States to load restaurant details and error
   const [loading, setLoading] = useState(false);
@@ -22,6 +22,9 @@ const RestaurantDetails = ({ restaurant_id, open, handleClose }) => {
   const [restaurantHours, setRestaurantHours] = useState([]);
   const [ratings, setRatings] = useState({});
   const [restaurant, setRestaurant] = useState({});
+
+  // States to open/close expanded deal
+  const [openDeal, setOpenDeal] = useState(false)
 
 const loadRestaurantDetails = async () => {
     try {
@@ -259,37 +262,46 @@ const loadRestaurantDetails = async () => {
               ) : (
                 deals.map((deal) => (
                   <Box
-                    key={deal.deal_id}
+                key={deal.deal_id}
+                sx={{
+                  mt: 1,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="body1" fontWeight={600}>
+                    {deal.dealName || "Information is not available"}
+                  </Typography>
+
+                  <Typography
+                    onClick={() => setOpenDeal(true)}
+                    variant="body2"
                     sx={{
-                      mt: 1,
-                      p: 1.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 1,
+                      color: "primary.dark",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontWeight: 500,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography fontWeight={600}>
-                        {deal.deal_name}
-                      </Typography>
-
-                      <Typography
-                        component={Link}
-                        to={`/${deal.deal_id}`}
-                        sx={{
-                          color: "primary.dark",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        View Details
-                      </Typography>
-                    </Box>
-                  </Box>
+                    View Details
+                  </Typography>
+                  <ExpandedDeal 
+                            open={openDeal}
+                            handleClose={() => setOpenDeal(false)}
+                            uuid={uuid}
+                            deal={deal}
+                  />
+                </Box>
+                </Box>
                 ))
               )}
             </Box>
@@ -322,6 +334,7 @@ const loadRestaurantDetails = async () => {
               Close
               </Button>
           </DialogActions>
+
     </Dialog>
   );
 };

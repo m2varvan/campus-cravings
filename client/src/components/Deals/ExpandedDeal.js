@@ -287,7 +287,8 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
       <RestaurantDetails 
         restaurant_id={deal.restaurantID} 
         open={openRestaurant} 
-        handleClose={() => setOpenRestaurant(false)} />
+        handleClose={() => setOpenRestaurant(false)}
+        uuid={uuid} />
     </Dialog>
   );
 };
