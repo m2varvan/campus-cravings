@@ -9,6 +9,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import RestaurantReview from '../Review/RestaurantReview';
 import ExpandedDeal from "../Deals/ExpandedDeal";
 
 const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
@@ -296,6 +297,45 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
                   >
                     View Details
                   </Typography>
+                )}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              No deals available at {restaurant.restaurant_name}.
+            </Typography>
+          )}
+        </Box>
+
+        <RestaurantReview restaurantID={restaurant.restaurant_id} />
+
+      </DialogContent>
+
+      {/* Footer Info */}
+      <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
+        <Box>
+          <Typography variant="caption" display="block" color="text.secondary">
+            Added on: {formatDate(restaurant.created_at)}
+          </Typography>
+          <Typography variant="caption" display="block" color="text.secondary">
+            Last updated: {formatDate(restaurant.updated_at)}
+          </Typography>
+        </Box>
+
+        <Button
+          onClick={handleClose}
+          sx={{
+            bgcolor: "primary.dark",
+            color: "white",
+            px: 3,
+            "&:hover": {
+              bgcolor: "primary.main",
+            },
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
                   <ExpandedDeal 
                             open={openDeal}
                             handleClose={() => setOpenDeal(false)}

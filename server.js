@@ -578,6 +578,39 @@ app.get("/api/deal/:dealID/reviews", (req, res) => {
   connection.end();
 });
 
+app.get('/api/restaurant/:restaurantID/reviews', (req, res) => {
+  const { restaurantID } = req.params;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      r.review_id,
+      r.user_id,
+      u.username,
+      r.title,
+      r.body,
+      d.deal_name,
+      DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    JOIN deals d ON r.deal_id = d.deal_id
+    WHERE d.restaurant_id = ?
+    ORDER BY r.created_at DESC
+  `;
+
+  connection.query(sql, [restaurantID], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to fetch restaurant reviews' });
+    }
+
+    res.json(results);
+  });
+
+  connection.end();
+});
+
 app.post("/api/add/review", (req, res) => {
   const { dealID, userID, title, body } = req.body;
 
