@@ -2,7 +2,6 @@ import TodayDeal from "./TodayDeal";
 import WeekDeal from "./WeekDeal";
 import React from "react";
 import { Typography, Grid } from "@mui/material";
-import { useParams } from "react-router-dom";
 import ExpandedDeal from "./ExpandedDeal";
 
 const Deals = ({ uuid }) => {
@@ -14,18 +13,8 @@ const Deals = ({ uuid }) => {
   const [weekDeals, setWeekDeals] = React.useState({});
   const [loadingWeekDeals, setLoadingWeekDeals] = React.useState(false);
   const [WeekDealsError, setWeekDealsError] = React.useState(false);
-  const { id } = useParams();
 
   const [selectedDeal, setSelectedDeal] = React.useState(null);
-
-  React.useEffect(() => {
-    if (id && weekDeals) {
-      // matching id from params to deal id
-      const allDeals = Object.values(weekDeals).flat();
-      const foundDeal = allDeals.find((d) => String(d.dealID) === String(id));
-      if (foundDeal) setSelectedDeal(foundDeal);
-    }
-  }, [id, weekDeals]);
 
   // API to load today's deals
   const loadTodayDeals = async () => {

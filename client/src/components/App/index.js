@@ -8,7 +8,6 @@ import RestaurantList from "../Restaurant/index";
 import Login from "../User/Login";
 import SiteAppBar from "./AppBar";
 import SignUp from "../User/SignUp";
-import RestaurantDetails from "../Restaurant/RestaurantDetails";
 
 const App = () => {
   // Create theme
@@ -55,8 +54,8 @@ const App = () => {
               path="/Restaurant"
               element={<RestaurantList uuid={uuid} />}
             />
-            <Route path="/restaurant/:id" element={<RestaurantList />} />
-            <Route path="/:id" element={<Deals uuid={uuid} />} />
+            <Route path="/restaurant" element={<RestaurantList />} />
+            <Route path="/" element={<Deals uuid={uuid} />} />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<SignUp />} />
           </Routes>

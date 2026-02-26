@@ -128,7 +128,6 @@ const TodayDeal = ({
                   uuid={uuid}
                   deal={deal}
                   reloadDeals={reloadDeals}
-                  isOpen={id ? String(id) === String(deal.dealID) : false}
                 />
               </Grid>
             ))}

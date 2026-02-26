@@ -56,7 +56,6 @@ const WeekDayDeal = ({ uuid, day, dealList, reloadDeals, id }) => {
                   deal={deal}
                   size={"sm"}
                   reloadDeals={reloadDeals}
-                  isOpen={id ? String(id) === String(deal.dealID) : false}
                 />
               ))}
 
