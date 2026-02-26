@@ -265,117 +265,82 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
               ) : (
                 deals.map((deal) => (
                   <Box
-                key={deal.deal_id}
-                sx={{
-                  mt: 1,
-                  p: 1.5,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="body1" fontWeight={600}>
-                    {deal.dealName || "Information is not available"}
-                  </Typography>
-
-                  <Typography
-                    onClick={() => setOpenDeal(true)}
-                    variant="body2"
+                    key={deal.deal_id}
                     sx={{
-                      color: "primary.dark",
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                      fontWeight: 500,
+                      mt: 1,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
                     }}
                   >
-                    View Details
-                  </Typography>
-                )}
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              No deals available at {restaurant.restaurant_name}.
-            </Typography>
-          )}
-        </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="body1" fontWeight={600}>
+                        {deal.dealName || "Information is not available"}
+                      </Typography>
 
-        <RestaurantReview restaurantID={restaurant.restaurant_id} />
+                      <Typography
+                        onClick={() => setOpenDeal(true)}
+                        variant="body2"
+                        sx={{
+                          color: "primary.dark",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          fontWeight: 500,
+                        }}
+                      >
+                        View Details
+                      </Typography>
 
-      </DialogContent>
-
-      {/* Footer Info */}
-      <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
-        <Box>
-          <Typography variant="caption" display="block" color="text.secondary">
-            Added on: {formatDate(restaurant.created_at)}
-          </Typography>
-          <Typography variant="caption" display="block" color="text.secondary">
-            Last updated: {formatDate(restaurant.updated_at)}
-          </Typography>
-        </Box>
-
-        <Button
-          onClick={handleClose}
-          sx={{
-            bgcolor: "primary.dark",
-            color: "white",
-            px: 3,
-            "&:hover": {
-              bgcolor: "primary.main",
-            },
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
-                  <ExpandedDeal 
+                      <ExpandedDeal 
                             open={openDeal}
                             handleClose={() => setOpenDeal(false)}
                             uuid={uuid}
                             deal={deal}
-                  />
-                </Box>
-                </Box>
+                      />
+
+                    </Box>
+                  </Box>
                 ))
               )}
             </Box>
-          </DialogContent>
 
-          
-        </>
+        <RestaurantReview restaurantID={restaurant.restaurant_id} />
+      
+      </DialogContent>
+      </>
       )}
-          {/* Footer */}
-          <DialogActions sx={{ justifyContent: "space-between" }}>
-            <Box>
-              <Typography variant="caption">
-                Added on: {restaurant.created_at}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Last updated: {restaurant.updated_at}
-              </Typography>
-            </Box>
 
-            <Button 
-              onClick={handleClose}
-              sx={{
-                bgcolor: 'primary.dark',
-                color: 'secondary.dark',
-                px: 3,
-                '&:hover': {
-                  bgcolor: 'primary.main',
-                },
-              }}>
-              Close
-              </Button>
-          </DialogActions>
+      {/* Footer */}
+      <DialogActions sx={{ justifyContent: "space-between" }}>
+        <Box>
+          <Typography variant="caption">
+            Added on: {restaurant.created_at}
+          </Typography>
+          <Typography variant="caption" display="block">
+            Last updated: {restaurant.updated_at}
+          </Typography>
+        </Box>
+
+        <Button 
+          onClick={handleClose}
+          sx={{
+            bgcolor: 'primary.dark',
+            color: 'secondary.dark',
+            px: 3,
+            '&:hover': {
+              bgcolor: 'primary.main',
+            },
+          }}>
+          Close
+          </Button>
+      </DialogActions>
 
     </Dialog>
   );
