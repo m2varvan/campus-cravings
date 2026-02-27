@@ -1,10 +1,10 @@
-import mysql from 'mysql';
-import config from './config.js';
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import bodyParser from 'body-parser';
-import { createConnection } from 'net';
+import mysql from "mysql";
+import config from "./config.js";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import bodyParser from "body-parser";
+import { createConnection } from "net";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -125,47 +125,6 @@ app.post("/api/deal/hours", (req, res) => {
   connection.end();
 });
 
-// API to get the deal availability all deals in a restaurant
-app.post("/api/deal-availability-by-restaurant", (req, res) => {
-  const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
-
-  const sql = `
-          SELECT 
-          dh.deal_id,
-          dh.day_of_week,
-          GROUP_CONCAT(TIME_FORMAT(dh.start_time, '%H:%i') ORDER BY dh.start_time) AS start_times,
-          GROUP_CONCAT(TIME_FORMAT(dh.end_time, '%H:%i') ORDER BY dh.end_time) AS end_times
-          FROM deal_hours dh
-          JOIN deals d ON dh.deal_id = d.deal_id
-          WHERE d.restaurant_id = ?
-          AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
-          AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
-          GROUP BY dh.deal_id, dh.day_of_week
-          ORDER BY 
-          dh.deal_id,
-          FIELD(dh.day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');`;
-
-  connection.query(sql, [restaurant_id], (error, result) => {
-    if (error) {
-      console.error("Database error:", error.message);
-      return res.status(500).json({ error: "Failed to load hours" });
-    }
-
-    const dealHours = result.map((day) => ({
-      dealID: day.deal_id,
-      dayOfWeek: day.day_of_week,
-      dealStartTime: day.start_times ? day.start_times.split(",") : [],
-      dealEndTime: day.end_times ? day.end_times.split(",") : [],
-    }));
-
-    // Return hours
-    res.json(dealHours);
-  });
-
-  connection.end();
-});
-
 // API endpoint to get all restaurant info
 app.get("/api/get-restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -191,6 +150,53 @@ app.get("/api/get-restaurants", (req, res) => {
   });
 });
 
+// API to get the avg rating for a restaurant's deals
+app.post("/api/restaurant-rating", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { restaurant_id } = req.body;
+
+  const sql = `
+    SELECT
+      d.restaurant_id,
+      AVG(r.value_score) AS avg_value_score,
+      AVG(r.taste_score) AS avg_taste_score,
+      AVG(r.portion_score) AS avg_portion_score,
+      COUNT(r.rating_id) AS total_ratings
+    FROM deals d
+    LEFT JOIN ratings r ON d.deal_id = r.deal_id
+    WHERE d.restaurant_id = ?
+    GROUP BY d.restaurant_id;
+  `;
+
+  connection.query(sql, [restaurant_id], (error, result) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to load ratings" });
+    }
+
+    if (result.length === 0) {
+      // No ratings found for this restaurant
+      connection.end();
+      return res.json({
+        avg_value_score: 0,
+        avg_taste_score: 0,
+        avg_portion_score: 0,
+        total_ratings: 0,
+      });
+    }
+
+    // Return the averages
+    const ratingData = result[0];
+    connection.end();
+    return res.json({
+      avg_value_score: Number(ratingData.avg_value_score) || 0,
+      avg_taste_score: Number(ratingData.avg_taste_score) || 0,
+      avg_portion_score: Number(ratingData.avg_portion_score) || 0,
+      total_ratings: ratingData.total_ratings || 0,
+    });
+  });
+});
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -227,31 +233,66 @@ app.post("/api/restaurant-hours", (req, res) => {
 });
 
 // API endpoint to get all deals from each restaurant
-app.post("/api/get-deals-by-restaurant", (req, res) => {
+app.post("/api/restaurant-deals", (req, res) => {
   const connection = mysql.createConnection(config);
-
   const { restaurant_id } = req.body;
 
-  connection.connect((err) => {
+  const dealsQuery = `
+    SELECT 
+        d.deal_id, 
+        d.restaurant_id, 
+        d.deal_name, 
+        d.description, 
+        d.deal_price,
+        r.restaurant_name,
+        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+        GROUP_CONCAT(DISTINCT dh.day_of_week) AS days_of_week,
+        AVG(rt.taste_score) AS avg_taste_rating,
+        AVG(rt.value_score) AS avg_value_rating,
+        AVG(rt.portion_score) AS avg_portion_rating,
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings
+    FROM deals d
+    LEFT JOIN deal_hours dh ON d.deal_id = dh.deal_id
+    LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+    WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
+      AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
+      AND d.restaurant_id = ?
+    GROUP BY d.deal_id;
+  `;
+
+  connection.query(dealsQuery, [restaurant_id], (err, results) => {
+    connection.end();
+
     if (err) {
-      console.error("Connection error:", err.message);
-      return res.status(500).json({ error: "Database connection failed" });
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load deals" });
     }
 
-    const user_query = `SELECT deal_name, description, deal_price FROM deals WHERE restaurant_id = ?`;
+    // Format results
+    const formattedResults = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name || "n/a",
+      dealDescription: deal.description || "n/a",
+      dealPrice: parseFloat(deal.deal_price).toFixed(2),
+      dealEditDate: deal.edited_at,
+      daysOfWeek: deal.days_of_week ? deal.days_of_week.split(",") : [],
+      dealValueRating:
+        deal.avg_value_rating !== null
+          ? parseFloat(deal.avg_value_rating.toFixed(1))
+          : 0,
+      dealTasteRating:
+        deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
+      dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
+      numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings) : 0,
+    }));
 
-    connection.query(user_query, [restaurant_id], (error, results) => {
-      if (error) {
-        console.error("Database error:", error.message);
-        connection.end();
-        return res.status(500).json({ error: "Failed to fetch restaurants" });
-      }
-
-      res.json(results);
-      connection.end();
-    });
+    res.json(formattedResults);
   });
 });
+
 
 // Route to get all valid deals
 app.get("/api/week/deals", (req, res) => {
@@ -505,7 +546,7 @@ app.post("/api/deal/ratings", (req, res) => {
   connection.end();
 });
 
-app.get('/api/deal/:dealID/reviews', (req, res) => {
+app.get("/api/deal/:dealID/reviews", (req, res) => {
   const { dealID } = req.params;
   const connection = mysql.createConnection(config);
 
@@ -526,7 +567,6 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
   `;
 
   connection.query(sql, [dealID], (err, results) => {
-
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch reviews" });
@@ -536,7 +576,39 @@ app.get('/api/deal/:dealID/reviews', (req, res) => {
   });
 
   connection.end();
+});
 
+app.get('/api/restaurant/:restaurantID/reviews', (req, res) => {
+  const { restaurantID } = req.params;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      r.review_id,
+      r.user_id,
+      u.username,
+      r.title,
+      r.body,
+      d.deal_name,
+      DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    JOIN deals d ON r.deal_id = d.deal_id
+    WHERE d.restaurant_id = ?
+    ORDER BY r.created_at DESC
+  `;
+
+  connection.query(sql, [restaurantID], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to fetch restaurant reviews' });
+    }
+
+    res.json(results);
+  });
+
+  connection.end();
 });
 
 app.post("/api/add/review", (req, res) => {
@@ -561,12 +633,12 @@ app.post("/api/add/review", (req, res) => {
     if (err) {
       console.error(err);
       connection.end();
-      return res.status(500).json({ error: 'Failed to add review' });
+      return res.status(500).json({ error: "Failed to add review" });
     }
 
     const reviewId = result.insertId;
 
-    // 🔥 Fetch back with formatted timestamps
+    // Fetch back with formatted timestamps
     const fetchSql = `
       SELECT 
         r.review_id,
@@ -587,7 +659,9 @@ app.post("/api/add/review", (req, res) => {
 
       if (err2) {
         console.error(err2);
-        return res.status(500).json({ error: 'Failed to fetch inserted review' });
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch inserted review" });
       }
 
       res.json(rows[0]);
@@ -595,16 +669,16 @@ app.post("/api/add/review", (req, res) => {
   });
 });
 
-app.put('/api/review/:reviewID', (req, res) => {
+app.put("/api/review/:reviewID", (req, res) => {
   const { reviewID } = req.params;
   const { title, body } = req.body;
 
   if (!title?.trim() || !body?.trim()) {
-    return res.status(400).json({ error: 'Title and body are required' });
+    return res.status(400).json({ error: "Title and body are required" });
   }
 
   if (title.length > 250 || body.length > 1000) {
-    return res.status(400).json({ error: 'Character limit exceeded' });
+    return res.status(400).json({ error: "Character limit exceeded" });
   }
 
   const connection = mysql.createConnection(config);
@@ -616,21 +690,18 @@ app.put('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [title, body, reviewID], (err) => {
-    
-
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update review' });
+      return res.status(500).json({ error: "Failed to update review" });
     }
 
     res.json({ success: true });
   });
 
   connection.end();
-
 });
 
-app.delete('/api/review/:reviewID', (req, res) => {
+app.delete("/api/review/:reviewID", (req, res) => {
   const { reviewID } = req.params;
 
   const connection = mysql.createConnection(config);
@@ -641,46 +712,121 @@ app.delete('/api/review/:reviewID', (req, res) => {
   `;
 
   connection.query(sql, [reviewID], (err, result) => {
-    
-
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to delete review' });
+      return res.status(500).json({ error: "Failed to delete review" });
     }
 
     res.json({ success: true });
   });
 
   connection.end();
-
 });
 
-app.post('/api/signup', (req, res) =>{
+app.post("/api/signup", (req, res) => {
+  const connection = mysql.createConnection(config);
+
+  const { id, email, username, firstName, lastName, profilePhoto } = req.body;
+
+  const checkQuery = "SELECT email_address, username  FROM users WHERE email_address = ? OR username = ?";
+  connection.query(checkQuery, [email, username], (err, data) => {
+    if (err) {
+      console.error("Select Error:", err);
+      connection.end();
+      return res.status(500).json("User search failed");
+    }
+
+    const emailExists = data.some(user => user.email_address === email);
+    if (emailExists) {
+      connection.end();
+      return res.status(409).json({
+        field: "email", 
+        message: "This email already has an account"
+      });
+    }
+
+    const usernameExists = data.some(user => user.username === username);
+    if (usernameExists) {
+      connection.end();
+      return res.status(409).json({
+        field: "username", 
+        message: "This username is already taken."
+      });
+    }
+
+    const insertQuery =
+      "INSERT INTO users (id, email_address, first_name, last_name, profile_photo, username) VALUES (?, ?, ?, ?, ?, ?)";
+    const values = [id, email, firstName, lastName, profilePhoto, username];
+    connection.query(insertQuery, values, (err, result) => {
+      connection.end();
+      if (err) {
+        console.error("Select Error:", err);
+        connection.end()
+        return res.status(500).json("User entry failed");
+      }
+      return res.status(200).json("User has been created.");
+    });
+  });
+});
+
+app.post('/api/login', (req, res) =>{
     const connection = mysql.createConnection(config);
 
-    const{ id, username, firstName, lastName, profilePhoto} = req.body
+    const{ email, password} = req.body
 
-    const checkQuery = "SELECT * FROM users WHERE username = ?";
-    connection.query(checkQuery, [username], (err, data) => {
+    const checkQuery = "SELECT * FROM users WHERE email_address = ? AND id = ?";
+    const values = [email, password]
+    connection.query(checkQuery, values, (err, data) => {
+        connection.end();
         if (err) {
             console.error("Select Error:", err)
             return res.status(500).json("User search failed");
         }
 
         if (data.length > 0) {
-            return res.status(409).json("This email already has an account.");
+            return res.status(200).json({
+              message: "Log In successfull.", 
+              profilePhoto: data[0].profile_photo
+            });
+        } else {
+          return res.status(409).json("Log In credentials given do not exists")
         }
-        const insertQuery = "INSERT INTO users (id, username, first_name, last_name, profile_photo) VALUES (?, ?, ?, ?, ?)";   
-        const values = [id, username, firstName, lastName, profilePhoto];
-        connection.query(insertQuery, values, (err, result) => {
-            connection.end();
-            if (err) {
-                console.error("Select Error:", err)
-                return res.status(500).json("User entry failed");
-            } 
-            return res.status(200).json("User has been created.")
-        })   
     })
+});
+
+app.post("/api/restaurant-info", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { restaurant_id } = req.body;
+
+  const detailsQuery = `
+    SELECT 
+      city,
+      closing_time,
+      DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i') AS updated_at,
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
+      phone_number,
+      cuisine,
+      postal_code,
+      province,
+      restaurant_id,
+      restaurant_name,
+      street_address, 
+      unit,
+      website_url
+    FROM restaurants 
+    WHERE restaurant_id = ?;
+  `;
+
+  connection.query(detailsQuery, [restaurant_id], (err, results) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load restaurant details" });
+    }
+
+    res.json(results[0] || null);
+  });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

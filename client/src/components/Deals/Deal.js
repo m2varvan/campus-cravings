@@ -20,6 +20,10 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     p: size==='lg' ? 2 : 1, // If large size, more padding
                     m: 1,
                     borderRadius: 1,
+                    "&:hover": {
+                        filter: "brightness(0.95)",
+                        boxShadow: 1,
+                    },
                 }}
             >
                 {/* Deal name and price on opposite ends */}

@@ -8,7 +8,6 @@ import RestaurantList from "../Restaurant/index";
 import Login from "../User/Login";
 import SiteAppBar from "./AppBar";
 import SignUp from "../User/SignUp";
-import RestaurantDetails from "../Restaurant/RestaurantDetails";
 
 const App = () => {
   // Create theme
@@ -40,14 +39,15 @@ const App = () => {
       fontFamily: "monospace",
     },
   });
-
-  const uuid = 'user-223';
-
+  
+  const [uuid, setUuid] = React.useState(null)
+  const [profilePhoto, setProfilePhoto] = React.useState("U")
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <SiteAppBar />
+        <SiteAppBar uuid={uuid} setUuid={setUuid} profilePhoto={profilePhoto} setProfilePhoto={setProfilePhoto} />
         <div>
           <Routes>
             <Route path="/" element={<Deals uuid={uuid} />} />
@@ -55,8 +55,9 @@ const App = () => {
               path="/Restaurant"
               element={<RestaurantList uuid={uuid} />}
             />
-            <Route path="/restaurant/:id" element={<RestaurantList />} />
-            <Route path="/Login" element={<Login />} />
+            <Route path="/restaurant" element={<RestaurantList />} />
+            <Route path="/" element={<Deals uuid={uuid} />} />
+            <Route path="/Login" element={<Login uuid={uuid} setUuid={setUuid} profilePhoto={profilePhoto} setProfilePhoto={setProfilePhoto} />} />
             <Route path="/Signup" element={<SignUp />} />
           </Routes>
         </div>

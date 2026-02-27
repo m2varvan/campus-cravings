@@ -49,6 +49,7 @@ describe('ExpandedDeal', () => {
 
     let handleClose;
 
+
     function renderComponent(props = {}) {
         handleClose = jest.fn().mockName('handleClose');
 
@@ -64,6 +65,12 @@ describe('ExpandedDeal', () => {
         </MemoryRouter>
         );
     }
+    beforeEach(() => {
+    global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [],
+    });
+    });
 
     afterEach(() => {
         jest.resetAllMocks();
@@ -87,9 +94,9 @@ describe('ExpandedDeal', () => {
 
     test('calls getDealHours on render', () => {
         // mock fetch
-        global.fetch = jest.fn().mockReturnValue({
+        global.fetch = jest.fn().mockResolvedValue({
             ok: true,
-            json: () => []
+            json: async () => [],
         });
         renderComponent();
         expect(global.fetch).toHaveBeenCalledWith('/api/deal/hours', expect.any(Object));
@@ -124,11 +131,14 @@ describe('ExpandedDeal', () => {
         expect(screen.getByText(/Loading availability.../)).toBeInTheDocument();
     });
 
-    test('shows error message if hours fail to load in expanded deal info', () => {
-        global.fetch = jest.fn(() => {throw new Error('API failure')});
+    test('shows error message if hours fail to load in expanded deal info', async () => {
+        global.fetch = jest.fn().mockRejectedValue(new Error('API failure'));
+
         renderComponent();
-        expect(screen.getByText(/Failed to load availability/)).toBeInTheDocument();
-    
+
+        expect(
+            await screen.findByText(/Failed to load availability/i)
+        ).toBeInTheDocument();
     });
 
     test('deals with no ratings display "No ratings yet" in expanded deal info', () => {
