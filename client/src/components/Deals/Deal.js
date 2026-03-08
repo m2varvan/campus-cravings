@@ -32,6 +32,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     {/* Name and Restaurant Name */}
                     <Box sx={{width: '70%'}}>
                     <Typography
+                            data-testid="deal-name"
                             variant= {size === 'lg' ? "h6": 'subtitle1'}
                             sx={{
                                 overflow: 'hidden',
