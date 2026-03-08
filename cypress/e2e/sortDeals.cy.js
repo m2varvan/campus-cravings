@@ -49,7 +49,11 @@ describe("Filtering and Sorting Deals", () => {
     cy.contains(deal2.dealName);
     cy.contains(deal3.dealName);
 
-    cy.get('[data-testid="restaurant-filter"]').select("Hakka Nation");
+    cy.get('[data-testid="restaurant-filter"]')
+    .find('[role="combobox"]')
+    .click();
+
+    cy.contains('li', 'Hakka Nation').click();
 
     cy.contains(deal1.dealName);
     cy.contains(deal3.dealName);
@@ -60,7 +64,11 @@ describe("Filtering and Sorting Deals", () => {
 
   it("Sorts deals by rating (highest first)", () => {
 
-    cy.get('[data-testid="rating-sort"]').select(/Highest to Lowest/i);
+    cy.get('[data-testid="rating-sort"]')
+    .find('[role="combobox"]')
+    .click();
+
+    cy.contains('li', 'Highest to Lowest').click();
 
     cy.get('[data-cy="deal-card"]').then(($cards) => {
 
@@ -74,5 +82,32 @@ describe("Filtering and Sorting Deals", () => {
     });
 
   });
+
+  it('clears filtering after on click of clear', () => {
+    cy.contains(deal1.dealName);
+    cy.contains(deal2.dealName);
+    cy.contains(deal3.dealName);
+
+    cy.get('[data-testid="restaurant-filter"]')
+    .find('[role="combobox"]')
+    .click();
+
+    cy.contains('li', 'Hakka Nation').click();
+
+    cy.contains(deal1.dealName);
+    cy.contains(deal3.dealName);
+
+    cy.contains(deal2.dealName).should("not.exist");
+
+    cy.get('body').click(0, 0) // click empty space to close dropdown
+
+    cy.get('[data-testid="clear-filters"]').click()
+
+    cy.contains(deal1.dealName).should("be.visible")
+    cy.contains(deal2.dealName).should("be.visible")
+    cy.contains(deal3.dealName).should("be.visible")
+
+  }
+  )
 
 });
