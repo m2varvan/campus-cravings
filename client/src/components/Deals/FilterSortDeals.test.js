@@ -1,7 +1,7 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import React from "react";
-import Deals from "./Deals";
+import Deals from "./index";
 
 // Mock child components
 jest.mock("./TodayDeal", () => (props) => (

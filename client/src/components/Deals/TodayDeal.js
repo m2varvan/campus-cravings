@@ -67,7 +67,7 @@ const TodayDeal = ({
   return (
     <Grid item xs={12}>
       {/* Today's Deals title and date */}
-      <Typography variant="h5" sx={{ my: 2 }}>
+      <Typography variant="h4" sx={{ my: 2 }}>
         Today's Deals ({getTodayDate()})
       </Typography>
 

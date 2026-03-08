@@ -49,7 +49,7 @@ describe("Filtering and Sorting Deals", () => {
     cy.contains(deal2.dealName);
     cy.contains(deal3.dealName);
 
-    cy.get('[data-cy="restaurant-filter"]').select("Hakka Nation");
+    cy.get('[data-testid="restaurant-filter"]').select("Hakka Nation");
 
     cy.contains(deal1.dealName);
     cy.contains(deal3.dealName);
@@ -60,7 +60,7 @@ describe("Filtering and Sorting Deals", () => {
 
   it("Sorts deals by rating (highest first)", () => {
 
-    cy.get('[data-cy="rating-sort"]').select(/Highest to Lowest/i);
+    cy.get('[data-testid="rating-sort"]').select(/Highest to Lowest/i);
 
     cy.get('[data-cy="deal-card"]').then(($cards) => {
 

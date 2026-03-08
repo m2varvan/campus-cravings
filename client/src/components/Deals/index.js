@@ -20,6 +20,12 @@ const Deals = ({ uuid }) => {
   const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([])
   const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
 
+  // Variables to hold filter states
+  const [restaurantFilter, setRestaurantFilter] = React.useState('');
+  const [ratingSort, setRatingSort] = React.useState('');
+  const [restaurants, setRestaurantOptions] = React.useState([])
+
+
   // API to load today's deals
   const loadTodayDeals = async () => {
     try {
@@ -65,6 +71,12 @@ const Deals = ({ uuid }) => {
     }
   };
 
+  // Funtion to find restaurants for dropdown list once deals load
+  React.useEffect(() => {
+
+
+  }, [weekDeals])
+
   // Function to reload all deals
   const reloadDeals = () => {
     loadWeekDeals();
@@ -73,10 +85,22 @@ const Deals = ({ uuid }) => {
 
   return (
     <Grid container p={4} display={"flex"}>
-      {/* Page Title */}
-      <Typography variant="h4">University Shops Plaza Deals</Typography>
 
-      <FilterSortDeals />
+      {/* Page Title */}
+      <Grid item xs={12}>
+        <Typography variant="h3">University Shops Plaza Deals</Typography>
+      </Grid>
+
+      {/* Filter Options */}
+      <Grid item xs={12} justifyContent={'flex-start'}>
+        <FilterSortDeals 
+          restaurantFiler={restaurantFilter}
+          ratingSort={ratingSort}
+          setRestaurantFilter={setRestaurantFilter}
+          setRatingSort={setRatingSort}
+          restaurantOptions={restaurants} />
+      </Grid>
+      
 
       {/* Today's Deals */}
       <TodayDeal

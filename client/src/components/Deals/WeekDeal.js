@@ -18,7 +18,7 @@ const WeekDeal = ({
 
   return (
     <Grid item xs={12}>
-      <Typography variant="h5" sx={{ my: 2 }}>
+      <Typography variant="h4" sx={{ my: 2 }}>
         Weekly Deals (Monday to Sunday)
       </Typography>
 
