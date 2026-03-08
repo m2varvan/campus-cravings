@@ -21,9 +21,10 @@ const Deals = ({ uuid }) => {
   const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
 
   // Variables to hold filter states
-  const [restaurantFilter, setRestaurantFilter] = React.useState('');
+  const [restaurantFilter, setRestaurantFilter] = React.useState([]);
   const [ratingSort, setRatingSort] = React.useState('');
-  const [restaurants, setRestaurantOptions] = React.useState([])
+  const [restaurantOptions, setRestaurantOptions] = React.useState([])
+
 
 
   // API to load today's deals
@@ -73,9 +74,66 @@ const Deals = ({ uuid }) => {
 
   // Funtion to find restaurants for dropdown list once deals load
   React.useEffect(() => {
+    const restaurantSet = new Set();
 
+    Object.values(weekDeals).forEach((dailyDeals) => {
+      dailyDeals.forEach((deal) => {
+        if (deal.restaurantName) {
+          restaurantSet.add(deal.restaurantName);
+        }
+      });
+    });
 
+    setRestaurantOptions(Array.from(restaurantSet));
   }, [weekDeals])
+
+
+  // Apply filters and update lists of displayed deals
+  React.useEffect(() => {
+
+     // Helper to compute overall rating for a deal
+    const getOverallRating = (deal) => {
+      if (deal.numRatings === 0) return null; // unrated deals
+      return (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) / 3;
+    };
+
+    // Function to sort deals by rating, keeping unrated last
+    const sortByRating = (deals) => {
+      return [...deals].sort((a, b) => {
+        const aRating = getOverallRating(a);
+        const bRating = getOverallRating(b);
+
+        if (aRating === null && bRating === null) return 0; // both unrated
+        if (aRating === null) return 1; // a goes after b
+        if (bRating === null) return -1; // b goes after a
+
+        if (ratingSort === "Highest") return bRating - aRating;
+        if (ratingSort === "Lowest") return aRating - bRating;
+        return 0; // no sort
+      });
+    };
+
+
+    // Apply filters and sorting to today's deals
+    let filteredToday = todayDeals.filter((deal) =>
+      restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+    );
+
+    setDisplayedTodayDeals(sortByRating(filteredToday));
+
+    
+    // Filter and sort week deals
+    const newWeekDeals = {};
+    Object.keys(weekDeals).forEach((day) => {
+      const filtered = (weekDeals[day] || []).filter(
+        (deal) => restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+      );
+      newWeekDeals[day] = sortByRating(filtered);
+    });
+
+    setDisplayedWeekDeals(newWeekDeals);
+
+  }, [restaurantFilter, ratingSort, todayDeals, weekDeals])
 
   // Function to reload all deals
   const reloadDeals = () => {
@@ -94,11 +152,11 @@ const Deals = ({ uuid }) => {
       {/* Filter Options */}
       <Grid item xs={12} justifyContent={'flex-start'}>
         <FilterSortDeals 
-          restaurantFiler={restaurantFilter}
+          restaurantFilter={restaurantFilter}
           ratingSort={ratingSort}
           setRestaurantFilter={setRestaurantFilter}
           setRatingSort={setRatingSort}
-          restaurantOptions={restaurants} />
+          restaurantOptions={restaurantOptions} />
       </Grid>
       
 

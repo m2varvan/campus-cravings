@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
+import { Box, FormControl, InputLabel, Select, MenuItem, Button, OutlinedInput, Chip } from "@mui/material";
 
 const FilterSortDeals = ({
     restaurantFilter,
@@ -10,9 +10,24 @@ const FilterSortDeals = ({
     }) => {
 
   const handleClearFilters = () => {
-    setRestaurantFilter("");
+    setRestaurantFilter([]);
     setRatingSort("");
   };
+
+  const menuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 400, // max height of dropdown in px
+        width: 220,
+      },
+    },
+  };
+
+  // Functio to remove a single selected restaurant
+  const handleDeleteRestaurant = (restaurant) => {
+    setRestaurantFilter(restaurantFilter.filter((r) => r !== restaurant));
+  };
+
 
   return (
     <Box
@@ -22,17 +37,30 @@ const FilterSortDeals = ({
       gap={1} // spacing between controls
       mt={2}
     >
-      {/* Restaurant Filter */}
-      <FormControl size="small" sx={{ minWidth: 220 }}>
+    {/* Multi-select Restaurant Filter */}
+      <FormControl size="small" sx={{ minWidth: 250 }}>
         <InputLabel id="restaurant-filter-label">Filter by Restaurant</InputLabel>
         <Select
           labelId="restaurant-filter-label"
-          data-testid="restaurant-filter"
+          multiple
           value={restaurantFilter}
           onChange={(e) => setRestaurantFilter(e.target.value)}
-          label="Filter by Restaurant"
+          input={<OutlinedInput label="Filter by Restaurant" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip
+                  key={value}
+                  label={value}
+                  size="small"
+                  onDelete={() => handleDeleteRestaurant(value)} // <-- delete one by one
+                />
+              ))}
+            </Box>
+          )}
+          MenuProps={menuProps}
+          data-testid="restaurant-filter"
         >
-          <MenuItem value=""><em>All</em></MenuItem>
           {restaurantOptions.map((name) => (
             <MenuItem key={name} value={name}>{name}</MenuItem>
           ))}
@@ -40,7 +68,7 @@ const FilterSortDeals = ({
       </FormControl>
 
       {/* Rating Sort */}
-      <FormControl size="small" sx={{ minWidth: 200 }}>
+    <FormControl size="small" sx={{ minWidth: 200 }}>
         <InputLabel id="rating-sort-label">Sort by Rating</InputLabel>
         <Select
           labelId="rating-sort-label"
@@ -53,10 +81,10 @@ const FilterSortDeals = ({
           <MenuItem value="Highest">Highest to Lowest</MenuItem>
           <MenuItem value="Lowest">Lowest to Highest</MenuItem>
         </Select>
-      </FormControl>
+    </FormControl>
 
       {/* Clear Filters Button */}
-      <Button
+    <Button
         data-testid="clear-filters-btn"
         variant="contained"
         onClick={handleClearFilters}
