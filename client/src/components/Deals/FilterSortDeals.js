@@ -85,7 +85,7 @@ const FilterSortDeals = ({
 
       {/* Clear Filters Button */}
     <Button
-        data-testid="clear-filters-btn"
+        data-testid="clear-filters"
         variant="contained"
         onClick={handleClearFilters}
         sx={{
