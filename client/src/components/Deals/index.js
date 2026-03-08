@@ -28,18 +28,25 @@ const Deals = ({ uuid }) => {
 
 
   // API to load today's deals
-  const loadTodayDeals = async () => {
+ const loadTodayDeals = async () => {
     try {
       setLoadingTodayDeals(true);
-      const response = await fetch("/api/today/deals");
+
+      const response = await fetch("/api/today/deals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userID: uuid }),
+      });
 
       if (!response.ok) {
-        throw new Error(`Server error: $(response.status)`);
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
       setTodayDeals(data);
-      setDisplayedTodayDeals(data)
+      setDisplayedTodayDeals(data);
 
       console.log(data);
     } catch (error) {
@@ -54,16 +61,22 @@ const Deals = ({ uuid }) => {
   const loadWeekDeals = async () => {
     try {
       setLoadingWeekDeals(true);
-      const response = await fetch("/api/week/deals");
+
+      const response = await fetch("/api/week/deals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userID: uuid }),
+      });
 
       if (!response.ok) {
-        throw new Error(`Server error: $(response.status)`);
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
       setWeekDeals(data);
-      setDisplayedWeekDeals(data)
-
+      setDisplayedWeekDeals(data);
     } catch (error) {
       console.error("Failed to load weekly deals:", error);
       setWeekDealsError(true);

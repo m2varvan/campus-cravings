@@ -1,6 +1,6 @@
 import React from "react";
 
-const DealVote = ({uuid, totalScore, deal_id}) => {
+const DealVote = ({uuid, totalVotes, userVote, dealID, }) => {
 
     // API to add vote
 

@@ -1,6 +1,7 @@
 import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
+import DealVote from "./DealVote";
 
 const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
@@ -79,6 +80,12 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                         </Typography>
                     </Box>
                 </Box>
+
+                {/* Deal Votes */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+                    <DealVote uuid={uuid} totalVotes={deal.totalVotes} userVote={deal.userVote} dealID={deal.dealID} />
+                </Box>
+
             </Box>
         
         {/* Dialog with expanded deal information */}
