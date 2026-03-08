@@ -13,6 +13,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     return(
         <>
             <Box
+                data-cy="deal-card"
                 onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
