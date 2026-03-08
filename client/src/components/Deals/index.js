@@ -1,20 +1,24 @@
-import TodayDeal from "./TodayDeal";
-import WeekDeal from "./WeekDeal";
 import React from "react";
 import { Typography, Grid } from "@mui/material";
-import ExpandedDeal from "./ExpandedDeal";
+import TodayDeal from "./TodayDeal";
+import WeekDeal from "./WeekDeal";
+import FilterSortDeals from "./FilterSortDeals";
 
 const Deals = ({ uuid }) => {
+
   // Stateful variables to load today's deals from db
   const [todayDeals, setTodayDeals] = React.useState([]);
   const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false);
   const [todayDealsError, setTodayDealsError] = React.useState(false);
 
+  // Stateful variables to load today's deals from db
   const [weekDeals, setWeekDeals] = React.useState({});
   const [loadingWeekDeals, setLoadingWeekDeals] = React.useState(false);
   const [WeekDealsError, setWeekDealsError] = React.useState(false);
 
-  const [selectedDeal, setSelectedDeal] = React.useState(null);
+  // Variables to hold displayed deals
+  const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([])
+  const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
 
   // API to load today's deals
   const loadTodayDeals = async () => {
@@ -28,6 +32,8 @@ const Deals = ({ uuid }) => {
 
       const data = await response.json();
       setTodayDeals(data);
+      setDisplayedTodayDeals(data)
+
       console.log(data);
     } catch (error) {
       console.error("Failed to load today's deals:", error);
@@ -37,7 +43,7 @@ const Deals = ({ uuid }) => {
     }
   };
 
-  // API to load today's deals
+  // API to load week deals
   const loadWeekDeals = async () => {
     try {
       setLoadingWeekDeals(true);
@@ -49,7 +55,8 @@ const Deals = ({ uuid }) => {
 
       const data = await response.json();
       setWeekDeals(data);
-      console.log(data);
+      setDisplayedWeekDeals(data)
+
     } catch (error) {
       console.error("Failed to load weekly deals:", error);
       setWeekDealsError(true);
@@ -69,10 +76,12 @@ const Deals = ({ uuid }) => {
       {/* Page Title */}
       <Typography variant="h4">University Shops Plaza Deals</Typography>
 
+      <FilterSortDeals />
+
       {/* Today's Deals */}
       <TodayDeal
         uuid={uuid}
-        todayDeals={todayDeals}
+        todayDeals={displayedTodayDeals}
         loading={loadingTodayDeals}
         error={todayDealsError}
         loadTodayDeals={loadTodayDeals}
@@ -82,22 +91,13 @@ const Deals = ({ uuid }) => {
       {/* Weekly Deals */}
       <WeekDeal
         uuid={uuid}
-        weekDeals={weekDeals}
+        weekDeals={displayedWeekDeals}
         loading={loadingWeekDeals}
         error={WeekDealsError}
         loadWeekDeals={loadWeekDeals}
         reloadDeals={reloadDeals}
       />
 
-      {selectedDeal && (
-        <ExpandedDeal
-          uuid={uuid}
-          deal={selectedDeal}
-          handleClose={() => setSelectedDeal(null)}
-          open={!!selectedDeal}
-          reloadDeals={reloadDeals}
-        />
-      )}
     </Grid>
   );
 };
