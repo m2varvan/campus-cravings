@@ -82,7 +82,7 @@ app.post("/api/today/deals", (req, res) => {
         ? parseInt(deal.number_of_ratings, 10)
         : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) || 0
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
     }));
 
     res.json(todayDeals);
@@ -296,6 +296,8 @@ app.post("/api/restaurant-deals", (req, res) => {
         deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
       dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
       numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings) : 0,
+      totalVote: parseInt(deal.total_votes) || 0,
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
     }));
 
     res.json(formattedResults);
@@ -380,7 +382,7 @@ app.post("/api/week/deals", (req, res) => {
           ? parseInt(deal.number_of_ratings, 10)
           : 0,
         totalVote: parseInt(deal.total_votes) || 0,
-        userVote: parseInt(deal.user_vote) || 0
+        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
       });
     });
 
@@ -843,6 +845,70 @@ app.post("/api/restaurant-info", (req, res) => {
 
     res.json(results[0] || null);
   });
+});
+
+app.post("/api/vote", (req, res) => {
+
+  const connection = mysql.createConnection(config);
+  const { userID, dealID, vote, update } = req.body;
+  const voteValue = Number(vote);
+
+  if (!userID || !dealID || vote === undefined) {
+    return res.status(400).send("Missing required fields");
+  }
+
+  if (![1, 0, -1].includes(voteValue)) {
+    return res.status(400).send("Invalid vote value");
+  }
+
+  // prevent invalid insert
+  if (!update && voteValue === 0) {
+    return res.json({ success: true });
+  }
+
+  let sql;
+  let params;
+
+  if (update) {
+
+    if (voteValue === 0) {
+
+      sql = `
+        DELETE FROM deal_votes
+        WHERE user_id = ? AND deal_id = ?;
+      `;
+      params = [userID, dealID];
+
+    } else {
+
+      sql = `
+        UPDATE deal_votes
+        SET vote = ?
+        WHERE user_id = ? AND deal_id = ?;
+      `;
+      params = [voteValue, userID, dealID];
+
+    }
+
+  } else {
+
+    sql = `
+      INSERT INTO deal_votes (user_id, deal_id, vote)
+      VALUES (?, ?, ?);
+    `;
+    params = [userID, dealID, voteValue];
+
+  }
+
+  connection.query(sql, params, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to submit vote" });
+    }
+
+    res.json({ success: true });
+  });
+
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
