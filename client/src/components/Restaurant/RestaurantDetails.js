@@ -39,7 +39,7 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ restaurant_id }),
+          body: JSON.stringify({ restaurant_id, userID: uuid }),
         };
 
         // Run all requests

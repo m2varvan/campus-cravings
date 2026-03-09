@@ -4,7 +4,6 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
-import { createConnection } from "net";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,13 +18,16 @@ app.use(express.static(path.join(__dirname, "client/build")));
 // API Routes
 
 // Route to get deals valid for current day
-app.get("/api/today/deals", (req, res) => {
+app.post("/api/today/deals", (req, res) => {
+
+  const {userID} = req.body;
+
   const connection = mysql.createConnection(config);
 
   const sql = `
         SELECT 
             d.deal_id, 
-            d.restaurant_id, 
+            d.restaurant_id,
             d.deal_name, 
             d.description, 
             d.deal_price, 
@@ -36,18 +38,21 @@ app.get("/api/today/deals", (req, res) => {
             AVG(rt.taste_score) AS avg_taste_rating,
             AVG(rt.value_score) AS avg_value_rating,
             AVG(rt.portion_score) AS avg_portion_rating,
-            COUNT(rt.rating_id) AS number_of_ratings
+            COUNT(rt.rating_id) AS number_of_ratings,
+            COALESCE(SUM(dv.vote), 0) AS total_votes,
+            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
         FROM deals d
         RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
         JOIN restaurants r ON r.restaurant_id = d.restaurant_id
         LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+        LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
         WHERE dh.day_of_week = DAYNAME(NOW())
         AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
         AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
         GROUP BY d.deal_id;
     `;
 
-  connection.query(sql, (error, results) => {
+  connection.query(sql, [userID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch promotions" });
@@ -76,6 +81,8 @@ app.get("/api/today/deals", (req, res) => {
       numRatings: deal.number_of_ratings
         ? parseInt(deal.number_of_ratings, 10)
         : 0,
+      totalVote: parseInt(deal.total_votes) || 0,
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
     }));
 
     res.json(todayDeals);
@@ -200,7 +207,7 @@ app.post("/api/restaurant-rating", (req, res) => {
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurantID } = req.body;
+  const { restaurant_id } = req.body;
 
   const sql = `
     SELECT 
@@ -212,10 +219,10 @@ app.post("/api/restaurant-hours", (req, res) => {
     WHERE restaurant_id = ?
     GROUP BY restaurant_id, day_of_week
     ORDER BY 
-        FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
+        FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
   `;
 
-  connection.query(sql, [restaurantID], (error, results) => {
+  connection.query(sql, [restaurant_id], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to load restaurant hours" });
@@ -235,10 +242,9 @@ app.post("/api/restaurant-hours", (req, res) => {
 // API endpoint to get all deals from each restaurant
 app.post("/api/restaurant-deals", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, userID } = req.body;
 
   const dealsQuery = `
-    SELECT 
         d.deal_id, 
         d.restaurant_id, 
         d.deal_name, 
@@ -250,18 +256,21 @@ app.post("/api/restaurant-deals", (req, res) => {
         AVG(rt.taste_score) AS avg_taste_rating,
         AVG(rt.value_score) AS avg_value_rating,
         AVG(rt.portion_score) AS avg_portion_rating,
-        COUNT(DISTINCT rt.rating_id) AS number_of_ratings
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
+        COALESCE(SUM(dv.vote), 0) AS total_votes,
+        MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
     FROM deals d
     LEFT JOIN deal_hours dh ON d.deal_id = dh.deal_id
     LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+    LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
     JOIN restaurants r ON r.restaurant_id = d.restaurant_id
     WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
       AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
       AND d.restaurant_id = ?
     GROUP BY d.deal_id;
-  `;
+    `;
 
-  connection.query(dealsQuery, [restaurant_id], (err, results) => {
+  connection.query(dealsQuery, [userID, restaurant_id], (err, results) => {
     connection.end();
 
     if (err) {
@@ -287,6 +296,8 @@ app.post("/api/restaurant-deals", (req, res) => {
         deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
       dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
       numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings) : 0,
+      totalVote: parseInt(deal.total_votes) || 0,
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
     }));
 
     res.json(formattedResults);
@@ -295,7 +306,9 @@ app.post("/api/restaurant-deals", (req, res) => {
 
 
 // Route to get all valid deals
-app.get("/api/week/deals", (req, res) => {
+app.post("/api/week/deals", (req, res) => {
+
+  const {userID} = req.body
   const connection = mysql.createConnection(config);
 
   const sql = `
@@ -313,17 +326,20 @@ app.get("/api/week/deals", (req, res) => {
             AVG(rt.taste_score) AS avg_taste_rating,
             AVG(rt.value_score) AS avg_value_rating,
             AVG(rt.portion_score) AS avg_portion_rating,
-            COUNT(rt.rating_id) AS number_of_ratings
+            COUNT(rt.rating_id) AS number_of_ratings,
+            COALESCE(SUM(dv.vote), 0) AS total_votes,
+            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
         FROM deals d
         RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
         JOIN restaurants r ON r.restaurant_id = d.restaurant_id
         LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+        LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
         WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
         AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
         GROUP BY d.deal_id, dh.day_of_week;
     `;
 
-  connection.query(sql, (error, results) => {
+  connection.query(sql, [userID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch promotions" });
@@ -365,6 +381,8 @@ app.get("/api/week/deals", (req, res) => {
         numRatings: deal.number_of_ratings
           ? parseInt(deal.number_of_ratings, 10)
           : 0,
+        totalVote: parseInt(deal.total_votes) || 0,
+        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
       });
     });
 
@@ -827,6 +845,70 @@ app.post("/api/restaurant-info", (req, res) => {
 
     res.json(results[0] || null);
   });
+});
+
+app.post("/api/vote", (req, res) => {
+
+  const connection = mysql.createConnection(config);
+  const { userID, dealID, vote, update } = req.body;
+  const voteValue = Number(vote);
+
+  if (!userID || !dealID || vote === undefined) {
+    return res.status(400).send("Missing required fields");
+  }
+
+  if (![1, 0, -1].includes(voteValue)) {
+    return res.status(400).send("Invalid vote value");
+  }
+
+  // prevent invalid insert
+  if (!update && voteValue === 0) {
+    return res.json({ success: true });
+  }
+
+  let sql;
+  let params;
+
+  if (update) {
+
+    if (voteValue === 0) {
+
+      sql = `
+        DELETE FROM deal_votes
+        WHERE user_id = ? AND deal_id = ?;
+      `;
+      params = [userID, dealID];
+
+    } else {
+
+      sql = `
+        UPDATE deal_votes
+        SET vote = ?
+        WHERE user_id = ? AND deal_id = ?;
+      `;
+      params = [voteValue, userID, dealID];
+
+    }
+
+  } else {
+
+    sql = `
+      INSERT INTO deal_votes (user_id, deal_id, vote)
+      VALUES (?, ?, ?);
+    `;
+    params = [userID, dealID, voteValue];
+
+  }
+
+  connection.query(sql, params, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to submit vote" });
+    }
+
+    res.json({ success: true });
+  });
+
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

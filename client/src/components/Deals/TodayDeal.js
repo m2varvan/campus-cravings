@@ -67,7 +67,7 @@ const TodayDeal = ({
   return (
     <Grid item xs={12}>
       {/* Today's Deals title and date */}
-      <Typography variant="h5" sx={{ my: 2 }}>
+      <Typography variant="h4" sx={{ my: 2 }}>
         Today's Deals ({getTodayDate()})
       </Typography>
 
@@ -118,11 +118,11 @@ const TodayDeal = ({
       {/* Show Deals */}
       {!loading && !error && todayDeals.length > 0 && (
         <>
-          <Grid container>
+          <Grid container data-testid="today-deals">
             {/* Iterate through deals array and render a each deal in a deal component */}
             {todayDeals.slice(0, visibleCount).map((deal) => (
-              <Grid item xs={12} sm={6} lg={4}>
-                {console.log(deal)}
+              <Grid item xs={12} sm={6} lg={4} >
+                
                 <Deal
                   key={deal.dealID}
                   uuid={uuid}

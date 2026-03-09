@@ -1,6 +1,7 @@
 import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
+import DealVote from "./DealVote";
 
 const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
@@ -13,7 +14,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     return(
         <>
             <Box
-                onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
+                data-cy="deal-card"
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
@@ -26,11 +27,15 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     },
                 }}
             >
+
+            {/* Box for clickable area */}
+            <Box onClick={() => setOpenDetails(true)} >
                 {/* Deal name and price on opposite ends */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
                     {/* Name and Restaurant Name */}
                     <Box sx={{width: '70%'}}>
                     <Typography
+                            data-testid="deal-name"
                             variant= {size === 'lg' ? "h6": 'subtitle1'}
                             sx={{
                                 overflow: 'hidden',
@@ -77,6 +82,14 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                         </Typography>
                     </Box>
                 </Box>
+                </Box>
+
+                {/* Deal Votes */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+                    <DealVote uuid={uuid} totalVote={deal.totalVote} userVote={deal.userVote} dealID={deal.dealID} />
+                </Box>
+
+
             </Box>
         
         {/* Dialog with expanded deal information */}
