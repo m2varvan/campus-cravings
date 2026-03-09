@@ -5,7 +5,7 @@ import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
 
-const DealVote = ({uuid, totalVote, userVote, dealID, }) => {
+const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
 
     // Local states to track the user's vote and the total vote
     const [displayedUserVote, setDisplayedUserVote] = React.useState(userVote)
