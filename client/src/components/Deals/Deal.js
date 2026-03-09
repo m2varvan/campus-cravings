@@ -15,7 +15,6 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
         <>
             <Box
                 data-cy="deal-card"
-                onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
@@ -28,6 +27,9 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     },
                 }}
             >
+
+            {/* Box for clickable area */}
+            <Box onClick={() => setOpenDetails(true)} >
                 {/* Deal name and price on opposite ends */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
                     {/* Name and Restaurant Name */}
@@ -80,11 +82,13 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                         </Typography>
                     </Box>
                 </Box>
+                </Box>
 
                 {/* Deal Votes */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
-                    <DealVote uuid={uuid} totalVotes={deal.totalVotes} userVote={deal.userVote} dealID={deal.dealID} />
+                    <DealVote uuid={uuid} totalVote={deal.totalVote} userVote={deal.userVote} dealID={deal.dealID} />
                 </Box>
+
 
             </Box>
         

@@ -13,7 +13,7 @@ describe('DealVote', () => {
 
     test('If user is not logged in total votes are shown but the vote function is disabled', () => {
 
-        render(<DealVote uuid={null} totalScore={3} deal_id={1} />);
+        render(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null} />);
 
         expect(screen.getByText('3')).toBeInTheDocument();
 
@@ -30,7 +30,7 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalScore={3} deal_id={1} />);
+        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
 
         const upvote = screen.getByLabelText(/upvote/i);
         fireEvent.click(upvote);
@@ -48,7 +48,7 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalScore={3} deal_id={1} />);
+        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
 
         const downvote = screen.getByLabelText(/downvote/i);
         fireEvent.click(downvote);
@@ -66,12 +66,12 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalScore={3} deal_id={1} />);
+        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
 
         fireEvent.click(screen.getByLabelText(/upvote/i));
 
         await waitFor(() => {
-            expect(screen.getByText(/vote recorded/i)).toBeInTheDocument();
+            expect(screen.getByTestId("thumbs-up-filled")).toBeInTheDocument();
         });
     });
 
@@ -81,12 +81,12 @@ describe('DealVote', () => {
             ok: false
         });
 
-        render(<DealVote uuid={null} totalScore={3} deal_id={1} />);
+        render(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null}/>);
 
         fireEvent.click(screen.getByLabelText(/upvote/i));
 
         await waitFor(() => {
-            expect(screen.getByText(/error submitting vote/i)).toBeInTheDocument();
+           expect(screen.getByTestId("thumbs-up-empty")).toBeInTheDocument();
         });
     });
 
