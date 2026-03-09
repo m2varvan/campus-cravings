@@ -19,7 +19,7 @@ describe("Showing Deals", () => {
   };
   const deal2 = {
     dealID: 2,
-    dealName: "Sandwhich Specials",
+    dealName: "Sandwich Specials",
     dealDescription:
       "Sandwhich & Bubble tea combo Your choice of regular size bubble tea and fresh made panini (blueberry brie, bacon and apple butter brie, beef cheddar n onion, spinach dip) add $2 for large size",
     dealPrice: "15.00",
@@ -84,7 +84,7 @@ describe("Showing Deals", () => {
   };
 
   it("Shows Monday's Deals from the server", () => {
-    cy.intercept("GET", "/api/today/deals", [deal1, deal2, deal3, deal4, deal5]);
+    cy.intercept("POST", "/api/today/deals", [deal1, deal2, deal3, deal4, deal5]);
 
     cy.visit("/");
     cy.contains("Today's Deals");
