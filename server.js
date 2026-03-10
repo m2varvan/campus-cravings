@@ -933,6 +933,7 @@ app.post("/api/vote", (req, res) => {
   }
 
   connection.query(sql, params, (err) => {
+    connection.end();
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to submit vote" });
@@ -945,13 +946,15 @@ app.post("/api/vote", (req, res) => {
 
 app.post("/api/save/fave/deal", (req, res) => {
     const { uuid, dealID } = req.body;
+    const connection = mysql.createConnection(config);
 
     const sql = `
         INSERT INTO favourite_deals (user_id, deal_id)
         VALUES (?, ?)
     `;
 
-    db.query(sql, [uuid, dealID], (err, result) => {
+    connection.query(sql, [uuid, dealID], (err, result) => {
+        connection.end();
         if (err) {
             console.error(err);
             return res.status(500).json({ error: "Failed to save favourite deal" });
@@ -963,13 +966,15 @@ app.post("/api/save/fave/deal", (req, res) => {
 
 app.post("/api/remove/fave/deal", (req, res) => {
     const { uuid, dealID } = req.body;
+    const connection = mysql.createConnection(config);
 
     const sql = `
         DELETE FROM favourite_deals
         WHERE user_id = ? AND deal_id = ?
     `;
 
-    db.query(sql, [uuid, dealID], (err, result) => {
+    connection.query(sql, [uuid, dealID], (err, result) => {
+      connection.end();
         if (err) {
             console.error(err);
             return res.status(500).json({ error: "Failed to remove favourite deal" });
@@ -981,13 +986,15 @@ app.post("/api/remove/fave/deal", (req, res) => {
 
 app.post("/api/save/fave/restaurant", (req, res) => {
     const { uuid, restaurantID } = req.body;
+    const connection = mysql.createConnection(config);
 
     const sql = `
         INSERT INTO favourite_restaurants (user_id, restaurant_id)
         VALUES (?, ?)
     `;
 
-    db.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.query(sql, [uuid, restaurantID], (err, result) => {
+        connection.end();
         if (err) {
             console.error(err);
             return res.status(500).json({ error: "Failed to save favourite restaurant" });
@@ -999,13 +1006,15 @@ app.post("/api/save/fave/restaurant", (req, res) => {
 
 app.post("/api/remove/fave/restaurant", (req, res) => {
     const { uuid, restaurantID } = req.body;
+    const connection = mysql.createConnection(config);
 
     const sql = `
         DELETE FROM favourite_restaurants
         WHERE user_id = ? AND restaurant_id = ?
     `;
 
-    db.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.query(sql, [uuid, restaurantID], (err, result) => {
+        connection.end();
         if (err) {
             console.error(err);
             return res.status(500).json({ error: "Failed to remove favourite restaurant" });

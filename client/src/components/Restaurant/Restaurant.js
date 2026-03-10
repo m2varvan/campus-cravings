@@ -1,6 +1,9 @@
 import { Typography, Box, Grid } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
+import Favourite from "../Deals/Favourite";
+import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
+import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
 const Restaurant = ({ uuid, restaurant }) => {
   
@@ -14,7 +17,6 @@ const Restaurant = ({ uuid, restaurant }) => {
     <>
       <Grid item xs={12} sm={6} lg={4}>
         <Box
-          onClick={() => setOpenDetails(true)}
           data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
           sx={{
             bgcolor: "secondary.light",
@@ -28,16 +30,10 @@ const Restaurant = ({ uuid, restaurant }) => {
             },
           }}
         >
-          {/* Restaurant name and contact info */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
-          >
-            {/* Name in box */}
-            <Box sx={{ width: "100%" }}>
+          {/* Restaurant name and favourite button */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+            {/* Name in box - make clickable*/}
+            <Box  onClick={() => setOpenDetails(true)} sx={{ width: "90%" }}>
               <Typography
                 variant="h6"
                 sx={{
@@ -50,6 +46,14 @@ const Restaurant = ({ uuid, restaurant }) => {
                 {restaurant.restaurant_name}
               </Typography>
             </Box>
+
+            <Favourite 
+                uuid={uuid}
+                itemID={restaurant.restaurant_id}
+                fave={restaurant.is_favourited}
+                saveFave={saveFaveRestaurant}
+                removeFave={removeFaveRestaurant}
+                />
           </Box>
         </Box>
       </Grid>

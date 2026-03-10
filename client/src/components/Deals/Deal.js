@@ -2,6 +2,10 @@ import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
 import DealVote from "./DealVote";
+import Favourite from "./Favourite";
+import saveFaveDeal from "../../APIs/saveFaveDeal";
+import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
+import removeFaveDeal from "../../APIs/removeFaveDeal";
 
 const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
@@ -86,7 +90,18 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
                 {/* Deal Votes */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
-                    <DealVote uuid={uuid} totalVote={deal.totalVote} userVote={deal.userVote} dealID={deal.dealID} />
+                    <DealVote 
+                        uuid={uuid} 
+                        totalVote={deal.totalVote} 
+                        userVote={deal.userVote} 
+                        dealID={deal.dealID} />
+                        
+                    <Favourite 
+                        uuid={uuid} 
+                        itemID={deal.dealID} 
+                        fave={deal.fave} 
+                        saveFave={saveFaveDeal} 
+                        removeFave={removeFaveDeal} />
                 </Box>
 
 

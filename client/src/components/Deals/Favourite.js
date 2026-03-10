@@ -3,24 +3,29 @@ import React from "react";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-const Favourite = ({type, uuid, itemID, fave, saveFave, removeFave }) => {
+const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
 
     const [isFavourited, setIsFavourited] = React.useState(fave);
 
-    React.useEffect(() => {
-        setIsFavourited(fave);
-    }, [fave]);
 
-    const handleFavourite = () => {
+    const handleFavourite = async () => {
 
         if (!uuid) return;
 
-        if (isFavourited) {
-            React.removeFavourite?.(type, uuid, itemID);
-            setIsFavourited(false);
-        } else {
-            React.saveFavourite?.(type, uuid, itemID);
-            setIsFavourited(true);
+        try {
+
+            if (isFavourited) {
+                console.log('Removing Favourite')
+                await removeFave(uuid, itemID);
+                setIsFavourited(false);
+            } else {
+                console.log('Adding Favourite')
+                await saveFave(uuid, itemID);
+                setIsFavourited(true);
+            }
+
+        } catch (error) {
+            console.error("Favourite action failed:", error);
         }
     };
 
@@ -36,7 +41,7 @@ const Favourite = ({type, uuid, itemID, fave, saveFave, removeFave }) => {
                 fontSize: "20px"
             }}
         >
-            {isFavourited ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            {isFavourited ? <FavoriteIcon sx={{ color: "#ba000d" }} /> : <FavoriteBorderIcon />}
         </IconButton>
     );
 }
