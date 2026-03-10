@@ -943,4 +943,76 @@ app.post("/api/vote", (req, res) => {
 
 });
 
+app.post("/api/save/fave/deal", (req, res) => {
+    const { uuid, dealID } = req.body;
+
+    const sql = `
+        INSERT INTO favourite_deals (user_id, deal_id)
+        VALUES (?, ?)
+    `;
+
+    db.query(sql, [uuid, dealID], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Failed to save favourite deal" });
+        }
+
+        res.json({ success: true });
+    });
+});
+
+app.post("/api/remove/fave/deal", (req, res) => {
+    const { uuid, dealID } = req.body;
+
+    const sql = `
+        DELETE FROM favourite_deals
+        WHERE user_id = ? AND deal_id = ?
+    `;
+
+    db.query(sql, [uuid, dealID], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Failed to remove favourite deal" });
+        }
+
+        res.json({ success: true });
+    });
+});
+
+app.post("/api/save/fave/restaurant", (req, res) => {
+    const { uuid, restaurantID } = req.body;
+
+    const sql = `
+        INSERT INTO favourite_restaurants (user_id, restaurant_id)
+        VALUES (?, ?)
+    `;
+
+    db.query(sql, [uuid, restaurantID], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Failed to save favourite restaurant" });
+        }
+
+        res.json({ success: true });
+    });
+});
+
+app.post("/api/remove/fave/restaurant", (req, res) => {
+    const { uuid, restaurantID } = req.body;
+
+    const sql = `
+        DELETE FROM favourite_restaurants
+        WHERE user_id = ? AND restaurant_id = ?
+    `;
+
+    db.query(sql, [uuid, restaurantID], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Failed to remove favourite restaurant" });
+        }
+
+        res.json({ success: true });
+    });
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
