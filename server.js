@@ -40,19 +40,30 @@ app.post("/api/today/deals", (req, res) => {
             AVG(rt.portion_score) AS avg_portion_rating,
             COUNT(rt.rating_id) AS number_of_ratings,
             COALESCE(SUM(dv.vote), 0) AS total_votes,
-            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
+            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
+            CASE 
+                WHEN fd.deal_id IS NULL THEN 0
+                ELSE 1
+            END AS is_favourited
         FROM deals d
-        RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
-        JOIN restaurants r ON r.restaurant_id = d.restaurant_id
-        LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
-        LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
+        RIGHT JOIN deal_hours dh 
+            ON d.deal_id = dh.deal_id
+        JOIN restaurants r 
+            ON r.restaurant_id = d.restaurant_id
+        LEFT JOIN ratings rt 
+            ON rt.deal_id = d.deal_id
+        LEFT JOIN deal_votes dv 
+            ON dv.deal_id = d.deal_id
+        LEFT JOIN favourite_deals fd 
+            ON fd.deal_id = d.deal_id 
+          AND fd.user_id = ?
         WHERE dh.day_of_week = DAYNAME(NOW())
         AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
         AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
         GROUP BY d.deal_id;
     `;
 
-  connection.query(sql, [userID], (error, results) => {
+  connection.query(sql, [userID, userID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch promotions" });
@@ -82,7 +93,8 @@ app.post("/api/today/deals", (req, res) => {
         ? parseInt(deal.number_of_ratings, 10)
         : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
+      fave: deal.is_favourited || 0
     }));
 
     res.json(todayDeals);
@@ -133,8 +145,9 @@ app.post("/api/deal/hours", (req, res) => {
 });
 
 // API endpoint to get all restaurant info
-app.get("/api/get-restaurants", (req, res) => {
+app.post("/api/get-restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
+  const {userID} = req.body;
 
   connection.connect((err) => {
     if (err) {
@@ -142,9 +155,16 @@ app.get("/api/get-restaurants", (req, res) => {
       return res.status(500).json({ error: "Database connection failed" });
     }
 
-    const user_query = `SELECT * FROM restaurants`;
+    const user_query = ` 
+      SELECT 
+          r.*,
+          (fr.restaurant_id IS NOT NULL) AS is_favourited
+      FROM restaurants r
+      LEFT JOIN favourite_restaurants fr
+          ON fr.restaurant_id = r.restaurant_id
+        AND fr.user_id = ?`;
 
-    connection.query(user_query, (error, results) => {
+    connection.query(user_query, [userID], (error, results) => {
       if (error) {
         console.error("Database error:", error.message);
         connection.end();
@@ -245,6 +265,7 @@ app.post("/api/restaurant-deals", (req, res) => {
   const { restaurant_id, userID } = req.body;
 
   const dealsQuery = `
+    SELECT
         d.deal_id, 
         d.restaurant_id, 
         d.deal_name, 
@@ -311,35 +332,45 @@ app.post("/api/week/deals", (req, res) => {
   const {userID} = req.body
   const connection = mysql.createConnection(config);
 
-  const sql = `
-        SELECT 
-            d.deal_id, 
-            d.restaurant_id, 
-            d.deal_name, 
-            d.description, 
-            d.deal_price, 
-            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
-            r.restaurant_name, 
-            dh.day_of_week,
-            GROUP_CONCAT(dh.start_time) AS start_times,
-            GROUP_CONCAT(dh.end_time) AS end_times,
-            AVG(rt.taste_score) AS avg_taste_rating,
-            AVG(rt.value_score) AS avg_value_rating,
-            AVG(rt.portion_score) AS avg_portion_rating,
-            COUNT(rt.rating_id) AS number_of_ratings,
-            COALESCE(SUM(dv.vote), 0) AS total_votes,
-            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
-        FROM deals d
-        RIGHT JOIN deal_hours dh ON d.deal_id = dh.deal_id
-        JOIN restaurants r ON r.restaurant_id = d.restaurant_id
-        LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
-        LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
-        WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
-        AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
-        GROUP BY d.deal_id, dh.day_of_week;
-    `;
 
-  connection.query(sql, [userID], (error, results) => {
+  const sql = `
+      SELECT 
+          d.deal_id, 
+          d.restaurant_id, 
+          d.deal_name, 
+          d.description, 
+          d.deal_price, 
+          DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
+          r.restaurant_name, 
+          dh.day_of_week,
+          GROUP_CONCAT(dh.start_time) AS start_times,
+          GROUP_CONCAT(dh.end_time) AS end_times,
+          AVG(rt.taste_score) AS avg_taste_rating,
+          AVG(rt.value_score) AS avg_value_rating,
+          AVG(rt.portion_score) AS avg_portion_rating,
+          COUNT(rt.rating_id) AS number_of_ratings,
+          COALESCE(SUM(dv.vote), 0) AS total_votes,
+          MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
+          (fd.deal_id IS NOT NULL) AS is_favourited
+      FROM deals d
+      RIGHT JOIN deal_hours dh 
+          ON d.deal_id = dh.deal_id
+      JOIN restaurants r 
+          ON r.restaurant_id = d.restaurant_id
+      LEFT JOIN ratings rt 
+          ON rt.deal_id = d.deal_id
+      LEFT JOIN deal_votes dv 
+          ON dv.deal_id = d.deal_id
+      LEFT JOIN favourite_deals fd 
+          ON fd.deal_id = d.deal_id 
+        AND fd.user_id = ?
+      WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
+      AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
+      GROUP BY d.deal_id, dh.day_of_week;
+  `;
+
+
+  connection.query(sql, [userID, userID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch promotions" });
@@ -382,7 +413,8 @@ app.post("/api/week/deals", (req, res) => {
           ? parseInt(deal.number_of_ratings, 10)
           : 0,
         totalVote: parseInt(deal.total_votes) || 0,
-        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
+        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
+        fave: deal.is_favourited || 0
       });
     });
 
