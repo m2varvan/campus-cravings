@@ -37,16 +37,20 @@ const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
                 body: JSON.stringify(body),
             });
 
-            // Update local states
-            setDisplayedUserVote(vote)
+            // Update local state for total vote
             if (!displayedUserVote || displayedUserVote === 0) {
-                setDisplayedUserVote(vote)
                 setDisplayedTotalVote(displayedTotalVote + vote)
+                console.log('Option 1')
             } else if (displayedUserVote === 1 ){
-                setDisplayedTotalVote(displayedTotalVote - (vote + 1))
+                setDisplayedTotalVote(displayedTotalVote - (Math.abs(vote) + 1))
+                console.log('Option 2')
             } else if (displayedUserVote === -1){
-                setDisplayedTotalVote(displayedTotalVote + (vote + 1))
+                setDisplayedTotalVote(displayedTotalVote + (Math.abs(vote) + 1))
+                console.log('Option 3')
             }
+
+            // Update local state for user's vote
+            setDisplayedUserVote(vote)
 
 
             if (!response.ok) {
