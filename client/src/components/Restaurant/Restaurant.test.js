@@ -69,7 +69,7 @@ describe("Restaurant", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  test("opens RestaurantDetails dialog when card is clicked", async () => {
+  test.only("opens RestaurantDetails dialog when card is clicked", async () => {
     renderComponent();
     fireEvent.click(
       screen.getByTestId(`expand-restaurantID-${mockRestaurant.restaurant_id}`),

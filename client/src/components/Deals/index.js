@@ -85,6 +85,7 @@ const Deals = ({ uuid }) => {
     }
   };
 
+
   // Funtion to find restaurants for dropdown list once deals load
   React.useEffect(() => {
     const restaurantSet = new Set();

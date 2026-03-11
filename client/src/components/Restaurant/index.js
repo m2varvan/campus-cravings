@@ -30,15 +30,24 @@ const RestaurantList = ({ uuid }) => {
     async function loadRestaurants() {
       try {
         setLoadingRestaurants(true);
-        const response = await fetch("/api/get-restaurants");
+
+        const response = await fetch("/api/get-restaurants", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userID: uuid }),
+        });
 
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('Restaurants',data)
         setRestaurants(data);
         console.log(data);
+
       } catch (error) {
         console.error("Failed to load restaurants:", error);
         setLoadingRestaurantsError(true);
@@ -48,7 +57,7 @@ const RestaurantList = ({ uuid }) => {
     }
 
     loadRestaurants();
-  }, []);
+  }, [uuid]);
 
 
 
