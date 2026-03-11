@@ -85,6 +85,7 @@ const Deals = ({ uuid }) => {
     }
   };
 
+
   // Funtion to find restaurants for dropdown list once deals load
   React.useEffect(() => {
     const restaurantSet = new Set();
@@ -153,6 +154,11 @@ const Deals = ({ uuid }) => {
     loadWeekDeals();
     loadTodayDeals();
   };
+
+  // Reload all deals when uuid changes
+  React.useEffect(() => {
+    reloadDeals()
+  }, [uuid])
 
   return (
     <Grid container p={4} display={"flex"}>
