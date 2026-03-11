@@ -1,9 +1,9 @@
 import React from 'react';
 
-const FavouriteDeals = () => {
+const FavouriteDeals = ({uuid, loadFaveDeals, faveDeals, setFaveDeals}) => {
 
     return(
-        <p>FavouriteDeals</p>
+        <p>Favourite Deals</p>
     );
 }
 

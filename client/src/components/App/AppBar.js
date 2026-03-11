@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+
 
 const pages = [
   { label: 'Deals', path: '/', id: 'nav-promotions' },
@@ -21,12 +23,18 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
 
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   let settings;
 
   const handleSignOut = () => {
     setUuid(null);
     setProfilePhoto('U');
+
+    if (location.pathname === '/User') {
+      navigate('/');
+    }
+
     window.location.reload();
   };
 
