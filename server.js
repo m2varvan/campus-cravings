@@ -912,4 +912,70 @@ app.post("/api/vote", (req, res) => {
 
 });
 
+
+router.post("/api/review/helpful", async (req, res) => {
+  const { reviewID } = req.body;
+  const userID = req.user?.id; // assuming auth middleware
+
+  if (!userID) {
+    return res.status(401).json({ error: "Must be logged in to vote helpful" });
+  }
+
+  try {
+    // check if already voted
+    const checkQuery = `
+      SELECT * FROM review_helpful_votes
+      WHERE review_id = ? AND user_id = ?
+    `;
+
+    const [existing] = await db.query(checkQuery, [reviewID, userID]);
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "You already voted helpful for this review." });
+    }
+
+    // insert vote
+    const insertVote = `
+      INSERT INTO review_helpful_votes (review_id, user_id)
+      VALUES (?, ?)
+    `;
+
+    await db.query(insertVote, [reviewID, userID]);
+
+    // increment counter
+    const updateReview = `
+      UPDATE reviews
+      SET helpful_votes = helpful_votes + 1
+      WHERE review_id = ?
+    `;
+
+    await db.query(updateReview, [reviewID]);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/api/review/:reviewID/helpful", async (req, res) => {
+  const { reviewID } = req.params;
+
+  try {
+    const query = `
+      SELECT helpful_votes
+      FROM reviews
+      WHERE review_id = ?
+    `;
+
+    const [result] = await db.query(query, [reviewID]);
+
+    res.json(result[0]);
+
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
