@@ -18,6 +18,10 @@ const pages = [
 ];
 
 const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const navigate = useNavigate();
+
   let settings;
 
   const handleSignOut = () => {
@@ -33,11 +37,11 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
     ];
   } else {
     settings = [
-      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' },
+      { label: 'My Account', path: '/User', id: 'nav-user' }
     ];
   }
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate();
+  
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);

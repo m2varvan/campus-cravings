@@ -8,6 +8,7 @@ import RestaurantList from "../Restaurant/index";
 import Login from "../User/Login";
 import SiteAppBar from "./AppBar";
 import SignUp from "../User/SignUp";
+import User from "../User/User";
 
 const App = () => {
   // Create theme
@@ -59,6 +60,7 @@ const App = () => {
             <Route path="/" element={<Deals uuid={uuid} />} />
             <Route path="/Login" element={<Login uuid={uuid} setUuid={setUuid} profilePhoto={profilePhoto} setProfilePhoto={setProfilePhoto} />} />
             <Route path="/Signup" element={<SignUp />} />
+            <Route path="/User" element={<User uuid={uuid} />} />
           </Routes>
         </div>
       </Router>
