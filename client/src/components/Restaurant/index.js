@@ -1,26 +1,25 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import {
-  Typography,
-  Grid,
-  CircularProgress,
-  Box,
-  visibleCount,
-  Button,
-} from "@mui/material";
+import { Typography, Grid, CircularProgress, Box, Button } from "@mui/material";
 import Restaurant from "./Restaurant";
+import FilterSortRestaurants from "./FilterSortRestaurants";
 
 const RestaurantList = ({ uuid }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [loadingRestaurantsError, setLoadingRestaurantsError] = useState(false);
 
+  // Filter and Sort States
+  const [restaurantFilter, setRestaurantFilter] = useState([]);
+  const [ratingSort, setRatingSort] = useState("");
+  const [restaurantRatings, setRestaurantRatings] = useState([]);
+
   // Variables and functions to show only 24 by default
   const defaultVisible = 24;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
   const handleShowMore = () => {
-    setVisibleCount(restaurants.length);
+    setVisibleCount(displayedRestaurants.length);
   };
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
@@ -47,16 +46,78 @@ const RestaurantList = ({ uuid }) => {
       }
     }
 
+    async function loadRestaurantRatings() {
+      try {
+        setLoadingRestaurants(true);
+        const res = await fetch("/api/restaurant-rating", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            getAll: true,
+          }),
+        });
+        if (!res.ok) {
+          throw new Error(`Server error: ${res.status}`);
+        }
+
+        const data = await res.json();
+        setRestaurantRatings(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Failed to load restaurants:", error);
+        setLoadingRestaurantsError(true);
+      } finally {
+        setLoadingRestaurants(false);
+      }
+    }
+
     loadRestaurants();
+    loadRestaurantRatings();
   }, []);
 
+  // Filtering Logic
+  let displayedRestaurants = [...restaurants];
 
+  if (restaurantFilter.length > 0) {
+    displayedRestaurants = displayedRestaurants.filter((r) =>
+      restaurantFilter.includes(r.restaurant_name),
+    );
+  }
+
+  // Sorting Logic
+  displayedRestaurants.sort((a, b) => {
+    if (ratingSort) {
+      const key = `avg_${ratingSort}_rating`;
+      const scoreA = parseFloat(a[key]) || 0;
+      const scoreB = parseFloat(b[key]) || 0;
+
+      if (scoreB !== scoreA) return scoreB - scoreA;
+    }
+    return a.restaurant_name.localeCompare(b.restaurant_name);
+  });
+
+  const restaurantOptions = [
+    ...new Set(restaurants.map((r) => r.restaurant_name)),
+  ].sort();
 
   return (
     <Grid container p={4} display={"flex"}>
-      {/* Page Title */}
-      <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+      <Grid item xs={12} mb={2}>
+
+        {/* Page Title */}
+        <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+
+        <FilterSortRestaurants
+          restaurantFilter={restaurantFilter}
+          setRestaurantFilter={setRestaurantFilter}
+          ratingSort={ratingSort}
+          setRatingSort={setRatingSort}
+          restaurantOptions={restaurantOptions}
+        />
+      </Grid>
+
       <Grid item xs={12}>
+        
         {/* Show loadingRestaurants message when restaurants are loading */}
         {loadingRestaurants && (
           <Box
@@ -114,17 +175,20 @@ const RestaurantList = ({ uuid }) => {
             <>
               <Grid container>
                 {/* Iterate through restaurants array and render each restaurant in a restaurant component */}
-                {restaurants.slice(0, visibleCount).map((restaurant) => (
-                  <Restaurant
-                    key={restaurant.restaurant_id}
-                    uuid={uuid}
-                    restaurant={restaurant}
-                  />
-                ))}
+                {displayedRestaurants
+                  .slice(0, visibleCount)
+                  .map((restaurant) => (
+                    <Restaurant
+                      key={restaurant.restaurant_id}
+                      uuid={uuid}
+                      restaurant={restaurant}
+                      ratings={restaurantRatings}
+                    />
+                  ))}
               </Grid>
 
               {/* Show More Button */}
-              {visibleCount < restaurants.length && (
+              {visibleCount < displayedRestaurants.length && (
                 <Box textAlign="center" mt={2}>
                   <Button
                     variant="contained"

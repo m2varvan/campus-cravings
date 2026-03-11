@@ -2,13 +2,16 @@ import { Typography, Box, Grid } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
 
-const Restaurant = ({ uuid, restaurant }) => {
-  
+const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
   const [openDetails, setOpenDetails] = useState(false);
 
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;
+
+  const restaurantRating = ratings?.find(
+    (r) => r.restaurant_id === restaurant.restaurant_id,
+  );
 
   return (
     <>
@@ -28,28 +31,35 @@ const Restaurant = ({ uuid, restaurant }) => {
             },
           }}
         >
-          {/* Restaurant name and contact info */}
-          <Box
+          {/* Restaurant name */}
+          <Typography
+            variant="h6"
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontWeight: 600,
             }}
           >
-            {/* Name in box */}
-            <Box sx={{ width: "100%" }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  fontWeight: 600,
-                }}
-              >
-                {restaurant.restaurant_name}
-              </Typography>
-            </Box>
+            {restaurant.restaurant_name}
+          </Typography>
+
+          {/* Average Rating */}
+          <Box sx={{ mt: 0.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              {restaurantRating && restaurantRating.total_ratings > 0
+                ? "⭐ " +
+                  (
+                    (restaurantRating.avg_value_rating +
+                      restaurantRating.avg_taste_rating +
+                      restaurantRating.avg_portion_rating) /
+                    3
+                  ).toFixed(2) +
+                  "/5 (" +
+                  restaurantRating.total_ratings +
+                  ")"
+                : "No ratings yet"}
+            </Typography>
           </Box>
         </Box>
       </Grid>
@@ -64,5 +74,4 @@ const Restaurant = ({ uuid, restaurant }) => {
     </>
   );
 };
-
 export default Restaurant;
