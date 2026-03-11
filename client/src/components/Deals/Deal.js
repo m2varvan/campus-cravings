@@ -4,7 +4,6 @@ import ExpandedDeal from "./ExpandedDeal";
 import DealVote from "./DealVote";
 import Favourite from "./Favourite";
 import saveFaveDeal from "../../APIs/saveFaveDeal";
-import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 import removeFaveDeal from "../../APIs/removeFaveDeal";
 
 const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
@@ -23,6 +22,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                 sx={{
                     bgcolor: 'secondary.light',
                     p: size==='lg' ? 2 : 1, // If large size, more padding
+                    pb: size==='lg' ? 1 : 0.5, // If large size, more padding
                     m: 1,
                     borderRadius: 1,
                     "&:hover": {

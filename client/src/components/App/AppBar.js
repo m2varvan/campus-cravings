@@ -37,8 +37,9 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
     ];
   } else {
     settings = [
-      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' },
-      { label: 'My Account', path: '/User', id: 'nav-user' }
+      { label: 'My Account', path: '/User', id: 'nav-user' },
+      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+      
     ];
   }
   
@@ -56,7 +57,7 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
   };
 
   return (
-    <AppBar position="static" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
+    <AppBar position="sticky" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
