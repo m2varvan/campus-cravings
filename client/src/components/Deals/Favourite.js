@@ -15,11 +15,9 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
         try {
 
             if (isFavourited) {
-                console.log('Removing Favourite')
                 await removeFave(uuid, itemID);
                 setIsFavourited(false);
             } else {
-                console.log('Adding Favourite')
                 await saveFave(uuid, itemID);
                 setIsFavourited(true);
             }

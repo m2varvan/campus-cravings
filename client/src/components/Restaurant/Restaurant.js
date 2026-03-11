@@ -17,7 +17,6 @@ const Restaurant = ({ uuid, restaurant }) => {
     <>
       <Grid item xs={12} sm={6} lg={4}>
         <Box
-          data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
           sx={{
             bgcolor: "secondary.light",
             p: 2,
@@ -32,8 +31,12 @@ const Restaurant = ({ uuid, restaurant }) => {
         >
           {/* Restaurant name and favourite button */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+            
             {/* Name in box - make clickable*/}
-            <Box  onClick={() => setOpenDetails(true)} sx={{ width: "90%" }}>
+            <Box  
+              onClick={() => setOpenDetails(true)} 
+              sx={{ width: "90%" }} 
+              data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}>
               <Typography
                 variant="h6"
                 sx={{
