@@ -1024,4 +1024,44 @@ app.post("/api/remove/fave/restaurant", (req, res) => {
     });
 });
 
+app.post("/api/load/user", (req, res) => {
+  const { uuid } = req.body;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+      SELECT 
+        id,
+        first_name,
+        last_name,
+        email_address,
+        username,
+        profile_photo,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at
+      FROM users
+      WHERE id = ?;
+  `;
+
+  connection.query(sql, [uuid], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load user info" });
+    }
+
+    const userInfo = result.map((user) => ({
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email_address,
+      userName: user.username,
+      profilePhoto: user.profile_photo,
+      createdDate: user.created_at
+    }));
+
+    res.json(userInfo);
+  });
+});
+
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
