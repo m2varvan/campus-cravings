@@ -1,28 +1,37 @@
 import React from "react";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
-function ReviewSort({ sortType, setSortType }) {
-
-  const handleChange = (e) => {
-    setSortType(e.target.value);
-  };
+const ReviewSort = ({ sortType, setSortType }) => {
 
   return (
+    <FormControl
+      size="small"
+      sx={{
+        minWidth: 180,
+        mb: 2
+      }}
+    >
 
-    <div style={{marginBottom:"10px"}}>
+      <InputLabel id="review-sort-label">
+        Sort Reviews
+      </InputLabel>
 
-      <label>Sort By: </label>
+      <Select
+        labelId="review-sort-label"
+        value={sortType}
+        label="Sort Reviews"
+        onChange={(e) => setSortType(e.target.value)}
+      >
 
-      <select value={sortType} onChange={handleChange}>
+        <MenuItem value="newest">Newest</MenuItem>
+        <MenuItem value="oldest">Oldest</MenuItem>
+        <MenuItem value="mostHelpful">Most Helpful</MenuItem>
+        <MenuItem value="leastHelpful">Least Helpful</MenuItem>
 
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-        <option value="mostHelpful">Most Helpful</option>
-        <option value="leastHelpful">Least Helpful</option>
+      </Select>
 
-      </select>
-
-    </div>
+    </FormControl>
   );
-}
+};
 
 export default ReviewSort;

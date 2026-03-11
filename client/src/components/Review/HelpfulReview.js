@@ -1,54 +1,93 @@
-import React, { useState } from "react";
+import React from "react";
+import { Stack, IconButton, Typography, Alert } from "@mui/material";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 
-function HelpfulReview({ reviewID, helpfulVotes, user }) {
+const HelpfulReview = ({ reviewID, helpfulVotes = 0, user }) => {
 
-  const [votes, setVotes] = useState(helpfulVotes);
-  const [voted, setVoted] = useState(false);
-  const [error, setError] = useState("");
+  const [liked, setLiked] = React.useState(false);
+  const [count, setCount] = React.useState(helpfulVotes);
+  const [error, setError] = React.useState("");
 
-  const markHelpful = async () => {
+  const onHelpful = async () => {
 
+    // User not logged in
     if (!user) {
-      setError("Login required to vote helpful.");
+      setError("You must be logged in to mark reviews as helpful.");
       return;
     }
 
-    if (voted) return;
+    setError("");
 
     try {
 
       const res = await fetch("/api/review/helpful", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reviewID })
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          reviewID,
+          userID: user
+        })
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error);
-        return;
+        throw new Error("Vote failed");
       }
 
-      setVotes(votes + 1);
-      setVoted(true);
+      if (!liked) {
+        setCount(prev => prev + 1);
+      } else {
+        setCount(prev => prev - 1);
+      }
+
+      setLiked(!liked);
 
     } catch (err) {
-      setError("Failed to mark helpful");
+      console.error("Helpful vote failed", err);
+      setError("Failed to record vote.");
     }
+
   };
 
   return (
-    <div>
 
-      <button onClick={markHelpful} disabled={voted}>
-        👍 Helpful ({votes})
-      </button>
+    <>
+      <Stack direction="row" alignItems="center" spacing={0}>
 
-      {error && <p style={{color:"red"}}>{error}</p>}
+        <IconButton
+          size="small"
+          aria-label="helpful review"
+          onClick={onHelpful}
+        >
+          {liked ? (
+            <ThumbUpIcon
+              fontSize="small"
+              sx={{ color: "success.main" }}
+            />
+          ) : (
+            <ThumbUpOutlinedIcon fontSize="small" />
+          )}
+        </IconButton>
 
-    </div>
+        <Typography variant="subtitle2">
+          {count}
+        </Typography>
+
+      </Stack>
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mt: 1 }}
+        >
+          {error}
+        </Alert>
+      )}
+
+    </>
   );
-}
+};
 
 export default HelpfulReview;
