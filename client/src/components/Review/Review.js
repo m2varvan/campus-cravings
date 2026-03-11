@@ -1,5 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField, Button, Divider, Alert } from '@mui/material';
+import HelpfulReview from './HelpfulReview';
+import ReviewSort from './ReviewSort';
+
+
+const sortReviews = (reviews, sortType) => {
+
+  const sorted = [...reviews];
+
+  switch(sortType){
+
+    case "newest":
+      sorted.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+
+    case "oldest":
+      sorted.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+      break;
+
+    case "mostHelpful":
+      sorted.sort((a,b) => b.helpful_votes - a.helpful_votes);
+      break;
+
+    case "leastHelpful":
+      sorted.sort((a,b) => a.helpful_votes - b.helpful_votes);
+      break;
+
+    default:
+      break;
+  }
+
+  return sorted;
+};
+
 
 function Review({ uuid, dealID }) {
   const [reviews, setReviews] = useState([]);
@@ -11,6 +44,9 @@ function Review({ uuid, dealID }) {
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [sortType, setSortType] = useState('newest');
+  const sortedReviews = sortReviews(reviews, sortType);
+  const visibleReviews = showAll ? sortedReviews : sortedReviews.slice(0,3);
 
 useEffect(() => {
   setError('');
@@ -205,98 +241,104 @@ useEffect(() => {
         Reviews
       </Typography>
 
+      <ReviewSort
+        sortType={sortType}
+        setSortType={setSortType}
+      />
+
       {reviews.length === 0 && (
         <Typography>No reviews yet.</Typography>
       )}
 
-  {(showAll ? reviews : reviews.slice(0, 3)).map((review) => (
-    <Box key={review.review_id} mb={2}>
+    {visibleReviews.map((review) => (
+  <Box key={review.review_id} mb={2}>
 
-      {editingReviewId === review.review_id ? (
-        <>
-          <TextField
-            fullWidth
-            label="Edit Title"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            inputProps={{ maxLength: 250 }}
-            sx={{ mb: 1 }}
-          />
+    {editingReviewId === review.review_id ? (
 
-          <TextField
-            fullWidth
-            multiline
-            minRows={3}
-            label="Edit Review"
-            value={editBody}
-            onChange={(e) => setEditBody(e.target.value)}
-            inputProps={{ maxLength: 1000 }}
-            sx={{ mb: 1 }}
-          />
+      <>
+        <TextField
+          fullWidth
+          label="Edit Title"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          inputProps={{ maxLength: 250 }}
+          sx={{ mb: 1 }}
+        />
 
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => handleSave(review.review_id)}
-            sx={{ mr: 1 }}
-          >
-            Save
-          </Button>
+        <TextField
+          fullWidth
+          multiline
+          minRows={3}
+          label="Edit Review"
+          value={editBody}
+          onChange={(e) => setEditBody(e.target.value)}
+          inputProps={{ maxLength: 1000 }}
+          sx={{ mb: 1 }}
+        />
 
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button>
-        </>
-      ) : (
-        <>
-          <Typography variant="subtitle1" fontWeight="bold">
-            {review.title}
-          </Typography>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => handleSave(review.review_id)}
+          sx={{ mr: 1 }}
+        >
+          Save
+        </Button>
 
-          <Typography variant="body2" gutterBottom>
-            {review.body}
-          </Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+      </>
 
-          <Typography variant="caption" display="block" gutterBottom>
-              Posted by {review.username} on{' '}
-              {review.created_at}
-              {review.edited_at &&
-                new Date(review.edited_at).getTime() !==
-                  new Date(review.created_at).getTime() && (
-                  <>
-                    {' '} (Edited on {review.edited_at})
-                  </>
-                )}
-            </Typography>
+    ) : (
 
-          {uuid === review.user_id && (
-            <>
-              <Button
-                size="small"
-                onClick={() => handleEdit(review)}
-                sx={{ mr: 1 }}
-              >
-                Edit
-              </Button>
+      <>
+        <Typography variant="subtitle1" fontWeight="bold">
+          {review.title}
+        </Typography>
 
-              <Button
-                size="small"
-                color="error"
-                onClick={() => handleDelete(review.review_id)}
-              >
-                Delete
-              </Button>
-            </>
-          )}
-        </>
-      )}
+        <Typography variant="body2" gutterBottom>
+          {review.body}
+        </Typography>
 
-    </Box>
-  ))}
+        <HelpfulReview
+          reviewID={review.review_id}
+          helpfulVotes={review.helpful_votes}
+          user={uuid}
+        />
+
+        <Typography variant="caption" display="block" gutterBottom>
+          Posted by {review.username} on {review.created_at}
+        </Typography>
+
+        {uuid === review.user_id && (
+          <>
+            <Button
+              size="small"
+              onClick={() => handleEdit(review)}
+              sx={{ mr: 1 }}
+            >
+              Edit
+            </Button>
+
+            <Button
+              size="small"
+              color="error"
+              onClick={() => handleDelete(review.review_id)}
+            >
+              Delete
+            </Button>
+          </>
+        )}
+      </>
+    )}
+
+  </Box>
+))}
 
   {reviews.length > 3 && (
   <Box textAlign="center" mt={2}>

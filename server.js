@@ -913,7 +913,7 @@ app.post("/api/vote", (req, res) => {
 });
 
 
-router.post("/api/review/helpful", async (req, res) => {
+app.post("/api/review/helpful", async (req, res) => {
   const { reviewID } = req.body;
   const userID = req.user?.id; // assuming auth middleware
 
@@ -959,7 +959,7 @@ router.post("/api/review/helpful", async (req, res) => {
   }
 });
 
-router.get("/api/review/:reviewID/helpful", async (req, res) => {
+app.get("/api/review/:reviewID/helpful", async (req, res) => {
   const { reviewID } = req.params;
 
   try {

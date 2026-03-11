@@ -62,6 +62,10 @@ function RestaurantReview({ restaurantID }) {
             </Typography>
 
             <Typography variant="caption" display="block">
+              Helpful ({review.helpful_votes})
+            </Typography>
+
+            <Typography variant="caption" display="block">
               Posted by {review.username} on {review.created_at}
               {review.edited_at &&
                 review.edited_at !== review.created_at && (
