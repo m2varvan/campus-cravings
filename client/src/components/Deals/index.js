@@ -155,11 +155,6 @@ const Deals = ({ uuid }) => {
     loadTodayDeals();
   };
 
-  // Reload all deals when uuid changes
-  React.useEffect(() => {
-    reloadDeals()
-  }, [uuid])
-
   return (
     <Grid container p={4} display={"flex"}>
 

@@ -23,6 +23,7 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
   const handleSignOut = () => {
     setUuid(null);
     setProfilePhoto('U');
+    window.location.reload();
   };
 
   if (uuid == null) {
