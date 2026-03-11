@@ -245,6 +245,7 @@ app.post("/api/restaurant-deals", (req, res) => {
   const { restaurant_id, userID } = req.body;
 
   const dealsQuery = `
+    SELECT
         d.deal_id, 
         d.restaurant_id, 
         d.deal_name, 
