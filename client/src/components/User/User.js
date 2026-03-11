@@ -1,5 +1,5 @@
 import React from 'react';
-import {Grid, Typography} from '@mui/material';
+import {Grid, Typography, Box} from '@mui/material';
 
 
 import UserInfo from './UserInfo';
@@ -15,20 +15,36 @@ const User = ({uuid}) => {
     const [faveDeals, setFaveDeals] = React.useState(null)
     const [faveRestaurants, setFaveRestaurants] = React.useState(null)
 
-    return(
-        <>
-        <Grid container p={4} display={"flex"}>
-            {/* Page Title */}
-            <Typography variant="h3">My Account</Typography>
+    return (
+    <>
+        <Grid container p={4}>
+        
+        {/* Page Title */}
+        <Grid item xs={12}>
+            <Box sx={{pb: 2}}>
+                <Typography variant="h3">My Account</Typography>
+            </Box>
+        </Grid>
 
-            <Grid item xs={12}>
-                <UserInfo 
-                    uuid={uuid}
-                    loadUserInfo={loadUserInfo}
-                    setUserInfo={setUserInfo}
-                    userInfo={userInfo}
-                    />
+        {/* Row */}
+        <Grid container item xs={12} spacing={2}>
 
+            {/* Left Column - User Info */}
+            <Grid item xs={12} md={4}>
+            <UserInfo 
+                uuid={uuid}
+                loadUserInfo={loadUserInfo}
+                setUserInfo={setUserInfo}
+                userInfo={userInfo}
+            />
+            </Grid>
+
+            {/* Right Column - Favourites */}
+            <Grid item xs={12} md={8} >
+                <Box sx={{
+                    maxHeight: 600, // scrollable height
+                    overflowY: "auto",
+                }}>
                 <FavouriteDeals 
                     uuid={uuid} 
                     loadFaveDeals={loadFaveDeals}
@@ -42,10 +58,13 @@ const User = ({uuid}) => {
                     setFaveRestaurants={setFaveRestaurants}
                     faveRestaurants={faveRestaurants} 
                 />
-
+                </Box>
             </Grid>
+
         </Grid>
-        </>
+
+        </Grid>
+    </>
     );
 }
 

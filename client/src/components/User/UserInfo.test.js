@@ -1,8 +1,7 @@
-import { render, screen, } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import UserInfo from './UserInfo';
-import loadUserInfo from '../../APIs/loadUserInfo';
 
 describe('UserInfo', () => {
 
@@ -15,15 +14,18 @@ describe('UserInfo', () => {
     };
 
     let mockLoadUserInfo;
+    let setUserInfo;
 
     function renderComponent() {
         mockLoadUserInfo = jest.fn();
+        setUserInfo = jest.fn()
 
         render(
             <UserInfo
                 uuid={1}
                 loadUserInfo={mockLoadUserInfo}
                 userInfo={mockUser}
+                setUserInfo={setUserInfo}
             />
         );
     }
@@ -33,24 +35,30 @@ describe('UserInfo', () => {
         expect(mockLoadUserInfo).toHaveBeenCalled();
     });
 
-    test('First and Last Name are displayed', () => {
+    test('First and Last Name are displayed', async () => {
         renderComponent();
 
-        expect(screen.getByText(/Aysha/i)).toBeInTheDocument();
-        expect(screen.getByText(/Hide/i)).toBeInTheDocument();
+        // Use findByText to wait for async rendering
+        const name = await screen.findByText(/Aysha Hide/i);
+
+        expect(name).toBeInTheDocument();
     });
 
-    test('Account Created Date is displayed', () => {
+    test('Account Created Date is displayed', async () => {
         renderComponent();
 
-        expect(screen.getByText(/2025-01-01/i)).toBeInTheDocument();
+        const createdDate = await screen.findByText(/2025-01-01/i);
+        expect(createdDate).toBeInTheDocument();
     });
 
-    test('Email and Username are displayed', () => {
+    test('Email and Username are displayed', async () => {
         renderComponent();
 
-        expect(screen.getByText(/test@email.com/i)).toBeInTheDocument();
-        expect(screen.getByText(/ahide123/i)).toBeInTheDocument();
+        const email = await screen.findByText(/test@email.com/i);
+        const username = await screen.findByText(/ahide123/i);
+
+        expect(email).toBeInTheDocument();
+        expect(username).toBeInTheDocument();
     });
 
 });

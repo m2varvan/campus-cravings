@@ -1049,7 +1049,9 @@ app.post("/api/load/user", (req, res) => {
       return res.status(500).json({ error: "Failed to load user info" });
     }
 
-    const userInfo = result.map((user) => ({
+   const user = result[0];
+
+    const userInfo = {
       id: user.id,
       firstName: user.first_name,
       lastName: user.last_name,
@@ -1057,7 +1059,7 @@ app.post("/api/load/user", (req, res) => {
       userName: user.username,
       profilePhoto: user.profile_photo,
       createdDate: user.created_at
-    }));
+    };
 
     res.json(userInfo);
   });
