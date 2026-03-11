@@ -41,7 +41,11 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
                 fontSize: "20px"
             }}
         >
-            {isFavourited ? <FavoriteIcon sx={{ color: "#ba000d" }} /> : <FavoriteBorderIcon />}
+            {isFavourited ? 
+                <FavoriteIcon sx={{ color: "#ba000d" }} data-testid='filled-heart'/> 
+            : 
+                <FavoriteBorderIcon data-testid='empty-heart'/>
+            }
         </IconButton>
     );
 }

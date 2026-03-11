@@ -44,7 +44,7 @@ describe('Favourite', () => {
     
     });
 
-    test('An indication of success is shown after a deal/restaurant has been favourited',  () => {
+    test('An indication of success is shown after a deal/restaurant has been favourited', async () => {
 
         const saveFave = jest.fn().mockName('saveFave')
         render(<Favourite uuid={1} fave={false} saveFave={saveFave} />);
@@ -52,11 +52,13 @@ describe('Favourite', () => {
         const faveButton = screen.getByTestId('favourite-empty')
         fireEvent.click(faveButton)
 
-        expect(screen.getByTestId("favourite-filled")).toBeInTheDocument();
+        await waitFor(() => 
+            expect(screen.getByTestId('filled-heart')).toBeInTheDocument()
+        );
 
     });
 
-    test('An indication of success is shown after a deal/restaurant has been unfavourited', () => {
+    test('An indication of success is shown after a deal/restaurant has been unfavourited', async () => {
 
         const removeFave = jest.fn().mockName('removeFave')
         render(<Favourite uuid={1} fave={true} removeFave={removeFave} />);
@@ -64,7 +66,9 @@ describe('Favourite', () => {
         const faveButton = screen.getByTestId('favourite-filled')
         fireEvent.click(faveButton)
 
-        expect(screen.getByTestId("favourite-empty")).toBeInTheDocument();
+        await waitFor(() => 
+            expect(screen.getByTestId('empty-heart')).toBeInTheDocument()
+        );
         
     });
 
