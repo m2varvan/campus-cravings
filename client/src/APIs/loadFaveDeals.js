@@ -4,7 +4,7 @@ const loadFaveDeals = async (uuid) => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ uuid }),
+    body: JSON.stringify({ userID: uuid }),
   });
 
   if (!response.ok) {

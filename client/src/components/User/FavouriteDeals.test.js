@@ -1,13 +1,69 @@
-// Test to show that favourtited deals are shown along with count of favourites. Users can also unfavourite deals.
-// Check that function to load data was called
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import React from "react";
+import FavouriteDeals from "./FavouriteDeals";
 
-import { render, screen, } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import React from 'react';
+describe("FavouriteDeals Component", () => {
+  const mockDeals = [
+    {
+      dealID: 1,
+      dealName: "Sushi Combo 1",
+      restaurantName: "Test Restaurant 1",
+      dealTasteRating: 5,
+      dealValueRating: 5,
+      dealPortionRating: 5,
+    },
+    {
+      dealID: 2,
+      dealName: "Sushi Combo",
+      restaurantName: "Sakura Sushi",
+      dealTasteRating: 4,
+      dealValueRating: 4,
+      dealPortionRating: 4,
+    },
+  ];
 
-describe('FavouriteDeal', () => {
-  test('placeholder test', () => {
-    expect(true).toBe(true);
+  let mockLoadFaveDeals;
+  let setFaveDeals;
+
+  function renderComponent() {
+    mockLoadFaveDeals = jest.fn();
+    setFaveDeals = jest.fn();
+
+    render(
+      <FavouriteDeals
+        uuid={1}
+        loadFaveDeals={mockLoadFaveDeals}
+        faveDeals={mockDeals}
+        setFaveDeals={setFaveDeals}
+      />
+    );
+  }
+
+  test("loadFaveDeals function is called on initial render", () => {
+    renderComponent();
+    expect(mockLoadFaveDeals).toHaveBeenCalled();
   });
-    
+
+  test("Deal name, restaurant, and average rating are displayed", async () => {
+    renderComponent();
+
+    // Check first deal
+    expect(await screen.findByText("Sushi Combo 1")).toBeInTheDocument();
+    expect(screen.getByText("Test Restaurant 1")).toBeInTheDocument();
+    expect(screen.getByText(/5\.0\/5/i)).toBeInTheDocument();
+
+    // Check second deal
+    expect(screen.getByText("Sushi Combo")).toBeInTheDocument();
+    expect(screen.getByText("Sakura Sushi")).toBeInTheDocument();
+    expect(screen.getByText(/4\.0\/5/i)).toBeInTheDocument();
+  });
+
+  test("Count of total favourite deals is displayed", async () => {
+    renderComponent();
+
+    expect(await screen.findByText("2 favourite deals")).toBeInTheDocument();
+  });
+
+
 });
