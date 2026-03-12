@@ -20,11 +20,10 @@ const pages = [
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 
-const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
+const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) => {
 
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const firebase = React.useContext(FirebaseContext);
 
   let settings;
@@ -32,12 +31,7 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
   const handleSignOut = async () => {
     await firebase.doSignOut();
     setProfilePhoto('U');
-
-    if (location.pathname === '/User') {
-      navigate('/');
-    }
-
-    window.location.reload();
+    navigate('/');
   };
 
   if (authUser == null) {
@@ -46,11 +40,18 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
       { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
     ];
   } else {
-    settings = [
-      { label: 'My Account', path: '/User', id: 'nav-user' },
-      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
-      
-    ];
+      if (userTypeAfter === 'restaurant_owner') {
+        settings = [
+          { label: 'My Owner Account', path: '/Owner', id: 'nav-owner' },
+          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+        ];
+      } else {
+        settings = [
+          { label: 'My Account', path: '/User', id: 'nav-user' },
+          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+        ];
+      }
+    
   }
   
 

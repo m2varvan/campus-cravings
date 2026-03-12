@@ -889,6 +889,24 @@ app.get("/api/user/:uid", (req, res) => {
   });
 });
 
+app.get("/api/user/type/:uid", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uid } = req.params;
+
+  const query = "SELECT user_type FROM users WHERE id = ?";
+  connection.query(query, [uid], (err, data) => {
+    connection.end();
+    if (err) {
+      console.error("Select Error:", err);
+      return res.status(500).json({ message: "Failed to fetch user" });
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ userType: data[0].user_type });
+  });
+});
+
 app.post("/api/restaurant-info", (req, res) => {
   const connection = mysql.createConnection(config);
   const { restaurant_id } = req.body;
