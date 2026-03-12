@@ -301,7 +301,7 @@ const SignUp = ({ firebase }) => {
                     <Grid item xs={12}>
                         <Typography align="center">
                             Already have an account?{" "}
-                            <Button variant="text" onClick={() => navigate('/')}>
+                            <Button variant="text" onClick={() => navigate('/Login')}>
                                 Log In
                             </Button>
                         </Typography>
