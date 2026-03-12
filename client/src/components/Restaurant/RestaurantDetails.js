@@ -9,11 +9,10 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import RestaurantReview from '../Review/RestaurantReview';
+import RestaurantReview from "../Review/RestaurantReview";
 import ExpandedDeal from "../Deals/ExpandedDeal";
 
 const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
-
   // States to load restaurant details and error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -25,71 +24,60 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
   const [restaurant, setRestaurant] = useState({});
 
   // States to open/close expanded deal
-  const [openDeal, setOpenDeal] = useState(false)
-
+  const [openDeal, setOpenDeal] = useState(false);
 
   // Function to load all restaurant details
   const loadRestaurantDetails = async () => {
-      try {
-        setLoading(true);
-        setError(false);
+    try {
+      setLoading(true);
+      setError(false);
 
-        const options = {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ restaurant_id, userID: uuid }),
-        };
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ restaurant_id, userID: uuid }),
+      };
 
-        // Run all requests
-        const [
-          dealsRes,
-          hoursRes,
-          ratingsRes,
-          detailsRes
-        ] = await Promise.all([
-          fetch("/api/restaurant-deals", options),
-          fetch("/api/restaurant-hours", options),
-          fetch("/api/restaurant-rating", options),
-          fetch("/api/restaurant-info", options),
-        ]);
+      // Run all requests
+      const [dealsRes, hoursRes, ratingsRes, detailsRes] = await Promise.all([
+        fetch("/api/restaurant-deals", options),
+        fetch("/api/restaurant-hours", options),
+        fetch("/api/restaurant-rating", options),
+        fetch("/api/restaurant-info", options),
+      ]);
 
-        // Check all responses
-        if (
-          !dealsRes.ok ||
-          !hoursRes.ok ||
-          !ratingsRes.ok ||
-          !detailsRes.ok
-        ) {
-          throw new Error("One or more requests failed");
-        }
-
-        // Parse JSON
-        const [deals, hours, ratings, details] = await Promise.all([
-          dealsRes.json(),
-          hoursRes.json(),
-          ratingsRes.json(),
-          detailsRes.json(),
-        ]);
-
-        // Debugging
-        console.log("Deals:", deals);
-        console.log("Hours:", hours);
-        console.log("Ratings:", ratings);
-        console.log("Details:", details);
-
-        // Set states
-        setDeals(deals || []);
-        setRestaurantHours(hours || []);
-        setRatings(ratings || {});
-        setRestaurant(details || {});
-      } catch (error) {
-        console.error("Failed to load restaurant data:", error);
-        setError(true);
-      } finally {
-        setLoading(false);
+      // Check all responses
+      if (!dealsRes.ok || !hoursRes.ok || !ratingsRes.ok || !detailsRes.ok) {
+        throw new Error("One or more requests failed");
       }
+
+      // Parse JSON
+      const [deals, hours, ratings, details] = await Promise.all([
+        dealsRes.json(),
+        hoursRes.json(),
+        ratingsRes.json(),
+        detailsRes.json(),
+      ]);
+
+      // Debugging
+      console.log("Deals:", deals);
+      console.log("Hours:", hours);
+      console.log("Ratings:", ratings);
+      console.log("Details:", details);
+
+      // Set states
+      setDeals(deals || []);
+      setRestaurantHours(hours || []);
+      setRatings(ratings || {});
+      setRestaurant(details || {});
+    } catch (error) {
+      console.error("Failed to load restaurant data:", error);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -298,23 +286,21 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
                         View Details
                       </Typography>
 
-                      <ExpandedDeal 
-                            open={openDeal}
-                            handleClose={() => setOpenDeal(false)}
-                            uuid={uuid}
-                            deal={deal}
+                      <ExpandedDeal
+                        open={openDeal}
+                        handleClose={() => setOpenDeal(false)}
+                        uuid={uuid}
+                        deal={deal}
                       />
-
                     </Box>
                   </Box>
                 ))
               )}
             </Box>
 
-        <RestaurantReview restaurantID={restaurant.restaurant_id} />
-      
-      </DialogContent>
-      </>
+            <RestaurantReview restaurantID={restaurant.restaurant_id} />
+          </DialogContent>
+        </>
       )}
 
       {/* Footer */}
@@ -328,20 +314,20 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
           </Typography>
         </Box>
 
-        <Button 
+        <Button
           onClick={handleClose}
           sx={{
-            bgcolor: 'primary.dark',
-            color: 'secondary.dark',
+            bgcolor: "primary.dark",
+            color: "secondary.dark",
             px: 3,
-            '&:hover': {
-              bgcolor: 'primary.main',
+            "&:hover": {
+              bgcolor: "primary.main",
             },
-          }}>
+          }}
+        >
           Close
-          </Button>
+        </Button>
       </DialogActions>
-
     </Dialog>
   );
 };

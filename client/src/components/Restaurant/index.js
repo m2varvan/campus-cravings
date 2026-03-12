@@ -87,12 +87,40 @@ const RestaurantList = ({ uuid }) => {
   // Sorting Logic
   displayedRestaurants.sort((a, b) => {
     if (ratingSort) {
-      const key = `avg_${ratingSort}_rating`;
-      const scoreA = parseFloat(a[key]) || 0;
-      const scoreB = parseFloat(b[key]) || 0;
+      const ratingA = restaurantRatings.find(
+        (r) => r.restaurant_id === a.restaurant_id,
+      );
+      const ratingB = restaurantRatings.find(
+        (r) => r.restaurant_id === b.restaurant_id,
+      );
 
+      let scoreA = 0;
+      let scoreB = 0;
+
+      if (ratingSort === "overall") {
+        scoreA = ratingA
+          ? (ratingA.avg_value_rating +
+              ratingA.avg_taste_rating +
+              ratingA.avg_portion_rating) /
+            3
+          : 0;
+        scoreB = ratingB
+          ? (ratingB.avg_value_rating +
+              ratingB.avg_taste_rating +
+              ratingB.avg_portion_rating) /
+            3
+          : 0;
+      } else {
+        const key = `avg_${ratingSort}_rating`;
+        scoreA = ratingA ? ratingA[key] : 0;
+        scoreB = ratingB ? ratingB[key] : 0;
+      }
+
+      // Sort by the scores
       if (scoreB !== scoreA) return scoreB - scoreA;
     }
+
+    // If more than 1 restaurants has the same score, order alphabetically
     return a.restaurant_name.localeCompare(b.restaurant_name);
   });
 
@@ -103,7 +131,6 @@ const RestaurantList = ({ uuid }) => {
   return (
     <Grid container p={4} display={"flex"}>
       <Grid item xs={12} mb={2}>
-
         {/* Page Title */}
         <Typography variant="h4">University Shops Plaza Restaurants</Typography>
 
@@ -117,7 +144,6 @@ const RestaurantList = ({ uuid }) => {
       </Grid>
 
       <Grid item xs={12}>
-        
         {/* Show loadingRestaurants message when restaurants are loading */}
         {loadingRestaurants && (
           <Box
