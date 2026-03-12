@@ -11,21 +11,25 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import { FirebaseContext } from '../Firebase';
+
 
 const pages = [
   { label: 'Deals', path: '/', id: 'nav-promotions' },
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 
-const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
+  const firebase = React.useContext(FirebaseContext);
+
   let settings;
 
-  const handleSignOut = () => {
-    setUuid(null);
+  const handleSignOut = async () => {
+    await firebase.doSignOut();
     setProfilePhoto('U');
   };
 
-  if (uuid == null) {
+  if (authUser == null) {
     settings = [
       { label: 'Login', path: '/Login', id: 'nav-login' },
       { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
