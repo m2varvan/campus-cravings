@@ -13,6 +13,7 @@ const RestaurantList = ({ uuid }) => {
   const [restaurantFilter, setRestaurantFilter] = useState([]);
   const [ratingSort, setRatingSort] = useState("");
   const [restaurantRatings, setRestaurantRatings] = useState([]);
+  const [cuisineFilter, setCuisineFilter] = useState([]);
 
   // Variables and functions to show only 24 by default
   const defaultVisible = 24;
@@ -83,6 +84,11 @@ const RestaurantList = ({ uuid }) => {
       restaurantFilter.includes(r.restaurant_name),
     );
   }
+  if (cuisineFilter.length > 0) {
+    displayedRestaurants = displayedRestaurants.filter((r) =>
+      cuisineFilter.includes(r.cuisine),
+    );
+  }
 
   // Sorting Logic
   displayedRestaurants.sort((a, b) => {
@@ -120,14 +126,24 @@ const RestaurantList = ({ uuid }) => {
       if (scoreB !== scoreA) return scoreB - scoreA;
     }
 
+    // If no data for cuisne for particular restaurant, website doesn't crash
+    if ((a.cuisine || "") !== (b.cuisine || "")) {
+      return (a.cuisine || "").localeCompare(b.cuisine || "");
+    }
+
+    if (a.cuisine !== b.cuisine) {
+      return a.cuisine.localeCompare(b.cuisine);
+    }
+
     // If more than 1 restaurants has the same score, order alphabetically
     return a.restaurant_name.localeCompare(b.restaurant_name);
   });
 
   const restaurantOptions = [
     ...new Set(restaurants.map((r) => r.restaurant_name)),
-  ].sort();
+  ];
 
+  const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
   return (
     <Grid container p={4} display={"flex"}>
       <Grid item xs={12} mb={2}>
@@ -140,6 +156,9 @@ const RestaurantList = ({ uuid }) => {
           ratingSort={ratingSort}
           setRatingSort={setRatingSort}
           restaurantOptions={restaurantOptions}
+          cuisineOptions={cuisineOptions}
+          cuisineFilter={cuisineFilter}
+          setCuisineFilter={setCuisineFilter}
         />
       </Grid>
 

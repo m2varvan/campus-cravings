@@ -13,12 +13,16 @@ import {
 const FilterSortRestaurants = ({
   restaurantFilter,
   setRestaurantFilter,
+  cuisineFilter,
+  setCuisineFilter,
   ratingSort,
   setRatingSort,
   restaurantOptions = [],
+  cuisineOptions = [],
 }) => {
   const handleClearFilters = () => {
     setRestaurantFilter([]);
+    setCuisineFilter([]);
     setRatingSort("");
   };
 
@@ -33,6 +37,10 @@ const FilterSortRestaurants = ({
 
   const handleDeleteRestaurant = (restaurant) => {
     setRestaurantFilter(restaurantFilter.filter((r) => r !== restaurant));
+  };
+
+  const handleDeleteCuisine = (cuisine) => {
+    setCuisineFilter(cuisineFilter.filter((c) => c !== cuisine));
   };
 
   return (
@@ -78,6 +86,38 @@ const FilterSortRestaurants = ({
         </Select>
       </FormControl>
 
+      {/*Cuisine Filtering*/}
+      <FormControl size="small" sx={{ minWidth: 250 }}>
+        <InputLabel id="cuisine-filter-label">Filter by Cuisine</InputLabel>
+        <Select
+          labelId="cuisine-filter-label"
+          multiple
+          value={cuisineFilter}
+          onChange={(e) => setCuisineFilter(e.target.value)}
+          input={<OutlinedInput label="Filter by Cuisine" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip
+                  key={value}
+                  label={value}
+                  size="small"
+                  onDelete={() => handleDeleteCuisine(value)}
+                  onMouseDown={(event) => event.stopPropagation()}
+                />
+              ))}
+            </Box>
+          )}
+          MenuProps={menuProps}
+        >
+          {cuisineOptions.map((name) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       {/* Rating Sort */}
       <FormControl size="small" sx={{ minWidth: 220 }}>
         <InputLabel id="rating-sort-label">Sort by Category</InputLabel>
@@ -114,5 +154,4 @@ const FilterSortRestaurants = ({
     </Box>
   );
 };
-
 export default FilterSortRestaurants;
