@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -776,9 +777,10 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { id, email, username, firstName, lastName, profilePhoto } = req.body;
+  const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
 
-  const checkQuery = "SELECT email_address, username  FROM users WHERE email_address = ? OR username = ?";
+  // 1️⃣ Check if email or username already exists
+  const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
@@ -804,45 +806,41 @@ app.post("/api/signup", (req, res) => {
       });
     }
 
+    // 2️⃣ Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
-      "INSERT INTO users (id, email_address, first_name, last_name, profile_photo, username) VALUES (?, ?, ?, ?, ?, ?)";
-    const values = [id, email, firstName, lastName, profilePhoto, username];
+      `INSERT INTO users 
+      (id, email_address, first_name, last_name, profile_photo, username, user_type) 
+      VALUES (?, ?, ?, ?, ?, ?, 'Regular')`;
+    const values = [uid, email, firstName, lastName, profilePhoto, username];
+
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
       if (err) {
-        console.error("Select Error:", err);
-        connection.end()
+        console.error("Insert Error:", err);
         return res.status(500).json("User entry failed");
       }
-      return res.status(200).json("User has been created.");
+      return res.status(200).json({ message: "User has been created." });
     });
   });
 });
 
-app.post('/api/login', (req, res) =>{
+app.get('/api/user/:uid', (req, res) => {
     const connection = mysql.createConnection(config);
+    const { uid } = req.params;
 
-    const{ email, password} = req.body
-
-    const checkQuery = "SELECT * FROM users WHERE email_address = ? AND id = ?";
-    const values = [email, password]
-    connection.query(checkQuery, values, (err, data) => {
+    const query = "SELECT profile_photo FROM users WHERE id = ?";
+    connection.query(query, [uid], (err, data) => {
         connection.end();
         if (err) {
-            console.error("Select Error:", err)
-            return res.status(500).json("User search failed");
+            console.error("Select Error:", err);
+            return res.status(500).json({ message: "Failed to fetch user" });
         }
-
-        if (data.length > 0) {
-            return res.status(200).json({
-              message: "Log In successfull.", 
-              profilePhoto: data[0].profile_photo
-            });
-        } else {
-          return res.status(409).json("Log In credentials given do not exists")
+        if (data.length === 0) {
+            return res.status(404).json({ message: "User not found" });
         }
-    })
-});
+        return res.status(200).json({ profilePhoto: data[0].profile_photo });
+    });
+})
 
 app.post("/api/restaurant-info", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -944,6 +942,70 @@ app.post("/api/vote", (req, res) => {
 
 });
 
+
+app.post("/api/review/helpful", async (req, res) => {
+  const { reviewID } = req.body;
+  const userID = req.user?.id; // assuming auth middleware
+
+  if (!userID) {
+    return res.status(401).json({ error: "Must be logged in to vote helpful" });
+  }
+
+  try {
+    // check if already voted
+    const checkQuery = `
+      SELECT * FROM review_helpful_votes
+      WHERE review_id = ? AND user_id = ?
+    `;
+
+    const [existing] = await db.query(checkQuery, [reviewID, userID]);
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "You already voted helpful for this review." });
+    }
+
+    // insert vote
+    const insertVote = `
+      INSERT INTO review_helpful_votes (review_id, user_id)
+      VALUES (?, ?)
+    `;
+
+    await db.query(insertVote, [reviewID, userID]);
+
+    // increment counter
+    const updateReview = `
+      UPDATE reviews
+      SET helpful_votes = helpful_votes + 1
+      WHERE review_id = ?
+    `;
+
+    await db.query(updateReview, [reviewID]);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/review/:reviewID/helpful", async (req, res) => {
+  const { reviewID } = req.params;
+
+  try {
+    const query = `
+      SELECT helpful_votes
+      FROM reviews
+      WHERE review_id = ?
+    `;
+
+    const [result] = await db.query(query, [reviewID]);
+
+    res.json(result[0]);
+
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
 app.post("/api/save/fave/deal", (req, res) => {
     const { uuid, dealID } = req.body;
     const connection = mysql.createConnection(config);

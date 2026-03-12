@@ -12,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { FirebaseContext } from '../Firebase';
 
 
 const pages = [
@@ -24,11 +25,12 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const firebase = React.useContext(FirebaseContext);
 
   let settings;
 
-  const handleSignOut = () => {
-    setUuid(null);
+  const handleSignOut = async () => {
+    await firebase.doSignOut();
     setProfilePhoto('U');
 
     if (location.pathname === '/User') {
@@ -38,7 +40,7 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
     window.location.reload();
   };
 
-  if (uuid == null) {
+  if (authUser == null) {
     settings = [
       { label: 'Login', path: '/Login', id: 'nav-login' },
       { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
