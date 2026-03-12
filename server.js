@@ -1169,66 +1169,51 @@ app.post("/api/remove/fave/restaurant", (req, res) => {
 });
 
 app.get("/api/search", (req, res) => {
+  const search = req.query.q;
 
-  const { q } = req.query;
-
-  if (!q || !q.trim()) {
+  if (!search) {
     return res.json({ restaurants: [], deals: [] });
   }
 
-  const searchTerm = `%${q}%`;
-
-  const connection = mysql.createConnection(config);
-
   const restaurantQuery = `
-    SELECT 
-      restaurant_id,
-      restaurant_name,
-      city,
-      cuisine
+    SELECT restaurant_id, restaurant_name
     FROM restaurants
     WHERE restaurant_name LIKE ?
   `;
 
+  // Only return IDs (and restaurant name if needed). Full deal data is fetched individually later.
   const dealQuery = `
-    SELECT 
-      d.deal_id,
-      d.deal_name,
-      d.description,
-      d.deal_price,
-      d.restaurant_id,
-      r.restaurant_name
+    SELECT d.deal_id, d.restaurant_id
     FROM deals d
-    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
     WHERE d.deal_name LIKE ?
   `;
 
-  connection.query(restaurantQuery, [searchTerm], (err, restaurantResults) => {
+  const db = mysql.createConnection(config);
 
+  db.connect((err) => {
     if (err) {
-      console.error(err);
-      connection.end();
-      return res.status(500).json({ error: "Restaurant search failed" });
+      console.error("DB connection failed:", err);
+      return res.status(500).send("Search failed");
     }
 
-    connection.query(dealQuery, [searchTerm], (err2, dealResults) => {
-
-      connection.end();
-
-      if (err2) {
-        console.error(err2);
-        return res.status(500).json({ error: "Deal search failed" });
+    db.query(restaurantQuery, [`%${search}%`], (err1, restaurants) => {
+      if (err1) {
+        console.error("Restaurant query error:", err1);
+        db.end();
+        return res.status(500).send("Search failed");
       }
 
-      res.json({
-        restaurants: restaurantResults,
-        deals: dealResults
+      db.query(dealQuery, [`%${search}%`], (err2, deals) => {
+        db.end();
+        if (err2) {
+          console.error("Deal query error:", err2);
+          return res.status(500).send("Search failed");
+        }
+
+        res.json({ restaurants, deals });
       });
-
     });
-
   });
-
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
