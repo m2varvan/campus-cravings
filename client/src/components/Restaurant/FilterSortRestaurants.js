@@ -58,9 +58,7 @@ const FilterSortRestaurants = ({
         gap: 2,
         mt: 2,
         p: 2,
-        backgroundColor: "#f9f9f9", 
         borderRadius: 2,
-        boxShadow: "0px 2px 4px rgba(0,0,0,0.05)"
       }}
     >
       {/* Multi-select Restaurant Filter */}
@@ -146,9 +144,7 @@ const FilterSortRestaurants = ({
         alignItems: "center", 
         height: 40, 
         px: 1,
-        border: "1px solid rgba(0, 0, 0, 0.23)",
         borderRadius: 1,
-        backgroundColor: "#fff" 
       }}>
         <FormControlLabel
           control={
@@ -161,7 +157,6 @@ const FilterSortRestaurants = ({
           label="Open Now"
           sx={{ 
             m: 0, 
-            "& .MuiFormControlLabel-label": { fontSize: "0.9rem", color: "text.secondary" } 
           }}
         />
       </Box>
@@ -170,18 +165,6 @@ const FilterSortRestaurants = ({
       <Button
         variant="contained"
         onClick={handleClearFilters}
-        sx={{
-          height: 40,
-          px: 3,
-          ml: "auto", 
-          textTransform: "none",
-          fontWeight: "bold",
-          backgroundColor: "#c5a000", 
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "#a38400", 
-          },
-        }}
       >
         Reset All
       </Button>
