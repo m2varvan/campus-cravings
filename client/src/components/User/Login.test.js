@@ -4,24 +4,24 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import Login from './Login';
 import { MemoryRouter } from 'react-router-dom';
 
-global.fetch = jest.fn(() => 
-        Promise.resolve({
-            ok: true, 
-            json: () => Promise.resolve({ message: "Log In successfull."})
-        })
-    );
-
-
 const mockedUsedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
    ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockedUsedNavigate,
 }));
 
-describe('LogIn Componenet', () => {
+const mockFirebase = {
+    doSignInWithEmailAndPassword: jest.fn(() => Promise.resolve()),
+};
+
+jest.mock('../Firebase', () => ({
+    withFirebase: (Component) => (props) => <Component firebase={mockFirebase} {...props} />,
+}));
+
+describe('LogIn Component', () => {
 
     beforeEach(() => {
-        fetch.mockClear();
+        mockFirebase.doSignInWithEmailAndPassword.mockClear();
         mockedUsedNavigate.mockClear();
         jest.useFakeTimers();
         render(
@@ -29,14 +29,12 @@ describe('LogIn Componenet', () => {
                 <Login />
             </MemoryRouter>
         );
-    })
+    });
 
     afterEach(() => {
-        // Clean up timers after each test
         jest.runOnlyPendingTimers();
         jest.useRealTimers();
     });
-
 
     test('renders the Log in form', () => {
         expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
@@ -51,71 +49,59 @@ describe('LogIn Componenet', () => {
         expect(screen.getByText(/Enter your password/i)).toBeInTheDocument();
     });
 
-    test('form submits successfully with correct ID and initials', async () => {
+    test('form submits successfully', async () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
 
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /Login/i }));
         });
-        
+
         const successMsg = await screen.findByTestId('login-success');
         expect(successMsg).toHaveTextContent('Login successful! Redirecting...');
-
-        const expectedBody = JSON.stringify({
-            email: 'test@gmail.com',
-            password: 'Mperson123'
-        });
-
-        expect(global.fetch).toHaveBeenCalledWith('/api/login', expect.objectContaining({
-            body: expectedBody
-        }));
     });
-    
+
     test('shows an error message when an invalid email is entered', () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvanigmail.' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: {value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
 
-        const signUpButton = screen.getByRole('button', { name: /Login/i });
-        fireEvent.click(signUpButton);
+        const loginButton = screen.getByRole('button', { name: /Login/i });
+        fireEvent.click(loginButton);
 
         expect(screen.getByText(/Enter a valid email address/i)).toBeInTheDocument();
     });
 
-    test('shows error when credentials entered were invalid', async () => {
-        global.fetch.mockImplementationOnce(() =>
-            Promise.resolve({
-                ok: false, 
-                status: 409, 
-                json: () => Promise.resolve("Log In credentials given do not exists")
-            })
-        )
+    test('shows error when credentials are invalid', async () => {
+        mockFirebase.doSignInWithEmailAndPassword.mockRejectedValueOnce(
+            new Error('auth/wrong-password')
+        );
 
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'existing@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: {value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mypassword123' } });
 
-        fireEvent.click(screen.getByRole('button', { name: /Login/i }));    
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+        });
 
-        const errorMsg = await screen.findByText(/Invalid credentials/i);
+        const errorMsg = await screen.findByText(/Invalid email or password/i);
         expect(errorMsg).toBeInTheDocument();
     });
 
-    test('redirects to /Deals after 3 seconds on successful login', async () => {
+    test('redirects to / after 2 seconds on successful login', async () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
 
-        fireEvent.click(screen.getByRole('button', { name: /Login/i }));
-
-        // Wait for the success message to appear
-        await screen.findByText(/Login successful! Redirecting../i);
-
-        act(() => {
-            jest.advanceTimersByTime(3000);
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /Login/i }));
         });
 
-        // Verify the mock navigator was called with the correct path
+        await screen.findByText(/Login successful! Redirecting/i);
+
+        act(() => {
+            jest.advanceTimersByTime(2000);
+        });
+
         expect(mockedUsedNavigate).toHaveBeenCalledWith('/');
     });
 
-
-})
+});

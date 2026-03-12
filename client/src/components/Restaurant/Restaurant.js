@@ -1,6 +1,9 @@
 import { Typography, Box, Grid } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
+import Favourite from "../Deals/Favourite";
+import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
+import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
 const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
@@ -17,8 +20,6 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
     <>
       <Grid item xs={12} sm={6} lg={4}>
         <Box
-          onClick={() => setOpenDetails(true)}
-          data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
           sx={{
             bgcolor: "secondary.light",
             p: 2,
@@ -31,35 +32,70 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
             },
           }}
         >
-          {/* Restaurant name */}
-          <Typography
-            variant="h6"
+          {/* Restaurant name and favourite button */}
+          <Box
             sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontWeight: 600,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
-            {restaurant.restaurant_name}
-          </Typography>
+            {/* Name in box - make clickable*/}
+            <Box
+              onClick={() => setOpenDetails(true)}
+              sx={{ width: "90%" }}
+              data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  fontWeight: 600,
+                }}
+              >
+                {restaurant.restaurant_name}
+              </Typography>
+            </Box>
 
-          {/* Average Rating */}
-          <Box sx={{ mt: 0.5 }}>
-            <Typography variant="body2" color="text.secondary">
-              {restaurantRating && restaurantRating.total_ratings > 0
-                ? "⭐ " +
-                  (
-                    (restaurantRating.avg_value_rating +
-                      restaurantRating.avg_taste_rating +
-                      restaurantRating.avg_portion_rating) /
-                    3
-                  ).toFixed(2) +
-                  "/5 (" +
-                  restaurantRating.total_ratings +
-                  ")"
-                : "No ratings yet"}
+            <Favourite
+              uuid={uuid}
+              itemID={restaurant.restaurant_id}
+              fave={restaurant.is_favourited}
+              saveFave={saveFaveRestaurant}
+              removeFave={removeFaveRestaurant}
+            />
+            {/* Restaurant name */}
+            <Typography
+              variant="h6"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                fontWeight: 600,
+              }}
+            >
+              {restaurant.restaurant_name}
             </Typography>
+
+            {/* Average Rating */}
+            <Box sx={{ mt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {restaurantRating && restaurantRating.total_ratings > 0
+                  ? "⭐ " +
+                    (
+                      (restaurantRating.avg_value_rating +
+                        restaurantRating.avg_taste_rating +
+                        restaurantRating.avg_portion_rating) /
+                      3
+                    ).toFixed(2) +
+                    "/5 (" +
+                    restaurantRating.total_ratings +
+                    ")"
+                  : "No ratings yet"}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </Grid>

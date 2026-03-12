@@ -194,7 +194,7 @@ describe('WeekDeal', () => {
                         loading={false}
                         error={false}
                         uuid={null} />);
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 4; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }
         expect(screen.getByText(/show more/i)).toBeInTheDocument();

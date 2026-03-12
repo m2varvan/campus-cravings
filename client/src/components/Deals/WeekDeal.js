@@ -9,8 +9,8 @@ const WeekDeal = ({
   loading,
   error,
   reloadDeals,
-  id,
 }) => {
+
   // Load all deals for week view
   React.useEffect(() => {
     loadWeekDeals();
@@ -70,7 +70,6 @@ const WeekDeal = ({
                 day={dayOfWeek}
                 dealList={weekDeals[dayOfWeek]}
                 reloadDeals={reloadDeals}
-                id={id}
               />
             </Grid>
           ))}

@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { Typography, Box, Button } from "@mui/material";
 import { useEffect } from "react";
 
-const WeekDayDeal = ({ uuid, day, dealList, reloadDeals, id }) => {
+const WeekDayDeal = ({ uuid, day, dealList, reloadDeals}) => {
   // Variables and functions to show only deals 6 by default
-  const defaultVisible = 6;
+  const defaultVisible = 4;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
   const handleShowMore = () => {
     setVisibleCount(dealList.length);
@@ -13,12 +13,7 @@ const WeekDayDeal = ({ uuid, day, dealList, reloadDeals, id }) => {
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
   };
-  useEffect(() => {
-    if (id) {
-      setVisibleCount(dealList.length);
-    }
-  }, [id, dealList]);
-  console.log("idih: ", id);
+  
 
   return (
     <>

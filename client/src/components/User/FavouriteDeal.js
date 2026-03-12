@@ -1,12 +1,11 @@
 import { Typography, Box, } from "@mui/material";
 import React from 'react';
-import ExpandedDeal from "./ExpandedDeal";
-import DealVote from "./DealVote";
-import Favourite from "./Favourite";
+import ExpandedDeal from "../Deals/ExpandedDeal";
+import Favourite from "../Deals/Favourite";
 import saveFaveDeal from "../../APIs/saveFaveDeal";
 import removeFaveDeal from "../../APIs/removeFaveDeal";
 
-const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
+const FavouriteDeal = ({uuid, deal, reloadDeals, handleRemoveDeal}) => {
 
     // State to open dialog box with deal details
     const [openDetails, setOpenDetails] = React.useState(false);
@@ -14,15 +13,21 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     // Calculate average rating
     const avgRating = ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1);
 
+    const removeDeal = () => {
+        if (handleRemoveDeal(deal.dealID)) {
+            removeFaveDeal(uuid, deal.dealID)
+        } else {
+            return
+        }
+    }
+
     return(
         <>
             <Box
-                data-cy="deal-card"
-                data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
-                    bgcolor: 'secondary.light',
-                    p: size==='lg' ? 2 : 1, // If large size, more padding
-                    pb: size==='lg' ? 1 : 0.5, // If large size, more padding
+                    bgcolor: 'primary.light',
+                    p:  1, 
+                    pb: 0.5, 
                     m: 1,
                     borderRadius: 1,
                     "&:hover": {
@@ -40,7 +45,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     <Box sx={{width: '70%'}}>
                     <Typography
                             data-testid="deal-name"
-                            variant= {size === 'lg' ? "h6": 'subtitle1'}
+                            variant= {'subtitle1'}
                             sx={{
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -51,9 +56,9 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                         </Typography>
                     </Box>
                     
-                    {/* Price and Average Rating */}
+                    {/* Price */}
                     <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant={size === 'lg' ? "h6": 'subtitle1'}>
+                        <Typography variant={'subtitle1'}>
                             ${deal.dealPrice}
                         </Typography>
                     </Box>
@@ -88,20 +93,16 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                 </Box>
                 </Box>
 
-                {/* Deal Votes */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
-                    <DealVote 
-                        uuid={uuid} 
-                        totalVote={deal.totalVote} 
-                        userVote={deal.userVote} 
-                        dealID={deal.dealID} />
+                {/* Favourite Deal */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-betwen', alignItems: 'flex-start', }}>
+                    <Box onClick={() => setOpenDetails(true)} sx={{width: '90%'}} />
                         
                     <Favourite 
                         uuid={uuid} 
                         itemID={deal.dealID} 
                         fave={deal.fave} 
                         saveFave={saveFaveDeal} 
-                        removeFave={removeFaveDeal} />
+                        removeFave={removeDeal} />
                 </Box>
 
 
@@ -118,4 +119,4 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     )
 };
 
-export default Deal
+export default FavouriteDeal
