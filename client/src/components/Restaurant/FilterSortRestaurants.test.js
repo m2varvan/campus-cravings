@@ -2,6 +2,7 @@ const { render, screen, fireEvent, within, waitFor } = require("@testing-library
 require("@testing-library/jest-dom");
 const React = require("react");
 
+
 const FilterSortRestaurants = ({
   restaurantFilter,
   setRestaurantFilter,
