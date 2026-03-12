@@ -4,6 +4,11 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress, Alert } from '@mui/material';
 import { withFirebase } from '../Firebase';
@@ -16,6 +21,9 @@ const SignUp = ({ firebase }) => {
     const [confirmPassword, setConfirmPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
+    const [userType, setUserType] = React.useState('Regular');
+    const [restaurantName, setRestaurantName] = React.useState('');
+    const [restaurantOptions, setRestaurantOptions] = React.useState([]);
 
     const [error, setError] = React.useState({});
     const [confirmationMessage, setConfirmationMessage] = React.useState(null);
@@ -34,6 +42,16 @@ const SignUp = ({ firebase }) => {
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isValidUsername = (username) => /^[a-zA-Z0-9_]{8,}$/.test(username);
     const isValidPassword = (password) => /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+
+    // Fetch restaurants when Owner type is selected
+    React.useEffect(() => {
+        if (userType === 'Owner') {
+            fetch('/api/signup/restaurants')
+                .then(res => res.json())
+                .then(data => setRestaurantOptions(data.map(r => r.restaurant_name)))
+                .catch(err => console.error("Failed to fetch restaurants:", err));
+        }
+    }, [userType]);
 
     const handleSubmit = async () => {
         if (loading) return;
@@ -59,6 +77,9 @@ const SignUp = ({ firebase }) => {
         if (firstName.trim() === '') newErrors.firstname = "Enter a first name";
         if (lastName.trim() === '') newErrors.lastname = "Enter a last name";
 
+        if (userType === 'Owner' && restaurantName.trim() === '')
+            newErrors.restaurantName = "Please select your restaurant";
+
         if (Object.keys(newErrors).length > 0) {
             setError(newErrors);
             return;
@@ -72,7 +93,7 @@ const SignUp = ({ firebase }) => {
             // Create Firebase user
             authUser = await firebase.doCreateUserWithEmailAndPassword(email, password);
 
-            await firebase.doSignOut()
+            await firebase.doSignOut();
 
             // Save user to your own database
             const response = await fetch('/api/signup', {
@@ -85,6 +106,8 @@ const SignUp = ({ firebase }) => {
                     firstName,
                     lastName,
                     profilePhoto: initials,
+                    userType,
+                    restaurantName: userType === 'Owner' ? restaurantName : null,
                 }),
             });
 
@@ -228,6 +251,43 @@ const SignUp = ({ firebase }) => {
                             />
                             {error.confirmPassword && <Alert severity="error">{error.confirmPassword}</Alert>}
                         </Grid>
+
+                        {/* User Type Toggle */}
+                        <Grid item sx={{ width: '80%' }}>
+                            <Button
+                                variant={userType === 'Regular' ? 'contained' : 'outlined'}
+                                onClick={() => setUserType('Regular')}
+                                sx={{ mr: 2 }}
+                            >
+                                Regular User
+                            </Button>
+                            <Button
+                                variant={userType === 'Owner' ? 'contained' : 'outlined'}
+                                onClick={() => setUserType('Owner')}
+                            >
+                                Restaurant Owner
+                            </Button>
+                        </Grid>
+
+                        {/* Restaurant Dropdown - only for Owners */}
+                        {userType === 'Owner' && (
+                            <Grid item sx={{ width: '80%' }}>
+                                <FormControl fullWidth margin="normal">
+                                    <InputLabel id="restaurant-select-label">Select Your Restaurant</InputLabel>
+                                    <Select
+                                        labelId="restaurant-select-label"
+                                        value={restaurantName}
+                                        onChange={(e) => setRestaurantName(e.target.value)}
+                                        input={<OutlinedInput label="Select Your Restaurant" />}
+                                    >
+                                        {restaurantOptions.map((name) => (
+                                            <MenuItem key={name} value={name}>{name}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                {error.restaurantName && <Alert severity="error">{error.restaurantName}</Alert>}
+                            </Grid>
+                        )}
 
                         {/* Submit */}
                         <Grid item sx={{ width: '80%' }}>

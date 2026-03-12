@@ -1086,4 +1086,17 @@ app.post("/api/remove/fave/restaurant", (req, res) => {
     });
 });
 
+app.get('/api/signup/restaurants', (req, res) => {
+    const connection = mysql.createConnection(config);
+
+    connection.query("SELECT DISTINCT restaurant_name FROM restaurants", (err, data) => {
+        connection.end();
+        if (err) {
+            console.error("Select Error:", err);
+            return res.status(500).json({ message: "Failed to fetch restaurants" });
+        }
+        return res.status(200).json(data);
+    });
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
