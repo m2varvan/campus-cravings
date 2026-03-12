@@ -13,10 +13,10 @@ const sortReviews = (reviews, sortType) => {
       sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       break;
     case "mostHelpful":
-      sorted.sort((a, b) => b.helpful_votes - a.helpful_votes);
+      sorted.sort((a, b) => Number(b.helpful_votes) - Number(a.helpful_votes));
       break;
     case "leastHelpful":
-      sorted.sort((a, b) => a.helpful_votes - b.helpful_votes);
+      sorted.sort((a, b) => Number(a.helpful_votes) - Number(b.helpful_votes));
       break;
     default:
       break;
@@ -34,7 +34,7 @@ function RestaurantReview({ restaurantID, uuid }) { // uuid added for HelpfulRev
   useEffect(() => {
     setError('');
 
-    fetch(`/api/restaurant/${restaurantID}/reviews`)
+    fetch(`/api/restaurant/${restaurantID}/reviews?userID=${uuid}`)
       .then(res => {
         if (!res.ok) throw new Error();
         return res.json();
@@ -107,11 +107,12 @@ function RestaurantReview({ restaurantID, uuid }) { // uuid added for HelpfulRev
               {review.body}
             </Typography>
 
-            {/* Helpful review now accepts uuid so users can upvote */}
+            
             <HelpfulReview
               reviewID={review.review_id}
               helpfulVotes={review.helpful_votes}
               user={uuid}
+              userVoted={review.user_voted}
             />
 
             <Typography variant="caption" display="block">

@@ -3,15 +3,22 @@ import { Stack, IconButton, Typography, Alert } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 
-const HelpfulReview = ({ reviewID, helpfulVotes = 0, user }) => {
+const HelpfulReview = ({ reviewID, helpfulVotes = 0, user, userVoted }) => {
 
-  const [liked, setLiked] = React.useState(false);
+  const [liked, setLiked] = React.useState(userVoted);
   const [count, setCount] = React.useState(helpfulVotes);
   const [error, setError] = React.useState("");
 
+  React.useEffect(() => {
+    setLiked(userVoted);
+  }, [userVoted]);
+
+  React.useEffect(() => {
+    setCount(helpfulVotes);
+  }, [helpfulVotes]);
+
   const onHelpful = async () => {
 
-    // User not logged in
     if (!user) {
       setError("You must be logged in to mark reviews as helpful.");
       return;
@@ -32,27 +39,29 @@ const HelpfulReview = ({ reviewID, helpfulVotes = 0, user }) => {
         })
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Vote failed");
+        setError(data.error || "Vote failed");
+        return;
       }
 
-      if (!liked) {
+      if (data.voted) {
+        setLiked(true);
         setCount(prev => prev + 1);
       } else {
+        setLiked(false);
         setCount(prev => prev - 1);
       }
 
-      setLiked(!liked);
-
     } catch (err) {
-      console.error("Helpful vote failed", err);
-      setError("Failed to record vote.");
+      console.error(err);
+      setError("Server error.");
     }
 
   };
 
   return (
-
     <>
       <Stack direction="row" alignItems="center" spacing={0}>
 
@@ -78,14 +87,10 @@ const HelpfulReview = ({ reviewID, helpfulVotes = 0, user }) => {
       </Stack>
 
       {error && (
-        <Alert
-          severity="error"
-          sx={{ mt: 1 }}
-        >
+        <Alert severity="error" sx={{ mt: 1 }}>
           {error}
         </Alert>
       )}
-
     </>
   );
 };
