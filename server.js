@@ -1168,4 +1168,67 @@ app.post("/api/remove/fave/restaurant", (req, res) => {
     });
 });
 
+app.get("/api/search", (req, res) => {
+
+  const { q } = req.query;
+
+  if (!q || !q.trim()) {
+    return res.json({ restaurants: [], deals: [] });
+  }
+
+  const searchTerm = `%${q}%`;
+
+  const connection = mysql.createConnection(config);
+
+  const restaurantQuery = `
+    SELECT 
+      restaurant_id,
+      restaurant_name,
+      city,
+      cuisine
+    FROM restaurants
+    WHERE restaurant_name LIKE ?
+  `;
+
+  const dealQuery = `
+    SELECT 
+      d.deal_id,
+      d.deal_name,
+      d.description,
+      d.deal_price,
+      d.restaurant_id,
+      r.restaurant_name
+    FROM deals d
+    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+    WHERE d.deal_name LIKE ?
+  `;
+
+  connection.query(restaurantQuery, [searchTerm], (err, restaurantResults) => {
+
+    if (err) {
+      console.error(err);
+      connection.end();
+      return res.status(500).json({ error: "Restaurant search failed" });
+    }
+
+    connection.query(dealQuery, [searchTerm], (err2, dealResults) => {
+
+      connection.end();
+
+      if (err2) {
+        console.error(err2);
+        return res.status(500).json({ error: "Deal search failed" });
+      }
+
+      res.json({
+        restaurants: restaurantResults,
+        deals: dealResults
+      });
+
+    });
+
+  });
+
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
