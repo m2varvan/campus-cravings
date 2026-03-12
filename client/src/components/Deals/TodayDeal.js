@@ -5,18 +5,18 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
 const TodayDeal = ({
-  uuid,
-  todayDeals,
-  loading,
-  error,
-  loadTodayDeals,
-  reloadDeals,
-  id,
-}) => {
+      uuid,
+      todayDeals,
+      loading,
+      error,
+      loadTodayDeals,
+      reloadDeals,
+    }) => {
+
   // Load today's deals on render
   React.useEffect(() => {
     loadTodayDeals();
-  }, []);
+  }, [uuid]);
 
   // Variables and functions to show only 12 by default
   const defaultVisible = 12;
@@ -27,12 +27,6 @@ const TodayDeal = ({
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
   };
-
-  useEffect(() => {
-    if (id) {
-      setVisibleCount(todayDeals.length);
-    }
-  }, [id, todayDeals]);
 
   // Function to get the current date and format it
   const getTodayDate = () => {

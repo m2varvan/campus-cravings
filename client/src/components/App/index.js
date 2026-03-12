@@ -7,6 +7,7 @@ import Deals from "../Deals/index";
 import RestaurantList from "../Restaurant/index";
 import Login from "../User/Login";
 import SignUp from "../User/SignUp";
+import User from "../User/User";
 import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
 
@@ -42,6 +43,7 @@ const theme = createTheme({
 const App = () => {
   const [authUser, setAuthUser] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState("U");
+  const [uuid, setUuid] = useState(null)
 
   const firebase = useContext(FirebaseContext);
 
@@ -51,14 +53,18 @@ useEffect(() => {
             setAuthUser(user || null);
 
             if (user) {
+              setUuid(user.uid)
               try {
                   const response = await fetch(`/api/user/${user.uid}`);
                   const data = await response.json();
                   console.log("Profile photo response:", data);
                   setProfilePhoto(data.profilePhoto);
+                  
               } catch (err) {
                   console.error("Failed to fetch profile photo:", err);
               }
+            } else {
+              setUuid(null)
             }
         });
 
@@ -77,9 +83,9 @@ useEffect(() => {
         />
 
         <Routes>
-          <Route path="/" element={<Deals uuid={authUser} />} />
-          <Route path="/Restaurant" element={<RestaurantList uuid={authUser} />} />
-          <Route path="/restaurant" element={<RestaurantList uuid={authUser} />} />
+          <Route path="/" element={<Deals uuid={uuid} />} />
+          <Route path="/Restaurant" element={<RestaurantList uuid={uuid} />} />
+          <Route path="/restaurant" element={<RestaurantList uuid={uuid} />} />
           <Route
             path="/Login"
             element={
@@ -90,6 +96,7 @@ useEffect(() => {
             }
           />
           <Route path="/Signup" element={<SignUp />} />
+          <Route path="/User" element={<User uuid={uuid} />} />
         </Routes>
       </Router>
     </ThemeProvider>

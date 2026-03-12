@@ -1,17 +1,21 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, Grid, Chip } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
 import Favourite from "../Deals/Favourite";
 import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
 import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
-const Restaurant = ({ uuid, restaurant }) => {
-  
+const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
   const [openDetails, setOpenDetails] = useState(false);
+  const { isOpen, isClosingSoon } = restaurant;
 
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;
+
+  const restaurantRating = ratings?.find(
+    (r) => r.restaurant_id === restaurant.restaurant_id,
+  );
 
   return (
     <>
@@ -30,13 +34,19 @@ const Restaurant = ({ uuid, restaurant }) => {
           }}
         >
           {/* Restaurant name and favourite button */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
-            
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             {/* Name in box - make clickable*/}
-            <Box  
-              onClick={() => setOpenDetails(true)} 
-              sx={{ width: "90%" }} 
-              data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}>
+            <Box
+              onClick={() => setOpenDetails(true)}
+              sx={{ width: "90%" }}
+              data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
+            >
               <Typography
                 variant="h6"
                 sx={{
@@ -46,17 +56,56 @@ const Restaurant = ({ uuid, restaurant }) => {
                   fontWeight: 600,
                 }}
               >
-                {restaurant.restaurant_name}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontWeight: 600,
+                  }}
+                >
+                  {restaurant.restaurant_name}
+                </Typography>
+              </Box>
+
+            <Favourite
+              uuid={uuid}
+              itemID={restaurant.restaurant_id}
+              fave={restaurant.is_favourited}
+              saveFave={saveFaveRestaurant}
+              removeFave={removeFaveRestaurant}
+            />
+            {/* Restaurant name */}
+            <Typography
+              variant="h6"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                fontWeight: 600,
+              }}
+            >
+              {restaurant.restaurant_name}
+            </Typography>
+
+            {/* Average Rating */}
+            <Box sx={{ mt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {restaurantRating && restaurantRating.total_ratings > 0
+                  ? "⭐ " +
+                    (
+                      (restaurantRating.avg_value_rating +
+                        restaurantRating.avg_taste_rating +
+                        restaurantRating.avg_portion_rating) /
+                      3
+                    ).toFixed(1) +
+                    "/5 (" +
+                    restaurantRating.total_ratings +
+                    ")"
+                  : "No ratings yet"}
               </Typography>
             </Box>
-
-            <Favourite 
-                uuid={uuid}
-                itemID={restaurant.restaurant_id}
-                fave={restaurant.is_favourited}
-                saveFave={saveFaveRestaurant}
-                removeFave={removeFaveRestaurant}
-                />
           </Box>
         </Box>
       </Grid>
@@ -71,5 +120,4 @@ const Restaurant = ({ uuid, restaurant }) => {
     </>
   );
 };
-
 export default Restaurant;
