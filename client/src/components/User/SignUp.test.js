@@ -89,7 +89,8 @@ describe('SignUp Componenet', () => {
             email: 'test@gmail.com',
             firstName: 'Muhammad',
             lastName: 'Varvani',
-            profilePhoto: 'MV'
+            profilePhoto: 'MV', 
+            userType: 'regular'
         });
 
         expect(global.fetch).toHaveBeenCalledWith('/api/signup', expect.objectContaining({
@@ -220,6 +221,48 @@ describe('SignUp Componenet', () => {
         });
 
         expect(mockedUsedNavigate).toHaveBeenCalledWith('/Login');
+    });
+
+    test('shows restaurant dropdown when Restaurant Owner is selected', () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+        expect(screen.getByLabelText(/Select Your Restaurant/i)).toBeInTheDocument();
+    });
+
+    test('hides restaurant dropdown when Regular User is selected', () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Regular User/i }));
+        expect(screen.queryByLabelText(/Select Your Restaurant/i)).not.toBeInTheDocument();
+    });
+
+    test('shows error when restaurant owner does not select a restaurant', async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+
+        fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
+        fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
+        fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mperson123' } });
+
+        fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
+
+        expect(screen.getByText(/Please select your restaurant/i)).toBeInTheDocument();
+    });
+
+    test('fetches restaurants when Restaurant Owner is selected', async () => {
+        global.fetch.mockImplementationOnce(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve([
+                    { restaurant_name: 'Pizza Palace' },
+                    { restaurant_name: 'Burger Barn' },
+                ])
+            })
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+
+        expect(global.fetch).toHaveBeenCalledWith('/api/signup/restaurants');
     });
 
 });

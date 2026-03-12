@@ -824,7 +824,7 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
+  const { uid, email, username, firstName, lastName, userType, profilePhoto } = req.body;
 
   // Check if email or username already exists
   const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
@@ -857,8 +857,8 @@ app.post("/api/signup", (req, res) => {
     const insertQuery =
       `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
-      VALUES (?, ?, ?, ?, ?, ?, 'Regular')`;
-    const values = [uid, email, firstName, lastName, profilePhoto, username];
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const values = [uid, email, firstName, lastName, profilePhoto, username, userType];
 
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
@@ -1282,6 +1282,19 @@ app.post("/api/load/fave/restaurants", (req, res) => {
       connection.end();
     });
   });
+});
+
+app.get('/api/signup/restaurants', (req, res) => {
+    const connection = mysql.createConnection(config);
+
+    connection.query("SELECT DISTINCT restaurant_name FROM restaurants", (err, data) => {
+        connection.end();
+        if (err) {
+            console.error("Select Error:", err);
+            return res.status(500).json({ message: "Failed to fetch restaurants" });
+        }
+        return res.status(200).json(data);
+    });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

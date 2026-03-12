@@ -16,6 +16,7 @@ const Login = ({ firebase }) => {
     const [error, setError] = React.useState({});
     const [submitStatus, setSubmitStatus] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
+    const [resetSent, setResetSent] = React.useState(false);
 
     const navigate = useNavigate();
 
@@ -67,6 +68,20 @@ const Login = ({ firebase }) => {
         }
     };
 
+    const handlePasswordReset = async () => {
+        if (!isValidEmail(email)) {
+            setError({ general: "Please enter your email address first." });
+            return;
+        }
+        try {
+            await firebase.doPasswordReset(email);
+            setResetSent(true);
+            setError({});
+        } catch (err) {
+            setError({ general: "Could not send reset email. Please check the email address." });
+        }
+    };
+
     React.useEffect(() => {
         if (submitStatus) {
             const timer = setTimeout(() => {
@@ -77,7 +92,7 @@ const Login = ({ firebase }) => {
     }, [submitStatus, navigate]);
 
     return (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', mt: 0 }}>
             <Grid container spacing={4} sx={{ maxWidth: 500, border: "1px solid #ccc", p: 3 }}>
 
                 <Grid item xs={12}>
@@ -111,7 +126,6 @@ const Login = ({ firebase }) => {
                         value={password}
                         onChange={handleChangePassword}
                         onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-
                     />
                     {error.password && (
                         <Alert severity="error" sx={{ mt: 2 }}>{error.password}</Alert>
@@ -132,6 +146,23 @@ const Login = ({ firebase }) => {
                             "Login"
                         )}
                     </Button>
+
+                    {/* Forgot Password */}
+                    <Button
+                        variant="text"
+                        fullWidth
+                        onClick={handlePasswordReset}
+                        sx={{ mt: 1 }}
+                    >
+                        Forgot Password?
+                    </Button>
+
+                    {/* Reset Sent Success */}
+                    {resetSent && (
+                        <Alert severity="success" sx={{ mt: 1 }}>
+                            Password reset email sent! Check your inbox.
+                        </Alert>
+                    )}
 
                     {/* General Error */}
                     {error.general && (
