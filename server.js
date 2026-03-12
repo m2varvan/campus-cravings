@@ -1021,10 +1021,6 @@ app.post("/api/review/helpful", (req, res) => {
     if (err) {
       connection.end();
       return res.status(500).json({ error: "Database error" });
-    if (existing.length > 0) {
-      return res
-        .status(400)
-        .json({ error: "You already voted helpful for this review." });
     }
 
     // USER ALREADY VOTED → REMOVE VOTE
@@ -1056,9 +1052,7 @@ app.post("/api/review/helpful", (req, res) => {
             return res.status(500).json({ error: "Failed to update review" });
           }
 
-          return res.json({
-            voted: false
-          });
+          return res.json({ voted: false });
 
         });
 
@@ -1066,7 +1060,7 @@ app.post("/api/review/helpful", (req, res) => {
 
     }
 
-    
+    // USER HAS NOT VOTED → ADD VOTE
     else {
 
       const insertVote = `
@@ -1095,9 +1089,7 @@ app.post("/api/review/helpful", (req, res) => {
             return res.status(500).json({ error: "Failed to update review" });
           }
 
-          return res.json({
-            voted: true
-          });
+          return res.json({ voted: true });
 
         });
 
@@ -1107,11 +1099,6 @@ app.post("/api/review/helpful", (req, res) => {
 
   });
 
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
 });
 
 app.get("/api/review/:reviewID/helpful", async (req, res) => {
