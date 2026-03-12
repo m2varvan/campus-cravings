@@ -8,6 +8,8 @@ import {
   Button,
   OutlinedInput,
   Chip,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 
 const FilterSortRestaurants = ({
@@ -17,6 +19,8 @@ const FilterSortRestaurants = ({
   setCuisineFilter,
   ratingSort,
   setRatingSort,
+  openNowFilter,       
+  setOpenNowFilter,
   restaurantOptions = [],
   cuisineOptions = [],
 }) => {
@@ -24,6 +28,7 @@ const FilterSortRestaurants = ({
     setRestaurantFilter([]);
     setCuisineFilter([]);
     setRatingSort("");
+    setOpenNowFilter(false); 
   };
 
   const menuProps = {
@@ -137,7 +142,20 @@ const FilterSortRestaurants = ({
           <MenuItem value="portion">Portion Size</MenuItem>
         </Select>
       </FormControl>
-
+    
+      {/* Open Now Toggle */}
+      <FormControlLabel
+        control={
+          <Switch
+            checked={openNowFilter}
+            onChange={(e) => setOpenNowFilter(e.target.checked)}
+            color="secondary"
+          />
+        }
+        label="Open Now"
+        sx={{ whiteSpace: "nowrap" }}
+      />
+      
       {/* Clear Filters */}
       <Button
         data-testid="clear-filters"

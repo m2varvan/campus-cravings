@@ -1,10 +1,11 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, Grid, Chip } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
 
 const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
   const [openDetails, setOpenDetails] = useState(false);
+  const { isOpen, isClosingSoon } = restaurant;
 
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;
@@ -43,6 +44,16 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
           >
             {restaurant.restaurant_name}
           </Typography>
+
+          <Box display="flex" gap={1} mt={1}>
+            {isOpen && !isClosingSoon && (
+              <Chip label="Open Now" color="success" size="small" />
+            )}
+            {isClosingSoon && (
+              <Chip label="Closing Soon" color="warning" size="small" />
+            )}
+            {!isOpen && <Chip label="Closed" color="error" size="small" />}
+          </Box>
 
           {/* Average Rating */}
           <Box sx={{ mt: 0.5 }}>

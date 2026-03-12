@@ -14,6 +14,7 @@ const RestaurantList = ({ uuid }) => {
   const [ratingSort, setRatingSort] = useState("");
   const [restaurantRatings, setRestaurantRatings] = useState([]);
   const [cuisineFilter, setCuisineFilter] = useState([]);
+  const [openNowFilter, setOpenNowFilter] = useState(false);
 
   // Variables and functions to show only 24 by default
   const defaultVisible = 24;
@@ -76,8 +77,41 @@ const RestaurantList = ({ uuid }) => {
     loadRestaurantRatings();
   }, []);
 
+  // times for open now feature
+  const getOpenStatus = (startTimeStr, endTimeStr) => {
+    if (!startTimeStr || !endTimeStr)
+      return { isOpen: false, isClosingSoon: false };
+
+    const now = new Date();
+    const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+
+    const [startH, startM] = startTimeStr.split(":").map(Number);
+    const [endH, endM] = endTimeStr.split(":").map(Number);
+
+    const startTotal = startH * 60 + startM;
+    let endTotal = endH * 60 + endM;
+
+    if (endTotal <= startTotal) endTotal += 24 * 60;
+
+    let adjustedCurrent = currentTotalMins;
+    if (endTotal > 24 * 60 && currentTotalMins < startTotal) {
+      adjustedCurrent += 24 * 60;
+    }
+
+    const isOpen = adjustedCurrent >= startTotal && adjustedCurrent < endTotal;
+    const isClosingSoon = isOpen && endTotal - adjustedCurrent <= 30;
+
+    return { isOpen, isClosingSoon };
+  };
+
   // Filtering Logic
   let displayedRestaurants = [...restaurants];
+
+  // Map open status to every restaurant
+  displayedRestaurants = displayedRestaurants.map((r) => {
+    const status = getOpenStatus(r.startTime, r.endTime);
+    return { ...r, isOpen: status.isOpen, isClosingSoon: status.isClosingSoon };
+  });
 
   if (restaurantFilter.length > 0) {
     displayedRestaurants = displayedRestaurants.filter((r) =>
@@ -88,6 +122,11 @@ const RestaurantList = ({ uuid }) => {
     displayedRestaurants = displayedRestaurants.filter((r) =>
       cuisineFilter.includes(r.cuisine),
     );
+  }
+
+  // Apply Open Now filter
+  if (openNowFilter) {
+    displayedRestaurants = displayedRestaurants.filter((r) => r.isOpen);
   }
 
   // Sorting Logic
@@ -159,6 +198,8 @@ const RestaurantList = ({ uuid }) => {
           cuisineOptions={cuisineOptions}
           cuisineFilter={cuisineFilter}
           setCuisineFilter={setCuisineFilter}
+          openNowFilter={openNowFilter}
+          setOpenNowFilter={setOpenNowFilter}
         />
       </Grid>
 
@@ -209,6 +250,18 @@ const RestaurantList = ({ uuid }) => {
               {" "}
               <Typography variant={"h6"} color="error">
                 No Restaurants Available.
+              </Typography>
+            </Box>
+          )}
+
+        {/* Show message if no restaurants are open while filter is on */}
+        {!loadingRestaurants &&
+          !loadingRestaurantsError &&
+          displayedRestaurants.length === 0 &&
+          openNowFilter && (
+            <Box sx={{ width: "100%", textAlign: "center", mt: 2 }}>
+              <Typography variant={"h6"} color="textSecondary">
+                No restaurants currently open.
               </Typography>
             </Box>
           )}
