@@ -9,6 +9,7 @@ import Login from "../User/Login";
 import SignUp from "../User/SignUp";
 import SearchPage from "../Search/SearchPage";
 import User from "../User/User";
+import Owner from "../User/Owner";
 import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
 
@@ -45,6 +46,7 @@ const App = () => {
   const [authUser, setAuthUser] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState("U");
   const [uuid, setUuid] = useState(null)
+  const [userTypeAfter, setUserTypeAfter] = React.useState('regular');
 
   const firebase = useContext(FirebaseContext);
 
@@ -60,6 +62,9 @@ useEffect(() => {
                   const data = await response.json();
                   console.log("Profile photo response:", data);
                   setProfilePhoto(data.profilePhoto);
+                  const response2 = await fetch(`/api/user/type/${user.uid}`)
+                  const data2 = await response2.json();
+                  setUserTypeAfter(data2.userType)
                   
               } catch (err) {
                   console.error("Failed to fetch profile photo:", err);
@@ -81,23 +86,17 @@ useEffect(() => {
           authUser={authUser}
           profilePhoto={profilePhoto}
           setProfilePhoto={setProfilePhoto}
+          userTypeAfter={userTypeAfter}
         />
 
         <Routes>
           <Route path="/" element={<Deals uuid={uuid} />} />
           <Route path="/Restaurant" element={<RestaurantList uuid={uuid} />} />
           <Route path="/restaurant" element={<RestaurantList uuid={uuid} />} />
-          <Route
-            path="/Login"
-            element={
-              <Login
-                profilePhoto={profilePhoto}
-                setProfilePhoto={setProfilePhoto}
-              />
-            }
-          />
+          <Route path="/Login" element={<Login />} />
           <Route path="/Signup" element={<SignUp />} />
           <Route path="/User" element={<User uuid={uuid} />} />
+          <Route path="/Owner" element={<Owner uuid={uuid} />} />
           <Route path="/search" element={<SearchPage uuid={uuid} />} />
         </Routes>
       </Router>
