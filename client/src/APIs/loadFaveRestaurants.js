@@ -12,6 +12,7 @@ const loadFaveRestaurants = async (uuid) => {
   }
 
   return await response.json();
+
 }
 
-export default loadFaveRestaurants
+export default loadFaveRestaurants;

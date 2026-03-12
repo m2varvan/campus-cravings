@@ -93,8 +93,9 @@ const FavouriteDeal = ({uuid, deal, reloadDeals, handleRemoveDeal}) => {
                 </Box>
                 </Box>
 
-                {/* Deal Votes */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', }}>
+                {/* Favourite Deal */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-betwen', alignItems: 'flex-start', }}>
+                    <Box onClick={() => setOpenDetails(true)} sx={{width: '90%'}} />
                         
                     <Favourite 
                         uuid={uuid} 

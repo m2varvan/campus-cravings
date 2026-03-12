@@ -1127,7 +1127,7 @@ app.post("/api/load/fave/deal", (req, res) => {
 // API endpoint to get favourited restaurants with average rating and rating count
 app.post("/api/load/fave/restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { userID } = req.body;
+  const { uuid } = req.body;
 
   connection.connect((err) => {
     if (err) {
@@ -1138,6 +1138,7 @@ app.post("/api/load/fave/restaurants", (req, res) => {
     const query = `
       SELECT 
           r.*,
+          1 as fave,
           ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
           COUNT(rt.rating_id) AS num_ratings
       FROM restaurants r
@@ -1148,10 +1149,10 @@ app.post("/api/load/fave/restaurants", (req, res) => {
       LEFT JOIN ratings rt
           ON rt.deal_id = d.deal_id
       WHERE fr.user_id = ?
-      GROUP BY r.restaurant_id
+      GROUP BY r.restaurant_id;
     `;
 
-    connection.query(query, [userID], (error, results) => {
+    connection.query(query, [uuid], (error, results) => {
       if (error) {
         console.error("Database error:", error.message);
         connection.end();

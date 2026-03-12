@@ -1,7 +1,6 @@
 import React from 'react';
 import {Grid, Typography, Box} from '@mui/material';
 
-
 import UserInfo from './UserInfo';
 import FavouriteDealList from './FavouriteDealList';
 import FavouriteRestaurantList from './FavouriteRestaurantList';
@@ -40,20 +39,28 @@ const User = ({uuid}) => {
             </Grid>
 
             {/* Right Column - Favourites */}
+            
             <Grid item xs={12} md={8} >
-                <FavouriteDealList 
-                    uuid={uuid} 
-                    loadFaveDeals={loadFaveDeals}
-                    faveDeals={faveDeals}
-                    setFaveDeals={setFaveDeals} 
-                />
 
-                <FavouriteRestaurantList 
-                    uuid={uuid} 
-                    loadFaveRestaurants={loadFaveRestaurants}
-                    setFaveRestaurants={setFaveRestaurants}
-                    faveRestaurants={faveRestaurants} 
-                />
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <FavouriteDealList 
+                            uuid={uuid} 
+                            loadFaveDeals={loadFaveDeals}
+                            faveDeals={faveDeals}
+                            setFaveDeals={setFaveDeals} 
+                        />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <FavouriteRestaurantList 
+                            uuid={uuid} 
+                            loadFaveRestaurants={loadFaveRestaurants}
+                            setFaveRestaurants={setFaveRestaurants}
+                            faveRestaurants={faveRestaurants} 
+                        />
+                    </Grid>
+                </Grid>
             </Grid>
 
         </Grid>

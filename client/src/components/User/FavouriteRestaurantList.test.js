@@ -18,6 +18,8 @@ describe("FaveRestaurantList Component", () => {
       cuisine: "Italian",
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-06-01T00:00:00Z",
+      num_ratings: 3,
+      avg_rating: 4.5
     },
     {
       restaurant_id: 2,
@@ -32,6 +34,8 @@ describe("FaveRestaurantList Component", () => {
       cuisine: "Japanese",
       created_at: "2024-02-01T00:00:00Z",
       updated_at: "2024-06-15T00:00:00Z",
+      num_ratings: 38,
+      avg_rating: 4
     },
   ];
 
@@ -62,13 +66,12 @@ describe("FaveRestaurantList Component", () => {
 
     // Check first restaurant
     expect(await screen.findByText("Test Restaurant 1")).toBeInTheDocument();
-    expect(screen.getByText(/123 Main St/i)).toBeInTheDocument();
-    expect(screen.getByText(/Italian/i)).toBeInTheDocument();
+    expect(screen.getByText(/4.5\/5/i)).toBeInTheDocument();
 
     // Check second restaurant
     expect(screen.getByText("Sakura Sushi")).toBeInTheDocument();
-    expect(screen.getByText(/456 Queen St, Unit 2/i)).toBeInTheDocument();
-    expect(screen.getByText(/Japanese/i)).toBeInTheDocument();
+    expect(screen.getByText(/4.0\/5/i)).toBeInTheDocument();
+    
   });
 
   test("Count of total favourite restaurants is displayed", async () => {
