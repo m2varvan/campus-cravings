@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import React from "react";
-import FavouriteDeals from "./FavouriteDeals";
+import FavouriteDealList from "./FavouriteDealList";
 
 describe("FavouriteDeals Component", () => {
   const mockDeals = [
@@ -12,6 +12,7 @@ describe("FavouriteDeals Component", () => {
       dealTasteRating: 5,
       dealValueRating: 5,
       dealPortionRating: 5,
+      numRatings: 2
     },
     {
       dealID: 2,
@@ -20,6 +21,7 @@ describe("FavouriteDeals Component", () => {
       dealTasteRating: 4,
       dealValueRating: 4,
       dealPortionRating: 4,
+      numRatings: 2
     },
   ];
 
@@ -31,7 +33,7 @@ describe("FavouriteDeals Component", () => {
     setFaveDeals = jest.fn();
 
     render(
-      <FavouriteDeals
+      <FavouriteDealList 
         uuid={1}
         loadFaveDeals={mockLoadFaveDeals}
         faveDeals={mockDeals}
@@ -62,7 +64,23 @@ describe("FavouriteDeals Component", () => {
   test("Count of total favourite deals is displayed", async () => {
     renderComponent();
 
-    expect(await screen.findByText("2 favourite deals")).toBeInTheDocument();
+    expect(await screen.findByText(/2 favourite deals/i)).toBeInTheDocument();
+  });
+
+  test("A message saying the user has no favourites is shown if the user has not favourited any deals", async () => {
+    mockLoadFaveDeals = jest.fn();
+    setFaveDeals = jest.fn();
+
+    render(
+      <FavouriteDealList 
+        uuid={1}
+        loadFaveDeals={mockLoadFaveDeals}
+        faveDeals={[]}
+        setFaveDeals={setFaveDeals}
+      />
+    );
+
+    expect(await screen.findByText(/No deals favourited./i)).toBeInTheDocument();
   });
 
 

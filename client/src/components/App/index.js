@@ -41,7 +41,7 @@ const App = () => {
     },
   });
   
-  const [uuid, setUuid] = React.useState(null) // For testing 'aa9b8a5d-5298-4212-9175-2db224dc9aa9'
+  const [uuid, setUuid] = React.useState('aa9b8a5d-5298-4212-9175-2db224dc9aa9') // For testing 'aa9b8a5d-5298-4212-9175-2db224dc9aa9'
   const [profilePhoto, setProfilePhoto] = React.useState("U")
   
   return (

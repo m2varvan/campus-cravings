@@ -3,8 +3,8 @@ import {Grid, Typography, Box} from '@mui/material';
 
 
 import UserInfo from './UserInfo';
-import FavouriteDeals from './FavouriteDeals';
-import FavouriteRestaurant from './FavouriteRestaurants';
+import FavouriteDealList from './FavouriteDealList';
+import FavouriteRestaurantList from './FavouriteRestaurantList';
 import loadUserInfo from '../../APIs/loadUserInfo';
 import loadFaveDeals from '../../APIs/loadFaveDeals';
 import loadFaveRestaurants from '../../APIs/loadFaveRestaurants';
@@ -12,8 +12,8 @@ import loadFaveRestaurants from '../../APIs/loadFaveRestaurants';
 const User = ({uuid}) => {
 
     const [userInfo, setUserInfo] = React.useState(null)
-    const [faveDeals, setFaveDeals] = React.useState(null)
-    const [faveRestaurants, setFaveRestaurants] = React.useState(null)
+    const [faveDeals, setFaveDeals] = React.useState([])
+    const [faveRestaurants, setFaveRestaurants] = React.useState([])
 
     return (
     <>
@@ -41,28 +41,22 @@ const User = ({uuid}) => {
 
             {/* Right Column - Favourites */}
             <Grid item xs={12} md={8} >
-                <Box sx={{
-                    maxHeight: 600, // scrollable height
-                    overflowY: "auto",
-                }}>
-                <FavouriteDeals 
+                <FavouriteDealList 
                     uuid={uuid} 
                     loadFaveDeals={loadFaveDeals}
                     faveDeals={faveDeals}
                     setFaveDeals={setFaveDeals} 
                 />
 
-                <FavouriteRestaurant 
+                <FavouriteRestaurantList 
                     uuid={uuid} 
                     loadFaveRestaurants={loadFaveRestaurants}
                     setFaveRestaurants={setFaveRestaurants}
                     faveRestaurants={faveRestaurants} 
                 />
-                </Box>
             </Grid>
 
         </Grid>
-
         </Grid>
     </>
     );

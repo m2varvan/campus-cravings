@@ -30,7 +30,7 @@ const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
 
     if (loadingUserInfo) {
         return (
-            <Box display="flex" justifyContent="center" mt={3}>
+            <Box display="flex" justifyContent="center" justifySelf={'center'} mt={3}>
                 Loading your Account Information
                 <CircularProgress />
             </Box>
