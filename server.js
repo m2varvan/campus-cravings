@@ -826,9 +826,8 @@ app.post("/api/signup", (req, res) => {
 
   const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
 
-  // 1️⃣ Check if email or username already exists
-  const checkQuery =
-    "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
+  // Check if email or username already exists
+  const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
@@ -854,8 +853,9 @@ app.post("/api/signup", (req, res) => {
       });
     }
 
-    // 2️⃣ Insert user into the database, defaulting user_type to 'Regular'
-    const insertQuery = `INSERT INTO users 
+    //  Insert user into the database, defaulting user_type to 'Regular'
+    const insertQuery =
+      `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
       VALUES (?, ?, ?, ?, ?, ?, 'Regular')`;
     const values = [uid, email, firstName, lastName, profilePhoto, username];
