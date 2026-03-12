@@ -19,8 +19,7 @@ app.use(express.static(path.join(__dirname, "client/build")));
 
 // Route to get deals valid for current day
 app.post("/api/today/deals", (req, res) => {
-
-  const {userID} = req.body;
+  const { userID } = req.body;
 
   const connection = mysql.createConnection(config);
 
@@ -93,8 +92,11 @@ app.post("/api/today/deals", (req, res) => {
         ? parseInt(deal.number_of_ratings, 10)
         : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
-      fave: deal.is_favourited || 0
+      userVote:
+        parseInt(deal.user_vote) === 0
+          ? null
+          : parseInt(deal.user_vote) || null,
+      fave: deal.is_favourited || 0,
     }));
 
     res.json(todayDeals);
@@ -147,7 +149,7 @@ app.post("/api/deal/hours", (req, res) => {
 // API endpoint to get all restaurant info
 app.post("/api/get-restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
-  const {userID} = req.body;
+  const { userID } = req.body;
 
   connection.connect((err) => {
     if (err) {
@@ -180,14 +182,27 @@ app.post("/api/get-restaurants", (req, res) => {
 // API to get the avg rating for a restaurant's deals
 app.post("/api/restaurant-rating", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, getAll } = req.body;
 
-  const sql = `
+  const sql = getAll
+    ? `
+      SELECT 
+      res.restaurant_id, 
+      AVG(rat.value_score) AS avg_value_rating, 
+      AVG(rat.taste_score) AS avg_taste_rating, 
+      AVG(rat.portion_score) AS avg_portion_rating, 
+      COUNT(rat.rating_id) AS total_ratings
+      FROM restaurants res
+      LEFT JOIN deals d ON res.restaurant_id = d.restaurant_id
+      LEFT JOIN ratings rat ON d.deal_id = rat.deal_id
+      GROUP BY res.restaurant_id;
+    `
+    : `
     SELECT
       d.restaurant_id,
-      AVG(r.value_score) AS avg_value_score,
-      AVG(r.taste_score) AS avg_taste_score,
-      AVG(r.portion_score) AS avg_portion_score,
+      AVG(r.value_score) AS avg_value_rating,
+      AVG(r.taste_score) AS avg_taste_rating,
+      AVG(r.portion_score) AS avg_portion_rating,
       COUNT(r.rating_id) AS total_ratings
     FROM deals d
     LEFT JOIN ratings r ON d.deal_id = r.deal_id
@@ -213,23 +228,47 @@ app.post("/api/restaurant-rating", (req, res) => {
       });
     }
 
-    // Return the averages
-    const ratingData = result[0];
+    const ratingData = !getAll ? result[0] : result;
     connection.end();
-    return res.json({
-      avg_value_score: Number(ratingData.avg_value_score) || 0,
-      avg_taste_score: Number(ratingData.avg_taste_score) || 0,
-      avg_portion_score: Number(ratingData.avg_portion_score) || 0,
-      total_ratings: ratingData.total_ratings || 0,
-    });
+    if (!getAll) {
+      return res.json({
+        restaurant_id: Number(ratingData.restaurant_id) || null,
+        avg_value_rating: Number(ratingData.avg_value_rating) || 0,
+        avg_taste_rating: Number(ratingData.avg_taste_rating) || 0,
+        avg_portion_rating: Number(ratingData.avg_portion_rating) || 0,
+        total_ratings: Number(ratingData.total_ratings) || 0,
+      });
+    }
+
+    const sanitizedData = ratingData.map((item) => ({
+      restaurant_id: Number(item.restaurant_id),
+      avg_value_rating: Number(item.avg_value_rating) || 0,
+      avg_taste_rating: Number(item.avg_taste_rating) || 0,
+      avg_portion_rating: Number(item.avg_portion_rating) || 0,
+      total_ratings: Number(item.total_ratings) || 0,
+    }));
+
+    return res.json(sanitizedData);
   });
 });
+
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, getAll } = req.body;
 
-  const sql = `
+  const sql = getAll
+    ? `
+    SELECT 
+        restaurant_id, 
+        day_of_week, 
+        GROUP_CONCAT(TIME_FORMAT(start_time, '%H:%i') ORDER BY start_time) AS start_times,
+        GROUP_CONCAT(TIME_FORMAT(end_time, '%H:%i') ORDER BY end_time) AS end_times
+    FROM restaurant_hours
+    GROUP BY restaurant_id, day_of_week
+    ORDER BY 
+        FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');`
+    : `
     SELECT 
         restaurant_id, 
         day_of_week, 
@@ -242,7 +281,9 @@ app.post("/api/restaurant-hours", (req, res) => {
         FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
   `;
 
-  connection.query(sql, [restaurant_id], (error, results) => {
+  const params = getAll ? [] : [restaurant_id];
+
+  connection.query(sql, params, (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to load restaurant hours" });
@@ -313,25 +354,28 @@ app.post("/api/restaurant-deals", (req, res) => {
         deal.avg_value_rating !== null
           ? parseFloat(deal.avg_value_rating.toFixed(1))
           : 0,
-      dealTasteRating:
-        deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
-      dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
+      dealTasteRating: deal.avg_taste_rating
+        ? parseFloat(deal.avg_taste_rating.toFixed(1))
+        : 0,
+      dealPortionRating: deal.avg_portion_rating
+        ? parseFloat(deal.avg_portion_rating.toFixed(1))
+        : 0,
       numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings) : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null
+      userVote:
+        parseInt(deal.user_vote) === 0
+          ? null
+          : parseInt(deal.user_vote) || null,
     }));
 
     res.json(formattedResults);
   });
 });
 
-
 // Route to get all valid deals
 app.post("/api/week/deals", (req, res) => {
-
-  const {userID} = req.body
+  const { userID } = req.body;
   const connection = mysql.createConnection(config);
-
 
   const sql = `
       SELECT 
@@ -368,7 +412,6 @@ app.post("/api/week/deals", (req, res) => {
       AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
       GROUP BY d.deal_id, dh.day_of_week;
   `;
-
 
   connection.query(sql, [userID, userID], (error, results) => {
     if (error) {
@@ -413,8 +456,11 @@ app.post("/api/week/deals", (req, res) => {
           ? parseInt(deal.number_of_ratings, 10)
           : 0,
         totalVote: parseInt(deal.total_votes) || 0,
-        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
-        fave: deal.is_favourited || 0
+        userVote:
+          parseInt(deal.user_vote) === 0
+            ? null
+            : parseInt(deal.user_vote) || null,
+        fave: deal.is_favourited || 0,
       });
     });
 
@@ -637,7 +683,7 @@ app.get("/api/deal/:dealID/reviews", (req, res) => {
   connection.end();
 });
 
-app.get('/api/restaurant/:restaurantID/reviews', (req, res) => {
+app.get("/api/restaurant/:restaurantID/reviews", (req, res) => {
   const { restaurantID } = req.params;
   const connection = mysql.createConnection(config);
   const userID = req.query.userID;
@@ -671,7 +717,9 @@ app.get('/api/restaurant/:restaurantID/reviews', (req, res) => {
   connection.query(sql, [userID, restaurantID], (err, results) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: 'Failed to fetch restaurant reviews' });
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch restaurant reviews" });
     }
 
     res.json(results);
@@ -795,9 +843,10 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { id, email, username, firstName, lastName, profilePhoto } = req.body;
+  const { uid, email, username, firstName, lastName, userType, profilePhoto } = req.body;
 
-  const checkQuery = "SELECT email_address, username  FROM users WHERE email_address = ? OR username = ?";
+  // Check if email or username already exists
+  const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
@@ -805,62 +854,58 @@ app.post("/api/signup", (req, res) => {
       return res.status(500).json("User search failed");
     }
 
-    const emailExists = data.some(user => user.email_address === email);
+    const emailExists = data.some((user) => user.email_address === email);
     if (emailExists) {
       connection.end();
       return res.status(409).json({
-        field: "email", 
-        message: "This email already has an account"
+        field: "email",
+        message: "This email already has an account",
       });
     }
 
-    const usernameExists = data.some(user => user.username === username);
+    const usernameExists = data.some((user) => user.username === username);
     if (usernameExists) {
       connection.end();
       return res.status(409).json({
-        field: "username", 
-        message: "This username is already taken."
+        field: "username",
+        message: "This username is already taken.",
       });
     }
 
+    //  Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
-      "INSERT INTO users (id, email_address, first_name, last_name, profile_photo, username) VALUES (?, ?, ?, ?, ?, ?)";
-    const values = [id, email, firstName, lastName, profilePhoto, username];
+      `INSERT INTO users 
+      (id, email_address, first_name, last_name, profile_photo, username, user_type) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const values = [uid, email, firstName, lastName, profilePhoto, username, userType];
+
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
       if (err) {
-        console.error("Select Error:", err);
-        connection.end()
+        console.error("Insert Error:", err);
         return res.status(500).json("User entry failed");
       }
-      return res.status(200).json("User has been created.");
+      return res.status(200).json({ message: "User has been created." });
     });
   });
 });
 
-app.post('/api/login', (req, res) =>{
-    const connection = mysql.createConnection(config);
+app.get("/api/user/:uid", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uid } = req.params;
 
-    const{ email, password} = req.body
-
-    const checkQuery = "SELECT * FROM users WHERE email_address = ? AND id = ?";
-    const values = [email, password]
-    connection.query(checkQuery, values, (err, data) => {
-        connection.end();
-        if (err) {
-            console.error("Select Error:", err)
-            return res.status(500).json("User search failed");
-        }
-
-        if (data.length > 0) {
-            return res.status(200).json({
-              message: "Log In successfull.", 
-              profilePhoto: data[0].profile_photo
-            });
-        } else {
-          return res.status(409).json("Log In credentials given do not exists")
-        }
-    })
+  const query = "SELECT profile_photo FROM users WHERE id = ?";
+  connection.query(query, [uid], (err, data) => {
+    connection.end();
+    if (err) {
+      console.error("Select Error:", err);
+      return res.status(500).json({ message: "Failed to fetch user" });
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ profilePhoto: data[0].profile_photo });
+  });
 });
 
 app.post("/api/restaurant-info", (req, res) => {
@@ -891,7 +936,9 @@ app.post("/api/restaurant-info", (req, res) => {
 
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: "Failed to load restaurant details" });
+      return res
+        .status(500)
+        .json({ error: "Failed to load restaurant details" });
     }
 
     res.json(results[0] || null);
@@ -899,7 +946,6 @@ app.post("/api/restaurant-info", (req, res) => {
 });
 
 app.post("/api/vote", (req, res) => {
-
   const connection = mysql.createConnection(config);
   const { userID, dealID, vote, update } = req.body;
   const voteValue = Number(vote);
@@ -921,34 +967,26 @@ app.post("/api/vote", (req, res) => {
   let params;
 
   if (update) {
-
     if (voteValue === 0) {
-
       sql = `
         DELETE FROM deal_votes
         WHERE user_id = ? AND deal_id = ?;
       `;
       params = [userID, dealID];
-
     } else {
-
       sql = `
         UPDATE deal_votes
         SET vote = ?
         WHERE user_id = ? AND deal_id = ?;
       `;
       params = [voteValue, userID, dealID];
-
     }
-
   } else {
-
     sql = `
       INSERT INTO deal_votes (user_id, deal_id, vote)
       VALUES (?, ?, ?);
     `;
     params = [userID, dealID, voteValue];
-
   }
 
   connection.query(sql, params, (err) => {
@@ -960,7 +998,6 @@ app.post("/api/vote", (req, res) => {
 
     res.json({ success: true });
   });
-
 });
 
 app.post("/api/review/helpful", (req, res) => {
@@ -984,6 +1021,10 @@ app.post("/api/review/helpful", (req, res) => {
     if (err) {
       connection.end();
       return res.status(500).json({ error: "Database error" });
+    if (existing.length > 0) {
+      return res
+        .status(400)
+        .json({ error: "You already voted helpful for this review." });
     }
 
     // USER ALREADY VOTED → REMOVE VOTE
@@ -1066,6 +1107,11 @@ app.post("/api/review/helpful", (req, res) => {
 
   });
 
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.get("/api/review/:reviewID/helpful", async (req, res) => {
@@ -1081,7 +1127,6 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
     const [result] = await db.query(query, [reviewID]);
 
     res.json(result[0]);
-
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
@@ -1089,82 +1134,253 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
 
 
 app.post("/api/save/fave/deal", (req, res) => {
-    const { uuid, dealID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, dealID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         INSERT INTO favourite_deals (user_id, deal_id)
         VALUES (?, ?)
     `;
 
-    connection.query(sql, [uuid, dealID], (err, result) => {
-        connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to save favourite deal" });
-        }
+  connection.query(sql, [uuid, dealID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to save favourite deal" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/remove/fave/deal", (req, res) => {
-    const { uuid, dealID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, dealID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         DELETE FROM favourite_deals
         WHERE user_id = ? AND deal_id = ?
     `;
 
-    connection.query(sql, [uuid, dealID], (err, result) => {
-      connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to remove favourite deal" });
-        }
+  connection.query(sql, [uuid, dealID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to remove favourite deal" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/save/fave/restaurant", (req, res) => {
-    const { uuid, restaurantID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, restaurantID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         INSERT INTO favourite_restaurants (user_id, restaurant_id)
         VALUES (?, ?)
     `;
 
-    connection.query(sql, [uuid, restaurantID], (err, result) => {
-        connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to save favourite restaurant" });
-        }
+  connection.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ error: "Failed to save favourite restaurant" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/remove/fave/restaurant", (req, res) => {
-    const { uuid, restaurantID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, restaurantID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         DELETE FROM favourite_restaurants
         WHERE user_id = ? AND restaurant_id = ?
     `;
 
-    connection.query(sql, [uuid, restaurantID], (err, result) => {
+  connection.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ error: "Failed to remove favourite restaurant" });
+    }
+
+    res.json({ success: true });
+  });
+});
+
+app.post("/api/load/user", (req, res) => {
+  const { uuid } = req.body;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+      SELECT 
+        id,
+        first_name,
+        last_name,
+        email_address,
+        username,
+        profile_photo,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at
+      FROM users
+      WHERE id = ?;
+  `;
+
+  connection.query(sql, [uuid], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load user info" });
+    }
+
+    const user = result[0];
+
+    const userInfo = {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email_address,
+      userName: user.username,
+      profilePhoto: user.profile_photo,
+      createdDate: user.created_at,
+    };
+
+    res.json(userInfo);
+  });
+});
+
+// Route to get a user's favourite deals
+app.post("/api/load/fave/deal", (req, res) => {
+  const { userID } = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      d.deal_id, 
+      d.restaurant_id,
+      d.deal_name, 
+      d.description, 
+      d.deal_price, 
+      DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+      r.restaurant_name, 
+      AVG(rt.taste_score) AS avg_taste_rating,
+      AVG(rt.value_score) AS avg_value_rating,
+      AVG(rt.portion_score) AS avg_portion_rating,
+      COUNT(rt.rating_id) AS number_of_ratings,
+      COALESCE(SUM(dv.vote), 0) AS total_votes,
+      MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
+      1 AS is_favourited
+    FROM deals d
+    JOIN favourite_deals fd ON fd.deal_id = d.deal_id AND fd.user_id = ?
+    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+    LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+    LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
+    GROUP BY d.deal_id;
+  `;
+
+  connection.query(sql, [userID, userID], (error, results) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      return res.status(500).json({ error: "Failed to fetch favourite deals" });
+    }
+
+    const faveDeals = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name,
+      dealDescription: deal.description || "n/a",
+      dealPrice: deal.deal_price.toFixed(2),
+      dealEditData: deal.edited_at_formatted,
+      dealValueRating: deal.avg_value_rating
+        ? parseFloat(deal.avg_value_rating.toFixed(1))
+        : 0,
+      dealTasteRating: deal.avg_taste_rating
+        ? parseFloat(deal.avg_taste_rating.toFixed(1))
+        : 0,
+      dealPortionRating: deal.avg_portion_rating
+        ? parseFloat(deal.avg_portion_rating.toFixed(1))
+        : 0,
+      numRatings: deal.number_of_ratings
+        ? parseInt(deal.number_of_ratings, 10)
+        : 0,
+      totalVote: parseInt(deal.total_votes) || 0,
+      userVote:
+        parseInt(deal.user_vote) === 0
+          ? null
+          : parseInt(deal.user_vote) || null,
+      fave: 1,
+    }));
+
+    res.json(faveDeals);
+  });
+
+  connection.end();
+});
+
+// API endpoint to get favourited restaurants with average rating and rating count
+app.post("/api/load/fave/restaurants", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uuid } = req.body;
+
+  connection.connect((err) => {
+    if (err) {
+      console.error("Connection error:", err.message);
+      return res.status(500).json({ error: "Database connection failed" });
+    }
+
+    const query = `
+      SELECT 
+          r.*,
+          1 as fave,
+          ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
+          COUNT(rt.rating_id) AS num_ratings
+      FROM restaurants r
+      JOIN favourite_restaurants fr
+          ON r.restaurant_id = fr.restaurant_id
+      LEFT JOIN deals d
+          ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ratings rt
+          ON rt.deal_id = d.deal_id
+      WHERE fr.user_id = ?
+      GROUP BY r.restaurant_id;
+    `;
+
+    connection.query(query, [uuid], (error, results) => {
+      if (error) {
+        console.error("Database error:", error.message);
+        connection.end();
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch favourite restaurants" });
+      }
+
+      res.json(results);
+      connection.end();
+    });
+  });
+});
+
+app.get('/api/signup/restaurants', (req, res) => {
+    const connection = mysql.createConnection(config);
+
+    connection.query("SELECT DISTINCT restaurant_name FROM restaurants", (err, data) => {
         connection.end();
         if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to remove favourite restaurant" });
+            console.error("Select Error:", err);
+            return res.status(500).json({ message: "Failed to fetch restaurants" });
         }
-
-        res.json({ success: true });
+        return res.status(200).json(data);
     });
 });
 

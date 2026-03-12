@@ -1,27 +1,41 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import SignUp from './SignUp';
 import { MemoryRouter } from 'react-router-dom';
 
 global.fetch = jest.fn(() => 
-        Promise.resolve({
-            ok: true, 
-            json: () => Promise.resolve({ message: "User has been created"})
-        })
-    );
-
-Object.defineProperty(global, 'crypto', {
-    value: {
-        randomUUID: () => 'test-uuid-1234',
-    },
-});
+    Promise.resolve({
+        ok: true, 
+        json: () => Promise.resolve({ message: "User has been created"})
+    })
+);
 
 const mockedUsedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
    ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockedUsedNavigate,
 }));
+
+jest.mock('../Firebase', () => {
+    const mockFirebase = {
+        doCreateUserWithEmailAndPassword: jest.fn(() =>
+            Promise.resolve({
+                user: {
+                    uid: 'test-uuid-1234',
+                    delete: jest.fn(),
+                }
+            })
+        ),
+        doSignOut: jest.fn(() => Promise.resolve()),
+    };
+    return {
+        withFirebase: (Component) => (props) => <Component firebase={mockFirebase} {...props} />,
+        FirebaseContext: {
+            Consumer: ({ children }) => children(mockFirebase),
+        },
+    };
+});
 
 describe('SignUp Componenet', () => {
 
@@ -37,11 +51,9 @@ describe('SignUp Componenet', () => {
     })
 
     afterEach(() => {
-        // Clean up timers after each test
         jest.runOnlyPendingTimers();
         jest.useRealTimers();
     });
-
 
     test('renders the sign up form', () => {
         expect(screen.getByText(/Create an account/i)).toBeInTheDocument();
@@ -59,26 +71,26 @@ describe('SignUp Componenet', () => {
         expect(screen.getByText(/Confirm your password/i)).toBeInTheDocument();
     });
 
-    test('form submits successfullywith correct ID and initials', async () => {
+    test('form submits successfully with correct ID and initials', async () => {
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
         fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
-
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mperson123' } });
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
 
-        await screen.findByText(/Your account has been created!! Redirecting to login../i);
+        await screen.findByText(/Your account has been created! Redirecting to login/i);
         
         const expectedBody = JSON.stringify({
-            id: 'test-uuid-1234',
-            email: 'test@gmail.com',
+            uid: 'test-uuid-1234',
             username: 'm2varvan',
+            email: 'test@gmail.com',
             firstName: 'Muhammad',
             lastName: 'Varvani',
-            profilePhoto: 'MV'
+            profilePhoto: 'MV', 
+            userType: 'regular'
         });
 
         expect(global.fetch).toHaveBeenCalledWith('/api/signup', expect.objectContaining({
@@ -91,9 +103,8 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvanigmail.' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mperson123' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
-
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mperson123' } });
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
@@ -106,13 +117,13 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'mypassword' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'mypassword'}});
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'mypassword' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'mypassword' } });
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
 
-        expect(screen.getByText(/Password must be at least 8 characters, include 1 uppercase letter and 1 number/i)).toBeInTheDocument()
+        expect(screen.getByText(/Password must be at least 8 characters, include 1 uppercase letter and 1 number/i)).toBeInTheDocument();
     });
 
     test('shows an error message if the username does not meet the standard', () => {
@@ -120,13 +131,13 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'mvarv' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword1' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword1'}});
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mypassword1' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mypassword1' } });
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
 
-        expect(screen.getByText(/Username must be at least 8 characters and contain only letters, numbers, or underscores/i)).toBeInTheDocument()
+        expect(screen.getByText(/Username must be at least 8 characters and contain only letters, numbers, or underscores/i)).toBeInTheDocument();
     });
 
     test('shows an error message if the password does not match the confirm password section', () => {
@@ -134,13 +145,13 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'muhammadvarvani@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword1' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword12'}});
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mypassword1' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mypassword12' } });
 
         const signUpButton = screen.getByRole('button', { name: /Sign Up/i });
         fireEvent.click(signUpButton);
 
-        expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument()
+        expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
     });
 
     test('shows error when email is already taken', async () => {
@@ -153,14 +164,14 @@ describe('SignUp Componenet', () => {
                     message: "This email already has an account."
                 })
             })
-        )
+        );
 
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'existing@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword123' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword123' }});
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mypassword123' } });
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));    
 
@@ -178,14 +189,14 @@ describe('SignUp Componenet', () => {
                     message: "This username is already taken."
                 })
             })
-        )
+        );
 
         fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
         fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'existing@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
-        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: {value: 'Mypassword123' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mypassword123' }});
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mypassword123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mypassword123' } });
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));    
 
@@ -199,21 +210,59 @@ describe('SignUp Componenet', () => {
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
         fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
         fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
-        fireEvent.change(screen.getByLabelText(/Confirm Password/i), {target: { value: 'Mperson123'}});
-        
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mperson123' } });
 
         fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
 
-        // Wait for the success message to appear
-        await screen.findByText(/Your account has been created!!/i);
+        await screen.findByText(/Your account has been created! Redirecting to login/i);
 
         act(() => {
             jest.advanceTimersByTime(3000);
         });
 
-        // Verify the mock navigator was called with the correct path
         expect(mockedUsedNavigate).toHaveBeenCalledWith('/Login');
     });
 
+    test('shows restaurant dropdown when Restaurant Owner is selected', () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+        expect(screen.getByLabelText(/Select Your Restaurant/i)).toBeInTheDocument();
+    });
 
-})
+    test('hides restaurant dropdown when Regular User is selected', () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Regular User/i }));
+        expect(screen.queryByLabelText(/Select Your Restaurant/i)).not.toBeInTheDocument();
+    });
+
+    test('shows error when restaurant owner does not select a restaurant', async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+
+        fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Muhammad' } });
+        fireEvent.change(screen.getByLabelText(/Last Name/i), { target: { value: 'Varvani' } });
+        fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@gmail.com' } });
+        fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'm2varvan' } });
+        fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'Mperson123' } });
+        fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'Mperson123' } });
+
+        fireEvent.click(screen.getByRole('button', { name: /Sign Up/i }));
+
+        expect(screen.getByText(/Please select your restaurant/i)).toBeInTheDocument();
+    });
+
+    test('fetches restaurants when Restaurant Owner is selected', async () => {
+        global.fetch.mockImplementationOnce(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve([
+                    { restaurant_name: 'Pizza Palace' },
+                    { restaurant_name: 'Burger Barn' },
+                ])
+            })
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /Restaurant Owner/i }));
+
+        expect(global.fetch).toHaveBeenCalledWith('/api/signup/restaurants');
+    });
+
+});
