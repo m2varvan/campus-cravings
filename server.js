@@ -231,12 +231,24 @@ app.post("/api/restaurant-rating", (req, res) => {
     return res.json(sanitizedData);
   });
 });
+
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, getAll } = req.body;
 
-  const sql = `
+  const sql = getAll
+    ? `
+    SELECT 
+        restaurant_id, 
+        day_of_week, 
+        GROUP_CONCAT(TIME_FORMAT(start_time, '%H:%i') ORDER BY start_time) AS start_times,
+        GROUP_CONCAT(TIME_FORMAT(end_time, '%H:%i') ORDER BY end_time) AS end_times
+    FROM restaurant_hours
+    GROUP BY restaurant_id, day_of_week
+    ORDER BY 
+        FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');`
+    : `
     SELECT 
         restaurant_id, 
         day_of_week, 
@@ -249,7 +261,9 @@ app.post("/api/restaurant-hours", (req, res) => {
         FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
   `;
 
-  connection.query(sql, [restaurant_id], (error, results) => {
+  const params = getAll ? [] : [restaurant_id];
+
+  connection.query(sql, params, (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to load restaurant hours" });
