@@ -21,9 +21,9 @@ const SignUp = ({ firebase }) => {
     const [confirmPassword, setConfirmPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
-    const [userType, setUserType] = React.useState('regular');
     const [restaurantName, setRestaurantName] = React.useState('');
     const [restaurantOptions, setRestaurantOptions] = React.useState([]);
+    const [userType, setUserType] = React.useState('regular');
 
     const [error, setError] = React.useState({});
     const [confirmationMessage, setConfirmationMessage] = React.useState(null);
