@@ -1124,5 +1124,45 @@ app.post("/api/load/fave/deal", (req, res) => {
   connection.end();
 });
 
+// API endpoint to get favourited restaurants with average rating and rating count
+app.post("/api/load/fave/restaurants", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { userID } = req.body;
+
+  connection.connect((err) => {
+    if (err) {
+      console.error("Connection error:", err.message);
+      return res.status(500).json({ error: "Database connection failed" });
+    }
+
+    const query = `
+      SELECT 
+          r.*,
+          ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
+          COUNT(rt.rating_id) AS num_ratings
+      FROM restaurants r
+      JOIN favourite_restaurants fr
+          ON r.restaurant_id = fr.restaurant_id
+      LEFT JOIN deals d
+          ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ratings rt
+          ON rt.deal_id = d.deal_id
+      WHERE fr.user_id = ?
+      GROUP BY r.restaurant_id
+    `;
+
+    connection.query(query, [userID], (error, results) => {
+      if (error) {
+        console.error("Database error:", error.message);
+        connection.end();
+        return res.status(500).json({ error: "Failed to fetch favourite restaurants" });
+      }
+
+      res.json(results);
+      connection.end();
+    });
+  });
+});
+
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
