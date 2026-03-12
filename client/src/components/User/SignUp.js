@@ -21,7 +21,7 @@ const SignUp = ({ firebase }) => {
     const [confirmPassword, setConfirmPassword] = React.useState('');
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
-    const [userType, setUserType] = React.useState('Regular');
+    const [userType, setUserType] = React.useState('regular');
     const [restaurantName, setRestaurantName] = React.useState('');
     const [restaurantOptions, setRestaurantOptions] = React.useState([]);
 
@@ -43,9 +43,8 @@ const SignUp = ({ firebase }) => {
     const isValidUsername = (username) => /^[a-zA-Z0-9_]{8,}$/.test(username);
     const isValidPassword = (password) => /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
-    // Fetch restaurants when Owner type is selected
     React.useEffect(() => {
-        if (userType === 'Owner') {
+        if (userType === 'restaurant_owner') {
             fetch('/api/signup/restaurants')
                 .then(res => res.json())
                 .then(data => setRestaurantOptions(data.map(r => r.restaurant_name)))
@@ -59,7 +58,6 @@ const SignUp = ({ firebase }) => {
         const newErrors = {};
         setError({});
 
-        // Validation
         if (email.trim() === '') newErrors.email = "Enter an email address";
         else if (!isValidEmail(email)) newErrors.email = "Enter a valid email address";
 
@@ -77,7 +75,7 @@ const SignUp = ({ firebase }) => {
         if (firstName.trim() === '') newErrors.firstname = "Enter a first name";
         if (lastName.trim() === '') newErrors.lastname = "Enter a last name";
 
-        if (userType === 'Owner' && restaurantName.trim() === '')
+        if (userType === 'restaurant_owner' && restaurantName.trim() === '')
             newErrors.restaurantName = "Please select your restaurant";
 
         if (Object.keys(newErrors).length > 0) {
@@ -90,12 +88,9 @@ const SignUp = ({ firebase }) => {
         let authUser = null;
 
         try {
-            // Create Firebase user
             authUser = await firebase.doCreateUserWithEmailAndPassword(email, password);
-
             await firebase.doSignOut();
 
-            // Save user to your own database
             const response = await fetch('/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -107,7 +102,6 @@ const SignUp = ({ firebase }) => {
                     lastName,
                     profilePhoto: initials,
                     userType,
-                    restaurantName: userType === 'Owner' ? restaurantName : null,
                 }),
             });
 
@@ -131,7 +125,6 @@ const SignUp = ({ firebase }) => {
         } catch (err) {
             console.error("Signup error:", err.message);
 
-            // Clean up Firebase user if backend save failed
             if (authUser?.user) {
                 try {
                     await authUser.user.delete();
@@ -165,169 +158,157 @@ const SignUp = ({ firebase }) => {
     }, [submitStatus, navigate]);
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', mt: 0 }}>
+            <Box sx={{ width: '100%', maxWidth: 700, border: '1px solid #ccc', borderRadius: 2, p: 3 }}>
 
-            <Grid container spacing={4} sx={{ maxWidth: 600, border: '1px solid #ccc', p: 2 }}>
+                <Typography variant="h4" align="center" sx={{ mb: 2 }}>
+                    Create an account
+                </Typography>
 
-                <Grid item xs={12}>
-                    <Grid container direction="column" spacing={2} alignItems="center">
+                {/* User Type Toggle */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Button
+                        variant={userType === 'regular' ? 'contained' : 'outlined'}
+                        onClick={() => { setUserType('regular'); setRestaurantName(''); }}
+                        sx={{ mr: 1 }}
+                    >
+                        Regular User
+                    </Button>
+                    <Button
+                        variant={userType === 'restaurant_owner' ? 'contained' : 'outlined'}
+                        onClick={() => setUserType('restaurant_owner')}
+                    >
+                        Restaurant Owner
+                    </Button>
+                </Box>
 
-                        <Grid item>
-                            <Typography variant="h3">Create an account</Typography>
-                        </Grid>
-
-                        {/* First Name */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="First Name"
-                                fullWidth
-                                margin="normal"
-                                value={firstName}
-                                onChange={handleChangeFirstName}
-                            />
-                            {error.firstname && <Alert severity="error">{error.firstname}</Alert>}
-                        </Grid>
-
-                        {/* Last Name */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="Last Name"
-                                fullWidth
-                                margin="normal"
-                                value={lastName}
-                                onChange={handleChangeLastName}
-                            />
-                            {error.lastname && <Alert severity="error">{error.lastname}</Alert>}
-                        </Grid>
-
-                        {/* Email */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="Email Address"
-                                type="email"
-                                fullWidth
-                                margin="normal"
-                                value={email}
-                                onChange={handleChangeEmail}
-                            />
-                            {error.email && <Alert severity="error">{error.email}</Alert>}
-                        </Grid>
-
-                        {/* Username */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="Username"
-                                fullWidth
-                                margin="normal"
-                                value={username}
-                                onChange={handleChangeUsername}
-                            />
-                            {error.username && <Alert severity="error">{error.username}</Alert>}
-                        </Grid>
-
-                        {/* Password */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="Password"
-                                type="password"
-                                fullWidth
-                                margin="normal"
-                                value={password}
-                                onChange={handleChangePassword}
-                            />
-                            {error.password && <Alert severity="error">{error.password}</Alert>}
-                        </Grid>
-
-                        {/* Confirm Password */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <TextField
-                                label="Confirm Password"
-                                type="password"
-                                fullWidth
-                                margin="normal"
-                                value={confirmPassword}
-                                onChange={handleChangeConfirmPassword}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                            />
-                            {error.confirmPassword && <Alert severity="error">{error.confirmPassword}</Alert>}
-                        </Grid>
-
-                        {/* User Type Toggle */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <Button
-                                variant={userType === 'Regular' ? 'contained' : 'outlined'}
-                                onClick={() => setUserType('Regular')}
-                                sx={{ mr: 2 }}
-                            >
-                                Regular User
-                            </Button>
-                            <Button
-                                variant={userType === 'Owner' ? 'contained' : 'outlined'}
-                                onClick={() => setUserType('Owner')}
-                            >
-                                Restaurant Owner
-                            </Button>
-                        </Grid>
-
-                        {/* Restaurant Dropdown - only for Owners */}
-                        {userType === 'Owner' && (
-                            <Grid item sx={{ width: '80%' }}>
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel id="restaurant-select-label">Select Your Restaurant</InputLabel>
-                                    <Select
-                                        labelId="restaurant-select-label"
-                                        value={restaurantName}
-                                        onChange={(e) => setRestaurantName(e.target.value)}
-                                        input={<OutlinedInput label="Select Your Restaurant" />}
-                                    >
-                                        {restaurantOptions.map((name) => (
-                                            <MenuItem key={name} value={name}>{name}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                                {error.restaurantName && <Alert severity="error">{error.restaurantName}</Alert>}
-                            </Grid>
-                        )}
-
-                        {/* Submit */}
-                        <Grid item sx={{ width: '80%' }}>
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                onClick={handleSubmit}
-                                disabled={loading}
-                            >
-                                {loading
-                                    ? <CircularProgress size={24} color="inherit" />
-                                    : "Sign Up"}
-                            </Button>
-
-                            {error.general && (
-                                <Typography color="error" align="center" sx={{ mt: 2 }}>
-                                    {error.general}
-                                </Typography>
-                            )}
-
-                            {submitStatus && (
-                                <Typography align="center">
-                                    {confirmationMessage}
-                                </Typography>
-                            )}
-                        </Grid>
-
-                        <Grid item sx={{ mt: 3 }}>
-                            <Typography align="center">
-                                Already have an account?{" "}
-                                <Button onClick={() => navigate('/')}>
-                                    Log In
-                                </Button>
-                            </Typography>
-                        </Grid>
-
+                {/* First Name & Last Name side by side */}
+                <Grid container spacing={4}>
+                    <Grid item xs={6}>
+                        <TextField
+                            label="First Name"
+                            fullWidth
+                            size="small"
+                            value={firstName}
+                            onChange={handleChangeFirstName}
+                        />
+                        {error.firstname && <Alert severity="error" sx={{ mt: 0.5 }}>{error.firstname}</Alert>}
                     </Grid>
-                </Grid>
+                    <Grid item xs={6}>
+                        <TextField
+                            label="Last Name"
+                            fullWidth
+                            size="small"
+                            value={lastName}
+                            onChange={handleChangeLastName}
+                        />
+                        {error.lastname && <Alert severity="error" sx={{ mt: 0.5 }}>{error.lastname}</Alert>}
+                    </Grid>
 
-            </Grid>
+                    {/* Email & Username side by side */}
+                    <Grid item xs={6}>
+                        <TextField
+                            label="Email Address"
+                            type="email"
+                            fullWidth
+                            size="small"
+                            value={email}
+                            onChange={handleChangeEmail}
+                        />
+                        {error.email && <Alert severity="error" sx={{ mt: 0.5 }}>{error.email}</Alert>}
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField
+                            label="Username"
+                            fullWidth
+                            size="small"
+                            value={username}
+                            onChange={handleChangeUsername}
+                        />
+                        {error.username && <Alert severity="error" sx={{ mt: 0.5 }}>{error.username}</Alert>}
+                    </Grid>
+
+                    {/* Password & Confirm Password side by side */}
+                    <Grid item xs={6}>
+                        <TextField
+                            label="Password"
+                            type="password"
+                            fullWidth
+                            size="small"
+                            value={password}
+                            onChange={handleChangePassword}
+                        />
+                        {error.password && <Alert severity="error" sx={{ mt: 0.5 }}>{error.password}</Alert>}
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField
+                            label="Confirm Password"
+                            type="password"
+                            fullWidth
+                            size="small"
+                            value={confirmPassword}
+                            onChange={handleChangeConfirmPassword}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                        />
+                        {error.confirmPassword && <Alert severity="error" sx={{ mt: 0.5 }}>{error.confirmPassword}</Alert>}
+                    </Grid>
+
+                    {/* Restaurant Dropdown - only for Owners */}
+                    {userType === 'restaurant_owner' && (
+                        <Grid item xs={12}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel id="restaurant-select-label">Select Your Restaurant</InputLabel>
+                                <Select
+                                    labelId="restaurant-select-label"
+                                    value={restaurantName}
+                                    onChange={(e) => setRestaurantName(e.target.value)}
+                                    input={<OutlinedInput label="Select Your Restaurant" />}
+                                >
+                                    {restaurantOptions.map((name) => (
+                                        <MenuItem key={name} value={name}>{name}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {error.restaurantName && <Alert severity="error" sx={{ mt: 0.5 }}>{error.restaurantName}</Alert>}
+                        </Grid>
+                    )}
+
+                    {/* Submit Button */}
+                    <Grid item xs={12}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            onClick={handleSubmit}
+                            disabled={loading}
+                        >
+                            {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+                        </Button>
+                    </Grid>
+
+                    {/* Errors & Success */}
+                    {error.general && (
+                        <Grid item xs={12}>
+                            <Typography color="error" align="center">{error.general}</Typography>
+                        </Grid>
+                    )}
+                    {submitStatus && (
+                        <Grid item xs={12}>
+                            <Typography align="center">{confirmationMessage}</Typography>
+                        </Grid>
+                    )}
+
+                    {/* Login Link */}
+                    <Grid item xs={12}>
+                        <Typography align="center">
+                            Already have an account?{" "}
+                            <Button variant="text" onClick={() => navigate('/')}>
+                                Log In
+                            </Button>
+                        </Typography>
+                    </Grid>
+
+                </Grid>
+            </Box>
         </Box>
     );
 };

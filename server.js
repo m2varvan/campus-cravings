@@ -777,9 +777,9 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
+  const { uid, email, username, firstName, lastName, userType, profilePhoto } = req.body;
 
-  // 1️⃣ Check if email or username already exists
+  // Check if email or username already exists
   const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
@@ -806,12 +806,12 @@ app.post("/api/signup", (req, res) => {
       });
     }
 
-    // 2️⃣ Insert user into the database, defaulting user_type to 'Regular'
+    // Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
       `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
-      VALUES (?, ?, ?, ?, ?, ?, 'Regular')`;
-    const values = [uid, email, firstName, lastName, profilePhoto, username];
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const values = [uid, email, firstName, lastName, profilePhoto, username, userType];
 
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
@@ -1006,6 +1006,8 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
+});
+
 app.post("/api/save/fave/deal", (req, res) => {
     const { uuid, dealID } = req.body;
     const connection = mysql.createConnection(config);
