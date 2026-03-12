@@ -1,6 +1,9 @@
 import { Typography, Box, Grid, Chip } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
+import Favourite from "../Deals/Favourite";
+import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
+import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
 const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
@@ -18,8 +21,6 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
     <>
       <Grid item xs={12} sm={6} lg={4}>
         <Box
-          onClick={() => setOpenDetails(true)}
-          data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
           sx={{
             bgcolor: "secondary.light",
             p: 2,
@@ -71,6 +72,41 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   ")"
                 : "No ratings yet"}
             </Typography>
+            {/* Restaurant name and favourite button */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              {/* Name in box - make clickable*/}
+              <Box
+                onClick={() => setOpenDetails(true)}
+                sx={{ width: "90%" }}
+                data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontWeight: 600,
+                  }}
+                >
+                  {restaurant.restaurant_name}
+                </Typography>
+              </Box>
+
+              <Favourite
+                uuid={uuid}
+                itemID={restaurant.restaurant_id}
+                fave={restaurant.is_favourited}
+                saveFave={saveFaveRestaurant}
+                removeFave={removeFaveRestaurant}
+              />
+            </Box>
           </Box>
         </Box>
       </Grid>

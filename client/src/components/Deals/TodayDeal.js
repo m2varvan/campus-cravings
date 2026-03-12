@@ -11,7 +11,6 @@ const TodayDeal = ({
   error,
   loadTodayDeals,
   reloadDeals,
-  id,
 }) => {
   // Load today's deals on render
   React.useEffect(() => {
@@ -27,12 +26,6 @@ const TodayDeal = ({
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
   };
-
-  useEffect(() => {
-    if (id) {
-      setVisibleCount(todayDeals.length);
-    }
-  }, [id, todayDeals]);
 
   // Function to get the current date and format it
   const getTodayDate = () => {

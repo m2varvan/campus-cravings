@@ -47,19 +47,27 @@ const FilterSortDeals = ({
           onChange={(e) => setRestaurantFilter(e.target.value)}
           input={<OutlinedInput label="Filter by Restaurant" />}
           renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip
-                  key={value}
-                  label={value}
-                  size="small"
-                  onDelete={() => handleDeleteRestaurant(value)} // <-- delete one by one
-                />
-              ))}
-            </Box>
-          )}
-          MenuProps={menuProps}
-          data-testid="restaurant-filter"
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value) => (
+                  <Box
+                    key={value}
+                    onMouseDown={(event) => {
+                      event.stopPropagation(); // prevent select from opening
+                    }}
+                  >
+                    <Chip
+                      label={value}
+                      size="small"
+                      onDelete={() => {
+                        setRestaurantFilter((prev) => prev.filter((r) => r !== value));
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+            MenuProps={menuProps}
+            data-testid="restaurant-filter"
         >
           {restaurantOptions.map((name) => (
             <MenuItem key={name} value={name}>{name}</MenuItem>

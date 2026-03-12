@@ -18,7 +18,7 @@ const RestaurantList = ({ uuid }) => {
   const [openNowFilter, setOpenNowFilter] = useState(false);
 
   // Variables and functions to show only 24 by default
-  const defaultVisible = 24;
+  const defaultVisible = 18;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
   const handleShowMore = () => {
@@ -32,13 +32,21 @@ const RestaurantList = ({ uuid }) => {
     async function loadRestaurants() {
       try {
         setLoadingRestaurants(true);
-        const response = await fetch("/api/get-restaurants");
+
+        const response = await fetch("/api/get-restaurants", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userID: uuid }),
+        });
 
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('Restaurants',data)
         setRestaurants(data);
         console.log(data);
       } catch (error) {

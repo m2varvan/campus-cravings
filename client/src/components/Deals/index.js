@@ -85,6 +85,7 @@ const Deals = ({ uuid }) => {
     }
   };
 
+
   // Funtion to find restaurants for dropdown list once deals load
   React.useEffect(() => {
     const restaurantSet = new Set();
@@ -103,6 +104,10 @@ const Deals = ({ uuid }) => {
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
+
+    // Sort by votes descending
+    const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
+
 
      // Helper to compute overall rating for a deal
     const getOverallRating = (deal) => {
@@ -127,24 +132,38 @@ const Deals = ({ uuid }) => {
     };
 
 
-    // Apply filters and sorting to today's deals
+    // Filter and sort today's deals
     let filteredToday = todayDeals.filter((deal) =>
       restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
     );
 
-    setDisplayedTodayDeals(sortByRating(filteredToday));
+    if (ratingSort === '') {
+      // No rating sort so sort by votes
+      filteredToday = sortByVotes(filteredToday);
+    } else {
+      filteredToday = sortByRating(filteredToday);
+    }
 
-    
+    setDisplayedTodayDeals(filteredToday);
+
     // Filter and sort week deals
     const newWeekDeals = {};
     Object.keys(weekDeals).forEach((day) => {
-      const filtered = (weekDeals[day] || []).filter(
+      let filtered = (weekDeals[day] || []).filter(
         (deal) => restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
       );
-      newWeekDeals[day] = sortByRating(filtered);
+
+      if (ratingSort === '') {
+        filtered = sortByVotes(filtered);
+      } else {
+        filtered = sortByRating(filtered);
+      }
+
+      newWeekDeals[day] = filtered;
     });
 
     setDisplayedWeekDeals(newWeekDeals);
+    
 
   }, [restaurantFilter, ratingSort, todayDeals, weekDeals])
 
