@@ -301,9 +301,13 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
               )}
             </Box>
 
-            <RestaurantReview restaurantID={restaurant.restaurant_id} />
-          </DialogContent>
-        </>
+        <RestaurantReview
+          restaurantID={restaurant.restaurant_id}
+          uuid={uuid}
+        />
+      
+      </DialogContent>
+      </>
       )}
 
       {/* Footer */}

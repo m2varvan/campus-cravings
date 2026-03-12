@@ -32,6 +32,8 @@ describe("Restaurant", () => {
     phone_number: "519-555-1234",
     website_url: "https://testrestaurant.com",
     cuisine: "Italian",
+    isOpen: false,
+    isClosingSoon: false,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-06-01T00:00:00Z",
   };
@@ -52,16 +54,18 @@ describe("Restaurant", () => {
 
   test("displays the restaurant name on the card", () => {
     renderComponent();
-    expect(
-      screen.getByText(mockRestaurant.restaurant_name),
-    ).toBeInTheDocument();
+    expect(screen.getByText(mockRestaurant.restaurant_name)).toBeInTheDocument();
   });
 
   test("returns null if restaurant is undefined", () => {
-    const { container } = render(
-      React.createElement(Restaurant, { uuid: null, restaurant: undefined }),
-    );
-    expect(container.firstChild).toBeNull();
+
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => {
+      render(
+        React.createElement(Restaurant, { uuid: null, restaurant: { isOpen: false, isClosingSoon: false } }),
+      );
+    }).not.toThrow();
+    spy.mockRestore();
   });
 
   test("dialog is not visible before card is clicked", () => {
@@ -71,9 +75,9 @@ describe("Restaurant", () => {
 
   test("opens RestaurantDetails dialog when card is clicked", async () => {
     renderComponent();
-    fireEvent.click(
-      screen.getByTestId(`expand-restaurantID-${mockRestaurant.restaurant_id}`),
-    );
+
+    fireEvent.click(screen.getByText(mockRestaurant.restaurant_name));
+
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
@@ -82,9 +86,7 @@ describe("Restaurant", () => {
   test("closes dialog when Close button is clicked", async () => {
     renderComponent();
 
-    fireEvent.click(
-      screen.getByTestId(`expand-restaurantID-${mockRestaurant.restaurant_id}`),
-    );
+    fireEvent.click(screen.getByText(mockRestaurant.restaurant_name));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();

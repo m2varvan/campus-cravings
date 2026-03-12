@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from "../Search/SearchBar";
 import { useLocation } from 'react-router-dom';
 import { FirebaseContext } from '../Firebase';
 
@@ -130,6 +131,9 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
               </Button>
             ))}
           </Box>
+          
+          {/* Search Bar */}
+          <SearchBar />
 
           {/* User Avatar & Settings */}
           <Box sx={{ flexGrow: 0 }}>

@@ -645,6 +645,7 @@ app.post("/api/deal/ratings", (req, res) => {
 app.get("/api/deal/:dealID/reviews", (req, res) => {
   const { dealID } = req.params;
   const connection = mysql.createConnection(config);
+  const userID = req.query.userID;
 
   const sql = `
     SELECT 
@@ -653,16 +654,24 @@ app.get("/api/deal/:dealID/reviews", (req, res) => {
       u.username,
       r.title,
       r.body,
-      DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
-      DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
-      r.helpful_votes
+      r.helpful_votes,
+      DATE_FORMAT(r.created_at,'%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at,'%Y-%m-%d %H:%i') AS edited_at,
+
+      EXISTS(
+          SELECT 1
+          FROM review_helpful_votes hv
+          WHERE hv.review_id = r.review_id
+          AND hv.user_id = ?
+      ) AS user_voted
+
     FROM reviews r
     JOIN users u ON r.user_id = u.id
     WHERE r.deal_id = ?
     ORDER BY r.created_at DESC
   `;
 
-  connection.query(sql, [dealID], (err, results) => {
+  connection.query(sql, [userID, dealID], (err, results) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch reviews" });
@@ -677,6 +686,7 @@ app.get("/api/deal/:dealID/reviews", (req, res) => {
 app.get("/api/restaurant/:restaurantID/reviews", (req, res) => {
   const { restaurantID } = req.params;
   const connection = mysql.createConnection(config);
+  const userID = req.query.userID;
 
   const sql = `
     SELECT 
@@ -686,8 +696,17 @@ app.get("/api/restaurant/:restaurantID/reviews", (req, res) => {
       r.title,
       r.body,
       d.deal_name,
-      DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i') AS created_at,
-      DATE_FORMAT(r.edited_at, '%Y-%m-%d %H:%i') AS edited_at
+      r.helpful_votes,
+      DATE_FORMAT(r.created_at,'%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at,'%Y-%m-%d %H:%i') AS edited_at,
+
+      EXISTS(
+          SELECT 1
+          FROM review_helpful_votes hv
+          WHERE hv.review_id = r.review_id
+          AND hv.user_id = ?
+      ) AS user_voted
+
     FROM reviews r
     JOIN users u ON r.user_id = u.id
     JOIN deals d ON r.deal_id = d.deal_id
@@ -695,7 +714,7 @@ app.get("/api/restaurant/:restaurantID/reviews", (req, res) => {
     ORDER BY r.created_at DESC
   `;
 
-  connection.query(sql, [restaurantID], (err, results) => {
+  connection.query(sql, [userID, restaurantID], (err, results) => {
     if (err) {
       console.error(err);
       return res
@@ -999,51 +1018,105 @@ app.post("/api/vote", (req, res) => {
   });
 });
 
-app.post("/api/review/helpful", async (req, res) => {
-  const { reviewID } = req.body;
-  const userID = req.user?.id; // assuming auth middleware
+app.post("/api/review/helpful", (req, res) => {
+
+  const { reviewID, userID } = req.body;
 
   if (!userID) {
     return res.status(401).json({ error: "Must be logged in to vote helpful" });
   }
 
-  try {
-    // check if already voted
-    const checkQuery = `
-      SELECT * FROM review_helpful_votes
-      WHERE review_id = ? AND user_id = ?
-    `;
+  const connection = mysql.createConnection(config);
 
-    const [existing] = await db.query(checkQuery, [reviewID, userID]);
+  const checkVote = `
+    SELECT id
+    FROM review_helpful_votes
+    WHERE review_id = ? AND user_id = ?
+  `;
 
-    if (existing.length > 0) {
-      return res
-        .status(400)
-        .json({ error: "You already voted helpful for this review." });
+  connection.query(checkVote, [reviewID, userID], (err, results) => {
+
+    if (err) {
+      connection.end();
+      return res.status(500).json({ error: "Database error" });
     }
 
-    // insert vote
-    const insertVote = `
-      INSERT INTO review_helpful_votes (review_id, user_id)
-      VALUES (?, ?)
-    `;
+    // USER ALREADY VOTED → REMOVE VOTE
+    if (results.length > 0) {
 
-    await db.query(insertVote, [reviewID, userID]);
+      const deleteVote = `
+        DELETE FROM review_helpful_votes
+        WHERE review_id = ? AND user_id = ?
+      `;
 
-    // increment counter
-    const updateReview = `
-      UPDATE reviews
-      SET helpful_votes = helpful_votes + 1
-      WHERE review_id = ?
-    `;
+      connection.query(deleteVote, [reviewID, userID], (err) => {
 
-    await db.query(updateReview, [reviewID]);
+        if (err) {
+          connection.end();
+          return res.status(500).json({ error: "Failed to remove vote" });
+        }
 
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
+        const decrement = `
+          UPDATE reviews
+          SET helpful_votes = helpful_votes - 1
+          WHERE review_id = ?
+        `;
+
+        connection.query(decrement, [reviewID], (err) => {
+
+          connection.end();
+
+          if (err) {
+            return res.status(500).json({ error: "Failed to update review" });
+          }
+
+          return res.json({ voted: false });
+
+        });
+
+      });
+
+    }
+
+    // USER HAS NOT VOTED → ADD VOTE
+    else {
+
+      const insertVote = `
+        INSERT INTO review_helpful_votes (review_id, user_id)
+        VALUES (?, ?)
+      `;
+
+      connection.query(insertVote, [reviewID, userID], (err) => {
+
+        if (err) {
+          connection.end();
+          return res.status(500).json({ error: "Failed to insert vote" });
+        }
+
+        const increment = `
+          UPDATE reviews
+          SET helpful_votes = helpful_votes + 1
+          WHERE review_id = ?
+        `;
+
+        connection.query(increment, [reviewID], (err) => {
+
+          connection.end();
+
+          if (err) {
+            return res.status(500).json({ error: "Failed to update review" });
+          }
+
+          return res.json({ voted: true });
+
+        });
+
+      });
+
+    }
+
+  });
+
 });
 
 app.get("/api/review/:reviewID/helpful", async (req, res) => {
@@ -1063,6 +1136,7 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 app.post("/api/save/fave/deal", (req, res) => {
   const { uuid, dealID } = req.body;
@@ -1313,6 +1387,54 @@ app.get('/api/signup/restaurants', (req, res) => {
         }
         return res.status(200).json(data);
     });
+});
+
+app.get("/api/search", (req, res) => {
+  const search = req.query.q;
+
+  if (!search) {
+    return res.json({ restaurants: [], deals: [] });
+  }
+
+  const restaurantQuery = `
+    SELECT restaurant_id, restaurant_name
+    FROM restaurants
+    WHERE restaurant_name LIKE ?
+  `;
+
+  // Only return IDs (and restaurant name if needed). Full deal data is fetched individually later.
+  const dealQuery = `
+    SELECT d.deal_id, d.restaurant_id
+    FROM deals d
+    WHERE d.deal_name LIKE ?
+  `;
+
+  const db = mysql.createConnection(config);
+
+  db.connect((err) => {
+    if (err) {
+      console.error("DB connection failed:", err);
+      return res.status(500).send("Search failed");
+    }
+
+    db.query(restaurantQuery, [`%${search}%`], (err1, restaurants) => {
+      if (err1) {
+        console.error("Restaurant query error:", err1);
+        db.end();
+        return res.status(500).send("Search failed");
+      }
+
+      db.query(dealQuery, [`%${search}%`], (err2, deals) => {
+        db.end();
+        if (err2) {
+          console.error("Deal query error:", err2);
+          return res.status(500).send("Search failed");
+        }
+
+        res.json({ restaurants, deals });
+      });
+    });
+  });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

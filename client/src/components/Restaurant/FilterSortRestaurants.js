@@ -50,17 +50,20 @@ const FilterSortRestaurants = ({
 
   return (
     <Box
-      display="flex"
-      justifyContent="flex-start"
-      alignItems="center"
-      gap={2}
-      mt={2}
+      sx={{
+        display: "flex",
+        flexWrap: "wrap", 
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 2,
+        mt: 2,
+        p: 2,
+        borderRadius: 2,
+      }}
     >
       {/* Multi-select Restaurant Filter */}
-      <FormControl size="small" sx={{ minWidth: 250 }}>
-        <InputLabel id="restaurant-filter-label">
-          Filter by Restaurant
-        </InputLabel>
+      <FormControl size="small" sx={{ minWidth: 220, flexGrow: 1, maxWidth: 300 }}>
+        <InputLabel id="restaurant-filter-label">Filter by Restaurant</InputLabel>
         <Select
           labelId="restaurant-filter-label"
           multiple
@@ -81,18 +84,15 @@ const FilterSortRestaurants = ({
             </Box>
           )}
           MenuProps={menuProps}
-          data-testid="restaurant-filter"
         >
           {restaurantOptions.map((name) => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
+            <MenuItem key={name} value={name}>{name}</MenuItem>
           ))}
         </Select>
       </FormControl>
 
       {/* Cuisine Filtering */}
-      <FormControl size="small" sx={{ minWidth: 250 }}>
+      <FormControl size="small" sx={{ minWidth: 200, flexGrow: 1, maxWidth: 250 }}>
         <InputLabel id="cuisine-filter-label">Filter by Cuisine</InputLabel>
         <Select
           labelId="cuisine-filter-label"
@@ -116,26 +116,21 @@ const FilterSortRestaurants = ({
           MenuProps={menuProps}
         >
           {cuisineOptions.map((name) => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
+            <MenuItem key={name} value={name}>{name}</MenuItem>
           ))}
         </Select>
       </FormControl>
 
       {/* Rating Sort */}
-      <FormControl size="small" sx={{ minWidth: 220 }}>
+      <FormControl size="small" sx={{ minWidth: 200, flexGrow: 1, maxWidth: 220 }}>
         <InputLabel id="rating-sort-label">Sort by Category</InputLabel>
         <Select
           labelId="rating-sort-label"
-          data-testid="rating-sort"
           value={ratingSort}
           onChange={(e) => setRatingSort(e.target.value)}
           label="Sort by Category"
         >
-          <MenuItem value="">
-            <em>Default (Alphabetical)</em>
-          </MenuItem>
+          <MenuItem value=""><em>Default (A-Z)</em></MenuItem>
           <MenuItem value="overall">Overall Rating</MenuItem>
           <MenuItem value="taste">Taste</MenuItem>
           <MenuItem value="value">Value</MenuItem>
@@ -143,29 +138,33 @@ const FilterSortRestaurants = ({
         </Select>
       </FormControl>
 
-      {/* Open Now Toggle */}
-      <FormControlLabel
-        control={
-          <Switch
-            checked={openNowFilter}
-            onChange={(e) => setOpenNowFilter(e.target.checked)}
-            color="secondary"
-          />
-        }
-        label="Open Now"
-        sx={{ whiteSpace: "nowrap" }}
-      />
+      {/* Open Now Toggle Container */}
+      <Box sx={{ 
+        display: "flex", 
+        alignItems: "center", 
+        height: 40, 
+        px: 1,
+        borderRadius: 1,
+      }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={openNowFilter}
+              onChange={(e) => setOpenNowFilter(e.target.checked)}
+              color="success" 
+            />
+          }
+          label="Open Now"
+          sx={{ 
+            m: 0, 
+          }}
+        />
+      </Box>
 
       {/* Clear Filters */}
       <Button
-        data-testid="clear-filters"
-        variant="outlined"
+        variant="contained"
         onClick={handleClearFilters}
-        sx={{
-          height: 40,
-          px: 3,
-          textTransform: "none",
-        }}
       >
         Reset All
       </Button>
