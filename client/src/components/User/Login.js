@@ -110,6 +110,8 @@ const Login = ({ firebase }) => {
                         autoComplete="current-password"
                         value={password}
                         onChange={handleChangePassword}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+
                     />
                     {error.password && (
                         <Alert severity="error" sx={{ mt: 2 }}>{error.password}</Alert>
@@ -140,7 +142,7 @@ const Login = ({ firebase }) => {
                     {submitStatus && (
                         <>
                             <br />
-                            <Alert severity="success" data-testid="login-success">
+                            <Alert severity="success" data-testid="login-success" sx={{ mt: 2 }}>
                                 Login successful! Redirecting...
                             </Alert>
                         </>

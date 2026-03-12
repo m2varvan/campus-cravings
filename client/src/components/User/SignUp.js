@@ -224,6 +224,7 @@ const SignUp = ({ firebase }) => {
                                 margin="normal"
                                 value={confirmPassword}
                                 onChange={handleChangeConfirmPassword}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             />
                             {error.confirmPassword && <Alert severity="error">{error.confirmPassword}</Alert>}
                         </Grid>
