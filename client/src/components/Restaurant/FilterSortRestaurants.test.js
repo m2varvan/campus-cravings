@@ -33,15 +33,12 @@ describe("FilterSortRestaurants Component", () => {
   const renderFilters = async (props = defaultProps) => {
     render(<FilterSortRestaurants {...props} />);
 
-    // Select the dropdowns by their label text
     const restaurantDropdown = screen.getByLabelText(/Filter by Restaurant/i).closest('.MuiInputBase-root');
     const cuisineDropdown = screen.getByLabelText(/Filter by Cuisine/i).closest('.MuiInputBase-root');
     const ratingDropdown = screen.getByLabelText(/Sort by Category/i).closest('.MuiInputBase-root');
     
-    // Select the switch (Open Now)
     const openNowToggle = screen.getByRole("checkbox", { name: /Open Now/i });
     
-    // Select the Reset button by its text
     const clearButton = screen.getByRole("button", { name: /Reset All/i });
 
     return {
@@ -72,7 +69,6 @@ describe("FilterSortRestaurants Component", () => {
   test("dropdowns populate with correct options from props", async () => {
     const { restaurantDropdown } = await renderFilters();
 
-    // Trigger the dropdown open
     fireEvent.mouseDown(within(restaurantDropdown).getByRole("combobox"));
 
     const listbox = await screen.findByRole("listbox");
@@ -121,7 +117,6 @@ describe("FilterSortRestaurants Component", () => {
   test("toggles the 'Open Now' filter switch", async () => {
     const { openNowToggle } = await renderFilters();
 
-    // Clicking the switch
     fireEvent.click(openNowToggle);
 
     expect(mockSetOpenNowFilter).toHaveBeenCalledWith(true);
