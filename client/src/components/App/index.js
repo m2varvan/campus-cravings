@@ -77,9 +77,9 @@ useEffect(() => {
         />
 
         <Routes>
-          <Route path="/" element={<Deals authUser={authUser} />} />
-          <Route path="/Restaurant" element={<RestaurantList authUser={authUser} />} />
-          <Route path="/restaurant" element={<RestaurantList authUser={authUser} />} />
+          <Route path="/" element={<Deals uuid={authUser} />} />
+          <Route path="/Restaurant" element={<RestaurantList uuid={authUser} />} />
+          <Route path="/restaurant" element={<RestaurantList uuid={authUser} />} />
           <Route
             path="/Login"
             element={
