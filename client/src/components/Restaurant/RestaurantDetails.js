@@ -311,7 +311,10 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
               )}
             </Box>
 
-        <RestaurantReview restaurantID={restaurant.restaurant_id} />
+        <RestaurantReview
+          restaurantID={restaurant.restaurant_id}
+          uuid={uuid}
+        />
       
       </DialogContent>
       </>
