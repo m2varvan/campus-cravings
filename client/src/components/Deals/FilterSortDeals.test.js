@@ -114,62 +114,6 @@ describe("Deals Filtering and Sorting", () => {
         expect(screen.queryByText("Sandwhich Specials")).not.toBeInTheDocument();
     });
 
-    test.skip("sorts deals by highest rating first", async () => {
-        const { ratingDropdown } = await renderDeals();
-
-        // Open the dropdown
-        fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
-
-        // listbox should appear in the DOM
-        const listbox = await screen.findByRole("listbox");
-
-        // Click the option
-        const hakkaOption = within(listbox).getByText("Highest to Lowest");
-        fireEvent.click(hakkaOption);
-
-        // Get all elements with deal-name tag
-        const dealsContainer = screen.getByTestId("today-deals"); // parent of all deals
-        const dealNameElements = within(dealsContainer).getAllByTestId("deal-name");
-        
-        // Map textContent
-        const dealNames = dealNameElements.map(el => el.textContent.trim());
-
-        // Assert exact order
-        expect(dealNames).toEqual([
-            "Lunch Special",
-            "Promo Special",
-            "Sandwhich Specials"
-        ]);
-    });
-
-    test.skip("sorts deals by lowest rating first", async () => {
-        const { ratingDropdown } = await renderDeals();
-
-        // Open the dropdown
-        fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
-
-        // listbox should appear in the DOM
-        const listbox = await screen.findByRole("listbox");
-
-        // Click the option
-        const hakkaOption = within(listbox).getByText("Highest to Lowest");
-        fireEvent.click(hakkaOption);
-
-
-        const dealsContainer = screen.getByTestId("today-deals"); // parent of all deals
-        const dealNameElements = within(dealsContainer).getAllByTestId("deal-name");
-        
-        // Map textContent
-        const dealNames = dealNameElements.map(el => el.textContent.trim());
-
-        // Assert exact order
-        expect(dealNames).toEqual([
-            "Sandwhich Specials",
-            "Promo Special",
-            "Lunch Special"
-        ]);
-    });
-
 
     test("clears filters and shows all deals", async () => {
         const { restaurantDropdown, clearButton } = await renderDeals();
