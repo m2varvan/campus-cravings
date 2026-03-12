@@ -1086,4 +1086,146 @@ app.post("/api/remove/fave/restaurant", (req, res) => {
     });
 });
 
+app.post("/api/load/user", (req, res) => {
+  const { uuid } = req.body;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+      SELECT 
+        id,
+        first_name,
+        last_name,
+        email_address,
+        username,
+        profile_photo,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at
+      FROM users
+      WHERE id = ?;
+  `;
+
+  connection.query(sql, [uuid], (err, result) => {
+    connection.end();
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to load user info" });
+    }
+
+   const user = result[0];
+
+    const userInfo = {
+      id: user.id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email_address,
+      userName: user.username,
+      profilePhoto: user.profile_photo,
+      createdDate: user.created_at
+    };
+
+    res.json(userInfo);
+  });
+});
+
+// Route to get a user's favourite deals
+app.post("/api/load/fave/deal", (req, res) => {
+  const { userID } = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      d.deal_id, 
+      d.restaurant_id,
+      d.deal_name, 
+      d.description, 
+      d.deal_price, 
+      DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+      r.restaurant_name, 
+      AVG(rt.taste_score) AS avg_taste_rating,
+      AVG(rt.value_score) AS avg_value_rating,
+      AVG(rt.portion_score) AS avg_portion_rating,
+      COUNT(rt.rating_id) AS number_of_ratings,
+      COALESCE(SUM(dv.vote), 0) AS total_votes,
+      MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
+      1 AS is_favourited
+    FROM deals d
+    JOIN favourite_deals fd ON fd.deal_id = d.deal_id AND fd.user_id = ?
+    JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+    LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+    LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
+    GROUP BY d.deal_id;
+  `;
+
+  connection.query(sql, [userID, userID], (error, results) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      return res.status(500).json({ error: "Failed to fetch favourite deals" });
+    }
+
+    const faveDeals = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name,
+      dealDescription: deal.description || "n/a",
+      dealPrice: deal.deal_price.toFixed(2),
+      dealEditData: deal.edited_at_formatted,
+      dealValueRating: deal.avg_value_rating ? parseFloat(deal.avg_value_rating.toFixed(1)) : 0,
+      dealTasteRating: deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
+      dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
+      numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings, 10) : 0,
+      totalVote: parseInt(deal.total_votes) || 0,
+      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
+      fave: 1,
+    }));
+
+    res.json(faveDeals);
+  });
+
+  connection.end();
+});
+
+// API endpoint to get favourited restaurants with average rating and rating count
+app.post("/api/load/fave/restaurants", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uuid } = req.body;
+
+  connection.connect((err) => {
+    if (err) {
+      console.error("Connection error:", err.message);
+      return res.status(500).json({ error: "Database connection failed" });
+    }
+
+    const query = `
+      SELECT 
+          r.*,
+          1 as fave,
+          ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
+          COUNT(rt.rating_id) AS num_ratings
+      FROM restaurants r
+      JOIN favourite_restaurants fr
+          ON r.restaurant_id = fr.restaurant_id
+      LEFT JOIN deals d
+          ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ratings rt
+          ON rt.deal_id = d.deal_id
+      WHERE fr.user_id = ?
+      GROUP BY r.restaurant_id;
+    `;
+
+    connection.query(query, [uuid], (error, results) => {
+      if (error) {
+        console.error("Database error:", error.message);
+        connection.end();
+        return res.status(500).json({ error: "Failed to fetch favourite restaurants" });
+      }
+
+      res.json(results);
+      connection.end();
+    });
+  });
+});
+
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

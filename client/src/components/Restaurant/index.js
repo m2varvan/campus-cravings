@@ -16,7 +16,7 @@ const RestaurantList = ({ uuid }) => {
   const [loadingRestaurantsError, setLoadingRestaurantsError] = useState(false);
 
   // Variables and functions to show only 24 by default
-  const defaultVisible = 24;
+  const defaultVisible = 18;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
   const handleShowMore = () => {
@@ -64,7 +64,7 @@ const RestaurantList = ({ uuid }) => {
   return (
     <Grid container p={4} display={"flex"}>
       {/* Page Title */}
-      <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+      <Typography variant="h3">University Shops Plaza Restaurants</Typography>
       <Grid item xs={12}>
         {/* Show loadingRestaurants message when restaurants are loading */}
         {loadingRestaurants && (

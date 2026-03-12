@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { FirebaseContext } from '../Firebase';
 
 
@@ -19,7 +20,11 @@ const pages = [
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 
-const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
+const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const firebase = React.useContext(FirebaseContext);
 
   let settings;
@@ -27,6 +32,11 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
   const handleSignOut = async () => {
     await firebase.doSignOut();
     setProfilePhoto('U');
+
+    if (location.pathname === '/User') {
+      navigate('/');
+    }
+
     window.location.reload();
   };
 
@@ -37,11 +47,12 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
     ];
   } else {
     settings = [
+      { label: 'My Account', path: '/User', id: 'nav-user' },
       { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+      
     ];
   }
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate();
+  
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -56,7 +67,7 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
   };
 
   return (
-    <AppBar position="static" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
+    <AppBar position="sticky" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
