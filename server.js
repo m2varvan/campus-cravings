@@ -5,7 +5,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -779,7 +778,7 @@ app.post("/api/signup", (req, res) => {
 
   const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
 
-  // 1️⃣ Check if email or username already exists
+  // Check if email or username already exists
   const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
@@ -806,7 +805,7 @@ app.post("/api/signup", (req, res) => {
       });
     }
 
-    // 2️⃣ Insert user into the database, defaulting user_type to 'Regular'
+    //  Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
       `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
@@ -1006,6 +1005,8 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
+});
+
 app.post("/api/save/fave/deal", (req, res) => {
     const { uuid, dealID } = req.body;
     const connection = mysql.createConnection(config);

@@ -10,6 +10,8 @@ import loadFaveRestaurants from '../../APIs/loadFaveRestaurants';
 
 const User = ({uuid}) => {
 
+    console.log('UUID', uuid)
+
     const [userInfo, setUserInfo] = React.useState(null)
     const [faveDeals, setFaveDeals] = React.useState([])
     const [faveRestaurants, setFaveRestaurants] = React.useState([])
