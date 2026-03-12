@@ -4,127 +4,159 @@ import React from "react";
 import FilterSortRestaurants from "./FilterSortRestaurants";
 
 describe("FilterSortRestaurants Component", () => {
-    const mockSetRestaurantFilter = jest.fn();
-    const mockSetCuisineFilter = jest.fn();
-    const mockSetRatingSort = jest.fn();
-    const mockSetOpenNowFilter = jest.fn();
+  const mockSetRestaurantFilter = jest.fn();
+  const mockSetCuisineFilter = jest.fn();
+  const mockSetRatingSort = jest.fn();
+  const mockSetOpenNowFilter = jest.fn();
 
-    const defaultProps = {
-        restaurantFilter: [],
-        setRestaurantFilter: mockSetRestaurantFilter,
-        cuisineFilter: [],
-        setCuisineFilter: mockSetCuisineFilter,
-        ratingSort: "",
-        setRatingSort: mockSetRatingSort,
-        openNowFilter: false,
-        setOpenNowFilter: mockSetOpenNowFilter,
-        restaurantOptions: ["Hakka Nation", "Indian Sweet Master", "Izna Poke Plus"],
-        cuisineOptions: ["Chinese / Indian", "Indian", "Japanese"],
+  const defaultProps = {
+    restaurantFilter: [],
+    setRestaurantFilter: mockSetRestaurantFilter,
+    cuisineFilter: [],
+    setCuisineFilter: mockSetCuisineFilter,
+    ratingSort: "",
+    setRatingSort: mockSetRatingSort,
+    openNowFilter: false,
+    setOpenNowFilter: mockSetOpenNowFilter,
+    restaurantOptions: [
+      "Hakka Nation",
+      "Indian Sweet Master",
+      "Izna Poke Plus",
+    ],
+    cuisineOptions: ["Chinese / Indian", "Indian", "Japanese"],
+  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const renderFilters = async (props = defaultProps) => {
+    render(React.createElement(FilterSortRestaurants, props));
+
+    const restaurantDropdown = screen.getByTestId("restaurant-filter");
+    const cuisineDropdown = screen
+      .getByLabelText(/Filter by Cuisine/i)
+      .closest(".MuiFormControl-root");
+    const ratingDropdown = screen.getByTestId("rating-sort");
+    const openNowToggle = screen.getByLabelText("Open Now");
+    const clearButton = screen.getByTestId("clear-filters");
+
+    return {
+      restaurantDropdown,
+      cuisineDropdown,
+      ratingDropdown,
+      openNowToggle,
+      clearButton,
     };
+  };
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
+  test("renders all filtering and sorting inputs on the screen", async () => {
+    const {
+      restaurantDropdown,
+      cuisineDropdown,
+      ratingDropdown,
+      openNowToggle,
+      clearButton,
+    } = await renderFilters();
 
-    const renderFilters = async (props = defaultProps) => {
-        // THE MAGIC FIX: Using React.createElement instead of <FilterSortRestaurants /> 
-        // to bypass the Babel JSX parsing error entirely!
-        render(React.createElement(FilterSortRestaurants, props));
+    expect(restaurantDropdown).toBeInTheDocument();
+    expect(cuisineDropdown).toBeInTheDocument();
+    expect(ratingDropdown).toBeInTheDocument();
+    expect(openNowToggle).toBeInTheDocument();
+    expect(clearButton).toBeInTheDocument();
+  });
 
-        const restaurantDropdown = screen.getByTestId("restaurant-filter");
-        const cuisineDropdown = screen.getByLabelText(/Filter by Cuisine/i).closest('.MuiFormControl-root');
-        const ratingDropdown = screen.getByTestId("rating-sort");
-        const openNowToggle = screen.getByLabelText("Open Now");
-        const clearButton = screen.getByTestId("clear-filters");
+  test("dropdowns populate with correct options from props", async () => {
+    const { restaurantDropdown } = await renderFilters();
 
-        return { restaurantDropdown, cuisineDropdown, ratingDropdown, openNowToggle, clearButton };
-    };
+    // Open the dropdown
+    fireEvent.mouseDown(restaurantDropdown.querySelector('[role="combobox"]'));
 
-    test("renders all filtering and sorting inputs on the screen", async () => {
-        const { restaurantDropdown, cuisineDropdown, ratingDropdown, openNowToggle, clearButton } = await renderFilters();
+    const listbox = await screen.findByRole("listbox");
 
-        expect(restaurantDropdown).toBeInTheDocument();
-        expect(cuisineDropdown).toBeInTheDocument();
-        expect(ratingDropdown).toBeInTheDocument();
-        expect(openNowToggle).toBeInTheDocument();
-        expect(clearButton).toBeInTheDocument();
-    });
+    expect(within(listbox).getByText("Hakka Nation")).toBeInTheDocument();
+    expect(
+      within(listbox).getByText("Indian Sweet Master"),
+    ).toBeInTheDocument();
+    expect(within(listbox).getByText("Izna Poke Plus")).toBeInTheDocument();
+  });
 
-    test("dropdowns populate with correct options from database props", async () => {
-        const { restaurantDropdown } = await renderFilters();
+  test("filters by a specific restaurant name", async () => {
+    const { restaurantDropdown } = await renderFilters();
 
-        fireEvent.mouseDown(restaurantDropdown.querySelector('[role="combobox"]'));
-        const listbox = await screen.findByRole("listbox");
+    fireEvent.mouseDown(restaurantDropdown.querySelector('[role="combobox"]'));
 
-        expect(within(listbox).getByText("Hakka Nation")).toBeInTheDocument();
-        expect(within(listbox).getByText("Indian Sweet Master")).toBeInTheDocument();
-        expect(within(listbox).getByText("Izna Poke Plus")).toBeInTheDocument();
-    });
+    const listbox = await screen.findByRole("listbox");
 
-    test("filters by a specific restaurant name", async () => {
-        const { restaurantDropdown } = await renderFilters();
+    // Click the option
+    const hakkaOption = within(listbox).getByText("Hakka Nation");
+    fireEvent.click(hakkaOption);
 
-        fireEvent.mouseDown(restaurantDropdown.querySelector('[role="combobox"]'));
-        const listbox = await screen.findByRole("listbox");
+    expect(mockSetRestaurantFilter).toHaveBeenCalledWith(["Hakka Nation"]);
+  });
 
-        const hakkaOption = within(listbox).getByText("Hakka Nation");
-        fireEvent.click(hakkaOption);
+  test("filters by a specific cuisine type", async () => {
+    const { cuisineDropdown } = await renderFilters();
 
-        expect(mockSetRestaurantFilter).toHaveBeenCalledWith(["Hakka Nation"]);
-    });
+    fireEvent.mouseDown(cuisineDropdown.querySelector('[role="combobox"]'));
 
-    test("filters by a specific cuisine type", async () => {
-        const { cuisineDropdown } = await renderFilters();
+    const listbox = await screen.findByRole("listbox");
 
-        fireEvent.mouseDown(cuisineDropdown.querySelector('[role="combobox"]'));
-        const listbox = await screen.findByRole("listbox");
+    const japaneseOption = within(listbox).getByText("Japanese");
+    fireEvent.click(japaneseOption);
 
-        const japaneseOption = within(listbox).getByText("Japanese");
-        fireEvent.click(japaneseOption);
+    expect(mockSetCuisineFilter).toHaveBeenCalledWith(["Japanese"]);
+  });
 
-        expect(mockSetCuisineFilter).toHaveBeenCalledWith(["Japanese"]);
-    });
+  test("sorts restaurants by 'Taste' rating category", async () => {
+    const { ratingDropdown } = await renderFilters();
 
-    test("sorts restaurants by 'Taste' rating category", async () => {
-        const { ratingDropdown } = await renderFilters();
+    fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
 
-        fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
-        const listbox = await screen.findByRole("listbox");
+    const listbox = await screen.findByRole("listbox");
 
-        const tasteOption = within(listbox).getByText("Taste");
-        fireEvent.click(tasteOption);
+    const tasteOption = within(listbox).getByText("Taste");
+    fireEvent.click(tasteOption);
 
-        expect(mockSetRatingSort).toHaveBeenCalledWith("taste");
-    });
+    expect(mockSetRatingSort).toHaveBeenCalledWith("taste");
+  });
 
-    test("sorts restaurants by 'Overall Rating' category", async () => {
-        const { ratingDropdown } = await renderFilters();
+  test("sorts restaurants by 'Overall Rating' category", async () => {
+    const { ratingDropdown } = await renderFilters();
 
-        fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
-        const listbox = await screen.findByRole("listbox");
+    fireEvent.mouseDown(ratingDropdown.querySelector('[role="combobox"]'));
 
-        const overallOption = within(listbox).getByText("Overall Rating");
-        fireEvent.click(overallOption);
+    const listbox = await screen.findByRole("listbox");
 
-        expect(mockSetRatingSort).toHaveBeenCalledWith("overall");
-    });
+    const overallOption = within(listbox).getByText("Overall Rating");
+    fireEvent.click(overallOption);
 
-    test("toggles the 'Open Now' filter switch", async () => {
-        const { openNowToggle } = await renderFilters();
+    expect(mockSetRatingSort).toHaveBeenCalledWith("overall");
+  });
 
-        fireEvent.click(openNowToggle);
+  test("toggles the 'Open Now' filter switch", async () => {
+    const { openNowToggle } = await renderFilters();
 
-        expect(mockSetOpenNowFilter).toHaveBeenCalledWith(true);
-    });
+    fireEvent.click(openNowToggle);
 
-    test("clears filters and resets all states back to default", async () => {
-        const { clearButton } = await renderFilters();
+    expect(mockSetOpenNowFilter).toHaveBeenCalledWith(true);
+  });
 
-        fireEvent.click(clearButton);
+  test("clears filters and resets all states back to default", async () => {
+    const { restaurantDropdown, clearButton } = await renderFilters();
 
-        expect(mockSetRestaurantFilter).toHaveBeenCalledWith([]);
-        expect(mockSetCuisineFilter).toHaveBeenCalledWith([]);
-        expect(mockSetRatingSort).toHaveBeenCalledWith("");
-        expect(mockSetOpenNowFilter).toHaveBeenCalledWith(false);
-    });
+    fireEvent.mouseDown(restaurantDropdown.querySelector('[role="combobox"]'));
+    const listbox = await screen.findByRole("listbox");
+    const hakkaOption = within(listbox).getByText("Hakka Nation");
+    fireEvent.click(hakkaOption);
+
+    expect(mockSetRestaurantFilter).toHaveBeenCalledWith(["Hakka Nation"]);
+
+    fireEvent.click(clearButton);
+
+    expect(mockSetRestaurantFilter).toHaveBeenCalledWith([]);
+    expect(mockSetCuisineFilter).toHaveBeenCalledWith([]);
+    expect(mockSetRatingSort).toHaveBeenCalledWith("");
+    expect(mockSetOpenNowFilter).toHaveBeenCalledWith(false);
+  });
 });
