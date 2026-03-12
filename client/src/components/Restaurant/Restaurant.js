@@ -55,7 +55,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   whiteSpace: "nowrap",
                   fontWeight: 600,
                 }}
-              >
+              />
                 <Typography
                   variant="h6"
                   sx={{
@@ -68,6 +68,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   {restaurant.restaurant_name}
                 </Typography>
               </Box>
+
 
             <Favourite
               uuid={uuid}

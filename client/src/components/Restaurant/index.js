@@ -267,41 +267,10 @@ const RestaurantList = ({ uuid }) => {
         scoreB = ratingB ? ratingB[key] : 0;
       }
 
-      // Sort by the scores
       if (scoreB !== scoreA) return scoreB - scoreA;
     }
 
-      // If more than 1 restaurants has the same score, order alphabetically
-      return a.restaurant_name.localeCompare(b.restaurant_name);
-  });
-
-  const restaurantOptions = [
-    ...new Set(restaurants.map((r) => r.restaurant_name)),
-  ].sort();
-
-      if (ratingSort === "overall") {
-        scoreA = ratingA
-          ? (ratingA.avg_value_rating +
-              ratingA.avg_taste_rating +
-              ratingA.avg_portion_rating) /
-            3
-          : 0;
-        scoreB = ratingB
-          ? (ratingB.avg_value_rating +
-              ratingB.avg_taste_rating +
-              ratingB.avg_portion_rating) /
-            3
-          : 0;
-      } else {
-        const key = `avg_${ratingSort}_rating`;
-        scoreA = ratingA ? ratingA[key] : 0;
-        scoreB = ratingB ? ratingB[key] : 0;
-      }
-
-      if (scoreB !== scoreA) return scoreB - scoreA;
-    }
-
-    // If no data for cuisne for particular restaurant, website doesn't crash
+    // If no data for cuisine for particular restaurant, website doesn't crash
     if ((a.cuisine || "") !== (b.cuisine || "")) {
       return (a.cuisine || "").localeCompare(b.cuisine || "");
     }
@@ -310,15 +279,16 @@ const RestaurantList = ({ uuid }) => {
       return a.cuisine.localeCompare(b.cuisine);
     }
 
-      // If more than 1 restaurants has the same score, order alphabetically
-      return a.restaurant_name.localeCompare(b.restaurant_name);
-    });
+    // If more than 1 restaurant has the same score, order alphabetically
+    return a.restaurant_name.localeCompare(b.restaurant_name);
+  });
 
   const restaurantOptions = [
     ...new Set(restaurants.map((r) => r.restaurant_name)),
-  ];
+  ].sort();
 
   const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
+   
   return (
     <Grid container p={4} display={"flex"}>
       <Grid item xs={12} mb={2}>

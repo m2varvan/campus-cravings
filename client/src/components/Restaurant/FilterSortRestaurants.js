@@ -18,18 +18,17 @@ const FilterSortRestaurants = ({
   ratingSort,
   setRatingSort,
   restaurantOptions = [],
+  cuisineFilter,
+  setCuisineFilter,
+  cuisineOptions = [],
+  openNowFilter,
+  setOpenNowFilter,
 }) => {
   const handleClearFilters = () => {
     setRestaurantFilter([]);
     setRatingSort("");
-    cuisineFilter,
-    setCuisineFilter,
-    ratingSort,
-    setRatingSort,
-    openNowFilter,       
-    setOpenNowFilter,
-    restaurantOptions = [],
-    cuisineOptions = [],
+    setCuisineFilter([]);
+    setOpenNowFilter(false);
   };
 
   const menuProps = {
@@ -92,7 +91,7 @@ const FilterSortRestaurants = ({
         </Select>
       </FormControl>
 
-      {/*Cuisine Filtering*/}
+      {/* Cuisine Filtering */}
       <FormControl size="small" sx={{ minWidth: 250 }}>
         <InputLabel id="cuisine-filter-label">Filter by Cuisine</InputLabel>
         <Select
@@ -143,7 +142,7 @@ const FilterSortRestaurants = ({
           <MenuItem value="portion">Portion Size</MenuItem>
         </Select>
       </FormControl>
-    
+
       {/* Open Now Toggle */}
       <FormControlLabel
         control={
@@ -156,7 +155,7 @@ const FilterSortRestaurants = ({
         label="Open Now"
         sx={{ whiteSpace: "nowrap" }}
       />
-      
+
       {/* Clear Filters */}
       <Button
         data-testid="clear-filters"
@@ -173,4 +172,5 @@ const FilterSortRestaurants = ({
     </Box>
   );
 };
+
 export default FilterSortRestaurants;
