@@ -225,14 +225,14 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
                 {ratings.total_ratings > 0 ? (
                   <>
                     <Typography variant="body2">
-                      Value: ⭐ {Number(ratings.avg_value_rating).toFixed(2)}
+                      Value: ⭐ {Number(ratings.avg_value_rating).toFixed(1)}
                     </Typography>
                     <Typography variant="body2">
-                      Taste: ⭐ {Number(ratings.avg_taste_rating).toFixed(2)}
+                      Taste: ⭐ {Number(ratings.avg_taste_rating).toFixed(1)}
                     </Typography>
                     <Typography variant="body2">
                       Portion: ⭐{" "}
-                      {Number(ratings.avg_portion_rating).toFixed(2)}
+                      {Number(ratings.avg_portion_rating).toFixed(1)}
                     </Typography>
                   </>
                 ) : (

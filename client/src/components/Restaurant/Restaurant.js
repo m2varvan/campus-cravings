@@ -99,7 +99,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                         restaurantRating.avg_taste_rating +
                         restaurantRating.avg_portion_rating) /
                       3
-                    ).toFixed(2) +
+                    ).toFixed(1) +
                     "/5 (" +
                     restaurantRating.total_ratings +
                     ")"
