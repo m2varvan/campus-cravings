@@ -271,8 +271,8 @@ const RestaurantList = ({ uuid }) => {
       if (scoreB !== scoreA) return scoreB - scoreA;
     }
 
-    // If more than 1 restaurants has the same score, order alphabetically
-    return a.restaurant_name.localeCompare(b.restaurant_name);
+      // If more than 1 restaurants has the same score, order alphabetically
+      return a.restaurant_name.localeCompare(b.restaurant_name);
   });
 
   const restaurantOptions = [
@@ -310,9 +310,9 @@ const RestaurantList = ({ uuid }) => {
       return a.cuisine.localeCompare(b.cuisine);
     }
 
-    // If more than 1 restaurants has the same score, order alphabetically
-    return a.restaurant_name.localeCompare(b.restaurant_name);
-  });
+      // If more than 1 restaurants has the same score, order alphabetically
+      return a.restaurant_name.localeCompare(b.restaurant_name);
+    });
 
   const restaurantOptions = [
     ...new Set(restaurants.map((r) => r.restaurant_name)),
