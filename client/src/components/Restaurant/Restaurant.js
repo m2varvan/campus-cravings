@@ -1,4 +1,4 @@
-import { Typography, Box, Grid } from "@mui/material";
+import { Typography, Box, Grid, Chip } from "@mui/material";
 import React, { useState } from "react";
 import RestaurantDetails from "./RestaurantDetails";
 import Favourite from "../Deals/Favourite";
@@ -8,6 +8,7 @@ import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 const Restaurant = ({ uuid, restaurant, ratings }) => {
   // State to open box with restaurant details
   const [openDetails, setOpenDetails] = useState(false);
+  const { isOpen, isClosingSoon } = restaurant;
 
   // If restaurant is undefined, return null to prevent a crash
   if (!restaurant) return null;
@@ -55,9 +56,18 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   fontWeight: 600,
                 }}
               >
-                {restaurant.restaurant_name}
-              </Typography>
-            </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontWeight: 600,
+                  }}
+                >
+                  {restaurant.restaurant_name}
+                </Typography>
+              </Box>
 
             <Favourite
               uuid={uuid}

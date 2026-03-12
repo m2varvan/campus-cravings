@@ -5,7 +5,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -93,8 +92,11 @@ app.post("/api/today/deals", (req, res) => {
         ? parseInt(deal.number_of_ratings, 10)
         : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
-      fave: deal.is_favourited || 0
+      userVote:
+        parseInt(deal.user_vote) === 0
+          ? null
+          : parseInt(deal.user_vote) || null,
+      fave: deal.is_favourited || 0,
     }));
 
     res.json(todayDeals);
@@ -147,7 +149,7 @@ app.post("/api/deal/hours", (req, res) => {
 // API endpoint to get all restaurant info
 app.post("/api/get-restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
-  const {userID} = req.body;
+  const { userID } = req.body;
 
   connection.connect((err) => {
     if (err) {
@@ -249,12 +251,24 @@ app.post("/api/restaurant-rating", (req, res) => {
     return res.json(sanitizedData);
   });
 });
+
 // API to get the opening hours for a specific restaurant
 app.post("/api/restaurant-hours", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, getAll } = req.body;
 
-  const sql = `
+  const sql = getAll
+    ? `
+    SELECT 
+        restaurant_id, 
+        day_of_week, 
+        GROUP_CONCAT(TIME_FORMAT(start_time, '%H:%i') ORDER BY start_time) AS start_times,
+        GROUP_CONCAT(TIME_FORMAT(end_time, '%H:%i') ORDER BY end_time) AS end_times
+    FROM restaurant_hours
+    GROUP BY restaurant_id, day_of_week
+    ORDER BY 
+        FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');`
+    : `
     SELECT 
         restaurant_id, 
         day_of_week, 
@@ -267,7 +281,9 @@ app.post("/api/restaurant-hours", (req, res) => {
         FIELD(day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday');
   `;
 
-  connection.query(sql, [restaurant_id], (error, results) => {
+  const params = getAll ? [] : [restaurant_id];
+
+  connection.query(sql, params, (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to load restaurant hours" });
@@ -361,7 +377,6 @@ app.post("/api/week/deals", (req, res) => {
   const { userID } = req.body;
   const connection = mysql.createConnection(config);
 
-
   const sql = `
       SELECT 
           d.deal_id, 
@@ -397,7 +412,6 @@ app.post("/api/week/deals", (req, res) => {
       AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
       GROUP BY d.deal_id, dh.day_of_week;
   `;
-
 
   connection.query(sql, [userID, userID], (error, results) => {
     if (error) {
@@ -442,8 +456,11 @@ app.post("/api/week/deals", (req, res) => {
           ? parseInt(deal.number_of_ratings, 10)
           : 0,
         totalVote: parseInt(deal.total_votes) || 0,
-        userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
-        fave: deal.is_favourited || 0
+        userVote:
+          parseInt(deal.user_vote) === 0
+            ? null
+            : parseInt(deal.user_vote) || null,
+        fave: deal.is_favourited || 0,
       });
     });
 
@@ -809,7 +826,7 @@ app.post("/api/signup", (req, res) => {
 
   const { uid, email, username, firstName, lastName, profilePhoto } = req.body;
 
-  // 1️⃣ Check if email or username already exists
+  // Check if email or username already exists
   const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
@@ -836,7 +853,7 @@ app.post("/api/signup", (req, res) => {
       });
     }
 
-    // 2️⃣ Insert user into the database, defaulting user_type to 'Regular'
+    //  Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
       `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
@@ -854,23 +871,23 @@ app.post("/api/signup", (req, res) => {
   });
 });
 
-app.get('/api/user/:uid', (req, res) => {
-    const connection = mysql.createConnection(config);
-    const { uid } = req.params;
+app.get("/api/user/:uid", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uid } = req.params;
 
-    const query = "SELECT profile_photo FROM users WHERE id = ?";
-    connection.query(query, [uid], (err, data) => {
-        connection.end();
-        if (err) {
-            console.error("Select Error:", err);
-            return res.status(500).json({ message: "Failed to fetch user" });
-        }
-        if (data.length === 0) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        return res.status(200).json({ profilePhoto: data[0].profile_photo });
-    });
-})
+  const query = "SELECT profile_photo FROM users WHERE id = ?";
+  connection.query(query, [uid], (err, data) => {
+    connection.end();
+    if (err) {
+      console.error("Select Error:", err);
+      return res.status(500).json({ message: "Failed to fetch user" });
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ profilePhoto: data[0].profile_photo });
+  });
+});
 
 app.post("/api/restaurant-info", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -964,7 +981,6 @@ app.post("/api/vote", (req, res) => {
   });
 });
 
-
 app.post("/api/review/helpful", async (req, res) => {
   const { reviewID } = req.body;
   const userID = req.user?.id; // assuming auth middleware
@@ -983,7 +999,9 @@ app.post("/api/review/helpful", async (req, res) => {
     const [existing] = await db.query(checkQuery, [reviewID, userID]);
 
     if (existing.length > 0) {
-      return res.status(400).json({ error: "You already voted helpful for this review." });
+      return res
+        .status(400)
+        .json({ error: "You already voted helpful for this review." });
     }
 
     // insert vote
@@ -1004,7 +1022,6 @@ app.post("/api/review/helpful", async (req, res) => {
     await db.query(updateReview, [reviewID]);
 
     res.json({ success: true });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
@@ -1024,90 +1041,93 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
     const [result] = await db.query(query, [reviewID]);
 
     res.json(result[0]);
-
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
-})
+});
 
 app.post("/api/save/fave/deal", (req, res) => {
-    const { uuid, dealID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, dealID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         INSERT INTO favourite_deals (user_id, deal_id)
         VALUES (?, ?)
     `;
 
-    connection.query(sql, [uuid, dealID], (err, result) => {
-        connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to save favourite deal" });
-        }
+  connection.query(sql, [uuid, dealID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to save favourite deal" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/remove/fave/deal", (req, res) => {
-    const { uuid, dealID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, dealID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         DELETE FROM favourite_deals
         WHERE user_id = ? AND deal_id = ?
     `;
 
-    connection.query(sql, [uuid, dealID], (err, result) => {
-      connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to remove favourite deal" });
-        }
+  connection.query(sql, [uuid, dealID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to remove favourite deal" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/save/fave/restaurant", (req, res) => {
-    const { uuid, restaurantID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, restaurantID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         INSERT INTO favourite_restaurants (user_id, restaurant_id)
         VALUES (?, ?)
     `;
 
-    connection.query(sql, [uuid, restaurantID], (err, result) => {
-        connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to save favourite restaurant" });
-        }
+  connection.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ error: "Failed to save favourite restaurant" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/remove/fave/restaurant", (req, res) => {
-    const { uuid, restaurantID } = req.body;
-    const connection = mysql.createConnection(config);
+  const { uuid, restaurantID } = req.body;
+  const connection = mysql.createConnection(config);
 
-    const sql = `
+  const sql = `
         DELETE FROM favourite_restaurants
         WHERE user_id = ? AND restaurant_id = ?
     `;
 
-    connection.query(sql, [uuid, restaurantID], (err, result) => {
-        connection.end();
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to remove favourite restaurant" });
-        }
+  connection.query(sql, [uuid, restaurantID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ error: "Failed to remove favourite restaurant" });
+    }
 
-        res.json({ success: true });
-    });
+    res.json({ success: true });
+  });
 });
 
 app.post("/api/load/user", (req, res) => {
@@ -1135,7 +1155,7 @@ app.post("/api/load/user", (req, res) => {
       return res.status(500).json({ error: "Failed to load user info" });
     }
 
-   const user = result[0];
+    const user = result[0];
 
     const userInfo = {
       id: user.id,
@@ -1144,7 +1164,7 @@ app.post("/api/load/user", (req, res) => {
       email: user.email_address,
       userName: user.username,
       profilePhoto: user.profile_photo,
-      createdDate: user.created_at
+      createdDate: user.created_at,
     };
 
     res.json(userInfo);
@@ -1195,12 +1215,23 @@ app.post("/api/load/fave/deal", (req, res) => {
       dealDescription: deal.description || "n/a",
       dealPrice: deal.deal_price.toFixed(2),
       dealEditData: deal.edited_at_formatted,
-      dealValueRating: deal.avg_value_rating ? parseFloat(deal.avg_value_rating.toFixed(1)) : 0,
-      dealTasteRating: deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
-      dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
-      numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings, 10) : 0,
+      dealValueRating: deal.avg_value_rating
+        ? parseFloat(deal.avg_value_rating.toFixed(1))
+        : 0,
+      dealTasteRating: deal.avg_taste_rating
+        ? parseFloat(deal.avg_taste_rating.toFixed(1))
+        : 0,
+      dealPortionRating: deal.avg_portion_rating
+        ? parseFloat(deal.avg_portion_rating.toFixed(1))
+        : 0,
+      numRatings: deal.number_of_ratings
+        ? parseInt(deal.number_of_ratings, 10)
+        : 0,
       totalVote: parseInt(deal.total_votes) || 0,
-      userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
+      userVote:
+        parseInt(deal.user_vote) === 0
+          ? null
+          : parseInt(deal.user_vote) || null,
       fave: 1,
     }));
 
@@ -1242,7 +1273,9 @@ app.post("/api/load/fave/restaurants", (req, res) => {
       if (error) {
         console.error("Database error:", error.message);
         connection.end();
-        return res.status(500).json({ error: "Failed to fetch favourite restaurants" });
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch favourite restaurants" });
       }
 
       res.json(results);
@@ -1250,6 +1283,5 @@ app.post("/api/load/fave/restaurants", (req, res) => {
     });
   });
 });
-
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

@@ -20,7 +20,7 @@ const pages = [
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 
-const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
 
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
