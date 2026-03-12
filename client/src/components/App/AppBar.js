@@ -27,6 +27,7 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto }) => {
   const handleSignOut = async () => {
     await firebase.doSignOut();
     setProfilePhoto('U');
+    window.location.reload();
   };
 
   if (authUser == null) {
