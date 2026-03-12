@@ -1,4 +1,4 @@
-const { render, screen, fireEvent, within } = require("@testing-library/react");
+const { render, screen, fireEvent, within, waitFor } = require("@testing-library/react");
 require("@testing-library/jest-dom");
 const React = require("react");
 
