@@ -15,20 +15,21 @@ import {
 const FilterSortRestaurants = ({
   restaurantFilter,
   setRestaurantFilter,
-  cuisineFilter,
-  setCuisineFilter,
   ratingSort,
   setRatingSort,
-  openNowFilter,       
-  setOpenNowFilter,
   restaurantOptions = [],
-  cuisineOptions = [],
 }) => {
   const handleClearFilters = () => {
     setRestaurantFilter([]);
-    setCuisineFilter([]);
     setRatingSort("");
-    setOpenNowFilter(false); 
+    cuisineFilter,
+    setCuisineFilter,
+    ratingSort,
+    setRatingSort,
+    openNowFilter,       
+    setOpenNowFilter,
+    restaurantOptions = [],
+    cuisineOptions = [],
   };
 
   const menuProps = {

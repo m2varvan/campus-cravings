@@ -33,58 +33,28 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
             },
           }}
         >
-          {/* Restaurant name */}
-          <Typography
-            variant="h6"
+          {/* Restaurant name and favourite button */}
+          <Box
             sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontWeight: 600,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
-            {restaurant.restaurant_name}
-          </Typography>
-
-          <Box display="flex" gap={1} mt={1}>
-            {isOpen && !isClosingSoon && (
-              <Chip label="Open Now" color="success" size="small" />
-            )}
-            {isClosingSoon && (
-              <Chip label="Closing Soon" color="warning" size="small" />
-            )}
-            {!isOpen && <Chip label="Closed" color="error" size="small" />}
-          </Box>
-
-          {/* Average Rating */}
-          <Box sx={{ mt: 0.5 }}>
-            <Typography variant="body2" color="text.secondary">
-              {restaurantRating && restaurantRating.total_ratings > 0
-                ? "⭐ " +
-                  (
-                    (restaurantRating.avg_value_rating +
-                      restaurantRating.avg_taste_rating +
-                      restaurantRating.avg_portion_rating) /
-                    3
-                  ).toFixed(2) +
-                  "/5 (" +
-                  restaurantRating.total_ratings +
-                  ")"
-                : "No ratings yet"}
-            </Typography>
-            {/* Restaurant name and favourite button */}
+            {/* Name in box - make clickable*/}
             <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-              }}
+              onClick={() => setOpenDetails(true)}
+              sx={{ width: "90%" }}
+              data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
             >
-              {/* Name in box - make clickable*/}
-              <Box
-                onClick={() => setOpenDetails(true)}
-                sx={{ width: "90%" }}
-                data-testid={`expand-restaurantID-${restaurant.restaurant_id}`}
+              <Typography
+                variant="h6"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  fontWeight: 600,
+                }}
               >
                 <Typography
                   variant="h6"
@@ -99,13 +69,42 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                 </Typography>
               </Box>
 
-              <Favourite
-                uuid={uuid}
-                itemID={restaurant.restaurant_id}
-                fave={restaurant.is_favourited}
-                saveFave={saveFaveRestaurant}
-                removeFave={removeFaveRestaurant}
-              />
+            <Favourite
+              uuid={uuid}
+              itemID={restaurant.restaurant_id}
+              fave={restaurant.is_favourited}
+              saveFave={saveFaveRestaurant}
+              removeFave={removeFaveRestaurant}
+            />
+            {/* Restaurant name */}
+            <Typography
+              variant="h6"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                fontWeight: 600,
+              }}
+            >
+              {restaurant.restaurant_name}
+            </Typography>
+
+            {/* Average Rating */}
+            <Box sx={{ mt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {restaurantRating && restaurantRating.total_ratings > 0
+                  ? "⭐ " +
+                    (
+                      (restaurantRating.avg_value_rating +
+                        restaurantRating.avg_taste_rating +
+                        restaurantRating.avg_portion_rating) /
+                      3
+                    ).toFixed(2) +
+                    "/5 (" +
+                    restaurantRating.total_ratings +
+                    ")"
+                  : "No ratings yet"}
+              </Typography>
             </Box>
           </Box>
         </Box>
