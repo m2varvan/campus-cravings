@@ -14,7 +14,7 @@ const WeekDeal = ({
   // Load all deals for week view
   React.useEffect(() => {
     loadWeekDeals();
-  }, [uuid, loadWeekDeals]);
+  }, [uuid]);
 
   return (
     <Grid item xs={12}>
