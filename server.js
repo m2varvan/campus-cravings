@@ -180,9 +180,9 @@ app.post("/api/restaurant-rating", (req, res) => {
     : `
     SELECT
       d.restaurant_id,
-      AVG(r.value_score) AS avg_value_score,
-      AVG(r.taste_score) AS avg_taste_score,
-      AVG(r.portion_score) AS avg_portion_score,
+      AVG(r.value_score) AS avg_value_rating,
+      AVG(r.taste_score) AS avg_taste_rating,
+      AVG(r.portion_score) AS avg_portion_rating,
       COUNT(r.rating_id) AS total_ratings
     FROM deals d
     LEFT JOIN ratings r ON d.deal_id = r.deal_id

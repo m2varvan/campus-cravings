@@ -37,7 +37,7 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ restaurant_id, userID: uuid }),
+        body: JSON.stringify({ restaurant_id: restaurant_id }),
       };
 
       // Run all requests
@@ -85,6 +85,8 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
       loadRestaurantDetails();
     }
   }, [open]);
+
+  console.log(ratings, "dugb");
 
   return (
     <Dialog
@@ -223,13 +225,14 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
                 {ratings.total_ratings > 0 ? (
                   <>
                     <Typography variant="body2">
-                      Value: ⭐ {Number(ratings.avg_value_score).toFixed(2)}
+                      Value: ⭐ {Number(ratings.avg_value_rating).toFixed(2)}
                     </Typography>
                     <Typography variant="body2">
-                      Taste: ⭐ {Number(ratings.avg_taste_score).toFixed(2)}
+                      Taste: ⭐ {Number(ratings.avg_taste_rating).toFixed(2)}
                     </Typography>
                     <Typography variant="body2">
-                      Portion: ⭐ {Number(ratings.avg_portion_score).toFixed(2)}
+                      Portion: ⭐{" "}
+                      {Number(ratings.avg_portion_rating).toFixed(2)}
                     </Typography>
                   </>
                 ) : (
