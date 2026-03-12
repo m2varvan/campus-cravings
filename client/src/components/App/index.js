@@ -7,6 +7,7 @@ import Deals from "../Deals/index";
 import RestaurantList from "../Restaurant/index";
 import Login from "../User/Login";
 import SignUp from "../User/SignUp";
+import SearchPage from "../Search/SearchPage";
 import User from "../User/User";
 import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
@@ -97,6 +98,7 @@ useEffect(() => {
           />
           <Route path="/Signup" element={<SignUp />} />
           <Route path="/User" element={<User uuid={uuid} />} />
+          <Route path="/search" element={<SearchPage uuid={uuid} />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -18,11 +18,11 @@ const sortReviews = (reviews, sortType) => {
       break;
 
     case "mostHelpful":
-      sorted.sort((a,b) => b.helpful_votes - a.helpful_votes);
+      sorted.sort((a,b) => Number(b.helpful_votes) - Number(a.helpful_votes));
       break;
 
     case "leastHelpful":
-      sorted.sort((a,b) => a.helpful_votes - b.helpful_votes);
+      sorted.sort((a,b) => Number(a.helpful_votes) - Number(b.helpful_votes));
       break;
 
     default:
@@ -52,7 +52,7 @@ function Review({ uuid, dealID }) {
 
     setError('');
 
-    fetch(`/api/deal/${dealID}/reviews`)
+    fetch(`/api/deal/${dealID}/reviews?userID=${uuid}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch reviews');
         return res.json();
@@ -177,7 +177,7 @@ function Review({ uuid, dealID }) {
         return;
       }
 
-      const refreshed = await fetch(`/api/deal/${dealID}/reviews`);
+      const refreshed = await fetch(`/api/deal/${dealID}/reviews?userID=${uuid}`);
       const refreshedData = await refreshed.json();
 
       setReviews(refreshedData);
@@ -324,6 +324,7 @@ function Review({ uuid, dealID }) {
                 reviewID={review.review_id}
                 helpfulVotes={review.helpful_votes}
                 user={uuid}
+                userVoted={review.user_voted}
               />
 
               <Typography variant="caption" display="block" gutterBottom>
