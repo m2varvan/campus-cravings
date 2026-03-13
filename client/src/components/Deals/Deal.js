@@ -1,6 +1,10 @@
 import { Typography, Box, } from "@mui/material";
 import React from 'react';
 import ExpandedDeal from "./ExpandedDeal";
+import DealVote from "./DealVote";
+import Favourite from "./Favourite";
+import saveFaveDeal from "../../APIs/saveFaveDeal";
+import removeFaveDeal from "../../APIs/removeFaveDeal";
 
 const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
 
@@ -13,11 +17,12 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
     return(
         <>
             <Box
-                onClick={() => setOpenDetails(true)} // Open dialog with details on click of box
+                data-cy="deal-card"
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
                     bgcolor: 'secondary.light',
                     p: size==='lg' ? 2 : 1, // If large size, more padding
+                    pb: size==='lg' ? 1 : 0.5, // If large size, more padding
                     m: 1,
                     borderRadius: 1,
                     "&:hover": {
@@ -26,11 +31,15 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     },
                 }}
             >
+
+            {/* Box for clickable area */}
+            <Box onClick={() => setOpenDetails(true)} >
                 {/* Deal name and price on opposite ends */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
                     {/* Name and Restaurant Name */}
                     <Box sx={{width: '70%'}}>
                     <Typography
+                            data-testid="deal-name"
                             variant= {size === 'lg' ? "h6": 'subtitle1'}
                             sx={{
                                 overflow: 'hidden',
@@ -77,6 +86,25 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                         </Typography>
                     </Box>
                 </Box>
+                </Box>
+
+                {/* Deal Votes */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
+                    <DealVote 
+                        uuid={uuid} 
+                        totalVote={deal.totalVote} 
+                        userVote={deal.userVote} 
+                        dealID={deal.dealID} />
+                        
+                    <Favourite 
+                        uuid={uuid} 
+                        itemID={deal.dealID} 
+                        fave={deal.fave} 
+                        saveFave={saveFaveDeal} 
+                        removeFave={removeFaveDeal} />
+                </Box>
+
+
             </Box>
         
         {/* Dialog with expanded deal information */}

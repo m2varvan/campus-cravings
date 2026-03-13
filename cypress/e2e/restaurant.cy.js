@@ -45,7 +45,7 @@ describe("Showing Restaurants", () => {
   };
 
   it("shows restaurants from the server and displays correct details", () => {
-    cy.intercept("GET", "/api/get-restaurants", [
+    cy.intercept("POST", "/api/get-restaurants", [
       restaurant1,
       restaurant2,
       restaurant3,

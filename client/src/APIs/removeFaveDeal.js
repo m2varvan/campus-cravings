@@ -1,0 +1,17 @@
+const removeFaveDeal = async (uuid, dealID) => {
+  const response = await fetch("/api/remove/fave/deal", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ uuid, dealID }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to remove favourite deal");
+  }
+
+  return await response.json();
+}
+
+export default removeFaveDeal

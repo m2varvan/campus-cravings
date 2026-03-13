@@ -5,18 +5,18 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
 const TodayDeal = ({
-  uuid,
-  todayDeals,
-  loading,
-  error,
-  loadTodayDeals,
-  reloadDeals,
-  id,
-}) => {
+      uuid,
+      todayDeals,
+      loading,
+      error,
+      loadTodayDeals,
+      reloadDeals,
+    }) => {
+
   // Load today's deals on render
   React.useEffect(() => {
     loadTodayDeals();
-  }, []);
+  }, [uuid]);
 
   // Variables and functions to show only 12 by default
   const defaultVisible = 12;
@@ -27,12 +27,6 @@ const TodayDeal = ({
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
   };
-
-  useEffect(() => {
-    if (id) {
-      setVisibleCount(todayDeals.length);
-    }
-  }, [id, todayDeals]);
 
   // Function to get the current date and format it
   const getTodayDate = () => {
@@ -67,7 +61,7 @@ const TodayDeal = ({
   return (
     <Grid item xs={12}>
       {/* Today's Deals title and date */}
-      <Typography variant="h5" sx={{ my: 2 }}>
+      <Typography variant="h4" sx={{ my: 2 }}>
         Today's Deals ({getTodayDate()})
       </Typography>
 
@@ -118,11 +112,11 @@ const TodayDeal = ({
       {/* Show Deals */}
       {!loading && !error && todayDeals.length > 0 && (
         <>
-          <Grid container>
+          <Grid container data-testid="today-deals">
             {/* Iterate through deals array and render a each deal in a deal component */}
             {todayDeals.slice(0, visibleCount).map((deal) => (
-              <Grid item xs={12} sm={6} lg={4}>
-                {console.log(deal)}
+              <Grid item xs={12} sm={6} lg={4} >
+                
                 <Deal
                   key={deal.dealID}
                   uuid={uuid}

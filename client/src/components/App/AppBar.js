@@ -11,32 +11,50 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from "../Search/SearchBar";
+import { useLocation } from 'react-router-dom';
+import { FirebaseContext } from '../Firebase';
+
 
 const pages = [
   { label: 'Deals', path: '/', id: 'nav-promotions' },
   { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
 ];
 
-const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
+const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) => {
+
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const navigate = useNavigate();
+  const firebase = React.useContext(FirebaseContext);
+
   let settings;
 
-  const handleSignOut = () => {
-    setUuid(null);
+  const handleSignOut = async () => {
+    await firebase.doSignOut();
     setProfilePhoto('U');
+    navigate('/');
   };
 
-  if (uuid == null) {
+  if (authUser == null) {
     settings = [
       { label: 'Login', path: '/Login', id: 'nav-login' },
       { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
     ];
   } else {
-    settings = [
-      { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
-    ];
+      if (userTypeAfter === 'restaurant_owner') {
+        settings = [
+          { label: 'My Owner Account', path: '/Owner', id: 'nav-owner' },
+          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+        ];
+      } else {
+        settings = [
+          { label: 'My Account', path: '/User', id: 'nav-user' },
+          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
+        ];
+      }
+    
   }
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate();
+  
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -51,7 +69,7 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
   };
 
   return (
-    <AppBar position="static" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
+    <AppBar position="sticky" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
@@ -113,6 +131,9 @@ const SiteAppBar = ({ uuid, setUuid, profilePhoto, setProfilePhoto }) => {
               </Button>
             ))}
           </Box>
+          
+          {/* Search Bar */}
+          <SearchBar />
 
           {/* User Avatar & Settings */}
           <Box sx={{ flexGrow: 0 }}>
