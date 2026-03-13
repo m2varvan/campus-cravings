@@ -4,8 +4,8 @@ describe('Login Flow', () => {
         cy.clearCookies();
         cy.clearLocalStorage();
         cy.window().then((win) => {
-            win.indexedDB.deleteDatabase('firebaseLocalStorageDb');
-        });
+        win.indexedDB.deleteDatabase('firebaseLocalStorageDb');
+    });
     });
 
     it("Logs in successfully and redirects", () => {
@@ -34,4 +34,5 @@ describe('Login Flow', () => {
         cy.contains('button', 'Forgot Password?').click();
         cy.contains('Please enter your email address first.').should('be.visible');
     });
+
 });
