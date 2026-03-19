@@ -843,9 +843,8 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { uid, email, username, firstName, lastName, userType, profilePhoto } = req.body;
+  const { uid, username, email, firstName, lastName, profilePhoto, userType, restaurantId } = req.body;
 
-  // Check if email or username already exists
   const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
@@ -857,22 +856,15 @@ app.post("/api/signup", (req, res) => {
     const emailExists = data.some((user) => user.email_address === email);
     if (emailExists) {
       connection.end();
-      return res.status(409).json({
-        field: "email",
-        message: "This email already has an account",
-      });
+      return res.status(409).json({ field: "email", message: "This email already has an account" });
     }
 
     const usernameExists = data.some((user) => user.username === username);
     if (usernameExists) {
       connection.end();
-      return res.status(409).json({
-        field: "username",
-        message: "This username is already taken.",
-      });
+      return res.status(409).json({ field: "username", message: "This username is already taken." });
     }
 
-    //  Insert user into the database, defaulting user_type to 'Regular'
     const insertQuery =
       `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
@@ -880,12 +872,26 @@ app.post("/api/signup", (req, res) => {
     const values = [uid, email, firstName, lastName, profilePhoto, username, userType];
 
     connection.query(insertQuery, values, (err, result) => {
-      connection.end();
       if (err) {
         console.error("Insert Error:", err);
+        connection.end();
         return res.status(500).json("User entry failed");
       }
-      return res.status(200).json({ message: "User has been created." });
+
+      if (userType === 'restaurant_owner' && restaurantId) {
+        const ownerQuery = "INSERT INTO restaurant_owners (user_id, restaurant_id) VALUES (?, ?)";
+        connection.query(ownerQuery, [uid, restaurantId], (err) => {
+          connection.end();
+          if (err) {
+            console.error("Restaurant owner insert error:", err);
+            return res.status(500).json("Failed to link restaurant owner");
+          }
+          return res.status(200).json({ message: "User has been created." });
+        });
+      } else {
+        connection.end();
+        return res.status(200).json({ message: "User has been created." });
+      }
     });
   });
 });
@@ -1379,7 +1385,7 @@ app.post("/api/load/fave/restaurants", (req, res) => {
 app.get('/api/signup/restaurants', (req, res) => {
     const connection = mysql.createConnection(config);
 
-    connection.query("SELECT DISTINCT restaurant_name FROM restaurants", (err, data) => {
+    connection.query("SELECT restaurant_id, restaurant_name FROM restaurants", (err, data) => {
         connection.end();
         if (err) {
             console.error("Select Error:", err);
@@ -1433,6 +1439,45 @@ app.get("/api/search", (req, res) => {
 
         res.json({ restaurants, deals });
       });
+    });
+  });
+});
+
+app.get("/api/owner/restaurants/:uuid", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uuid } = req.params;
+
+  connection.connect((err) => {
+    if (err) {
+      console.error("Connection error:", err.message);
+      return res.status(500).json({ error: "Database connection failed" });
+    }
+
+    const query = `
+      SELECT 
+          r.*,
+          ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
+          COUNT(rt.rating_id) AS num_ratings
+      FROM restaurants r
+      JOIN restaurant_owners ro
+          ON r.restaurant_id = ro.restaurant_id
+      LEFT JOIN deals d
+          ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ratings rt
+          ON rt.deal_id = d.deal_id
+      WHERE ro.user_id = ?
+      GROUP BY r.restaurant_id;
+    `;
+
+    connection.query(query, [uuid], (error, results) => {
+      if (error) {
+        console.error("Database error:", error.message);
+        connection.end();
+        return res.status(500).json({ error: "Failed to fetch owner restaurants" });
+      }
+
+      res.json(results);
+      connection.end();
     });
   });
 });
