@@ -88,7 +88,7 @@ describe("Deals Filtering and Sorting", () => {
         expect(deal1.length).toBeGreaterThan(0); // at least one
 
         const restaurantDropdown = screen.getByTestId("restaurant-filter");
-        const ratingDropdown = screen.getByTestId('rating-sort');
+        const ratingDropdown = screen.getByTestId('deal-sort');
         const clearButton = screen.getByTestId('clear-filters');
 
         return { restaurantDropdown, ratingDropdown, clearButton };
