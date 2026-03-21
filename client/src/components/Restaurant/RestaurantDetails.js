@@ -9,10 +9,16 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+
 import RestaurantReview from "../Review/RestaurantReview";
 import ExpandedDeal from "../Deals/ExpandedDeal";
+import Favourite from "../Deals/Favourite";
+import removeFaveRestaurant from '../../APIs/removeFaveRestaurant';
+import saveFaveRestaurant from '../../APIs/saveFaveRestaurant';
 
-const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
+
+
+const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose, onFavouriteChange }) => {
   // States to load restaurant details and error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -37,7 +43,7 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ restaurant_id: restaurant_id }),
+        body: JSON.stringify({ restaurant_id, userID: uuid }),
       };
 
       // Run all requests
@@ -72,6 +78,8 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
       setRestaurantHours(hours || []);
       setRatings(ratings || {});
       setRestaurant(details || {});
+
+      console.log('Deatails', details)
     } catch (error) {
       console.error("Failed to load restaurant data:", error);
       setError(true);
@@ -86,7 +94,16 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
     }
   }, [open]);
 
-  console.log(ratings, "dugb");
+  // Wrapper functions that call the API and then notify parent
+  const handleSaveFave = async (uuid, itemID) => {
+    await saveFaveRestaurant(uuid, itemID);
+    onFavouriteChange?.(itemID, true);
+  };
+
+  const handleRemoveFave = async (uuid, itemID) => {
+    await removeFaveRestaurant(uuid, itemID);
+    onFavouriteChange?.(itemID, false);
+  };
 
   return (
     <Dialog
@@ -117,26 +134,41 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose }) => {
         <>
           {/* Header */}
           <DialogTitle>
-            <Typography variant="h4" fontWeight={600}>
-              {restaurant.restaurant_name}
-            </Typography>
+            <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
 
-            {restaurant.website_url && (
-              <Typography
-                component="a"
-                href={restaurant.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="body1"
-                sx={{
-                  color: "primary.dark",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                }}
-              >
-                Visit Official Website
+            <Box>
+              <Typography variant="h4" fontWeight={600}>
+                {restaurant.restaurant_name}
               </Typography>
-            )}
+
+              {restaurant.website_url && (
+                <Typography
+                  component="a"
+                  href={restaurant.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="body1"
+                  sx={{
+                    color: "primary.dark",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                  }}
+                >
+                  Visit Official Website
+                </Typography>
+              )}
+            </Box>
+
+            <Favourite 
+              uuid={uuid} 
+              fave={restaurant.is_favourited} 
+              itemID={restaurant_id}
+              saveFave={handleSaveFave}
+              removeFave={handleRemoveFave}
+              size='40px'
+            />
+            </Box>
+
           </DialogTitle>
 
           <Divider />

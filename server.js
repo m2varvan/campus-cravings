@@ -928,28 +928,30 @@ app.get("/api/user/type/:uid", (req, res) => {
 
 app.post("/api/restaurant-info", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { restaurant_id } = req.body;
+  const { restaurant_id, userID } = req.body;
 
   const detailsQuery = `
     SELECT 
-      city,
-      closing_time,
-      DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i') AS updated_at,
-      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
-      phone_number,
-      cuisine,
-      postal_code,
-      province,
-      restaurant_id,
-      restaurant_name,
-      street_address, 
-      unit,
-      website_url
-    FROM restaurants 
-    WHERE restaurant_id = ?;
-  `;
+        city,
+        closing_time,
+        DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i') AS updated_at,
+        DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') AS created_at,
+        phone_number,
+        cuisine,
+        postal_code,
+        province,
+        r.restaurant_id,
+        restaurant_name,
+        street_address, 
+        unit,
+        website_url,
+        (fr.restaurant_id IS NOT NULL) AS is_favourited
+    FROM restaurants r
+    LEFT JOIN favourite_restaurants fr ON fr.restaurant_id = r.restaurant_id AND fr.user_id = ?
+    WHERE r.restaurant_id = ?
+    ;`;
 
-  connection.query(detailsQuery, [restaurant_id], (err, results) => {
+  connection.query(detailsQuery, [userID, restaurant_id], (err, results) => {
     connection.end();
 
     if (err) {

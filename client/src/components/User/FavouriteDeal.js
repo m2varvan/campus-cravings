@@ -14,11 +14,8 @@ const FavouriteDeal = ({uuid, deal, reloadDeals, handleRemoveDeal}) => {
     const avgRating = ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1);
 
     const removeDeal = () => {
-        if (handleRemoveDeal(deal.dealID)) {
-            removeFaveDeal(uuid, deal.dealID)
-        } else {
-            return
-        }
+        handleRemoveDeal(deal.dealID);
+        removeFaveDeal(uuid, deal.dealID);
     }
 
     return(

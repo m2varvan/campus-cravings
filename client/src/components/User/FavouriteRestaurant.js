@@ -13,11 +13,8 @@ const FavouriteRestaurant = ({ uuid, restaurant, handleRemoveRestaurant }) => {
 
     // Function to remove restaurant from local favourites shown and update database
     const removeRestaurant = () => {
-        if (handleRemoveRestaurant(restaurant.restaurant_id)) {
-            removeFaveRestaurant(uuid, restaurant.restaurant_id);
-        } else {
-            return;
-        }
+        handleRemoveRestaurant(restaurant.restaurant_id);
+        removeFaveRestaurant(uuid, restaurant.restaurant_id);
     };
 
     return (
