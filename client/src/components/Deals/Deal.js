@@ -109,7 +109,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} 
-                    deal={deal} 
+                    dealID={deal.dealID} 
                     handleClose={() => setOpenDetails(false)} 
                     open={openDetails} 
                     reloadDeals={reloadDeals} />

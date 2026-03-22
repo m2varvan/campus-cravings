@@ -9,8 +9,6 @@ const Restaurant = ({ uuid, restaurant, ratings, onFavouriteChange }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const { isOpen, isClosingSoon } = restaurant;
 
-  console.log("Favourite", restaurant.restaurant_name, restaurant.is_favourited)
-
   if (!restaurant) return null;
 
   const restaurantRating = ratings?.find(

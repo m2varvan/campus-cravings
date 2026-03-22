@@ -25,12 +25,10 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave, size='23px' }) => 
             if (isFavourited) {
                 await removeFave(uuid, itemID);
                 setIsFavourited(false);
-                console.log('removed fave')
             // If the current value is not favourite, favourite
             } else {
                 await saveFave(uuid, itemID);
                 setIsFavourited(true);
-                console.log('added fave')
             }
 
         } catch (error) {

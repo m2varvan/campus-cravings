@@ -62,7 +62,6 @@ const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
 
     };
 
-
     return(
         <Stack direction="row" alignItems="center" spacing={0}>
         
