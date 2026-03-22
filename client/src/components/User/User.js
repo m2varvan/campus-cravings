@@ -7,14 +7,18 @@ import FavouriteRestaurantList from './FavouriteRestaurantList';
 import loadUserInfo from '../../APIs/loadUserInfo';
 import loadFaveDeals from '../../APIs/loadFaveDeals';
 import loadFaveRestaurants from '../../APIs/loadFaveRestaurants';
+import UserRatingList from './UserRatingList';
+import UserReviewList from './UserReviewList';
+import { getUserRatings } from '../../APIs/getUserRatings';
+import { getUserReviews } from '../../APIs/getUserReviews';
 
 const User = ({uuid}) => {
-
-    console.log('UUID', uuid)
 
     const [userInfo, setUserInfo] = React.useState(null)
     const [faveDeals, setFaveDeals] = React.useState([])
     const [faveRestaurants, setFaveRestaurants] = React.useState([])
+    const [userRatings, setUserRatings] = React.useState([])
+    const [userReviews, setUserReviews] = React.useState([])
 
     return (
     <>
@@ -31,13 +35,38 @@ const User = ({uuid}) => {
         <Grid container item xs={12} spacing={2}>
 
             {/* Left Column - User Info */}
+            
             <Grid item xs={12} md={4}>
-            <UserInfo 
-                uuid={uuid}
-                loadUserInfo={loadUserInfo}
-                setUserInfo={setUserInfo}
-                userInfo={userInfo}
-            />
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                    <UserInfo 
+                        uuid={uuid}
+                        loadUserInfo={loadUserInfo}
+                        setUserInfo={setUserInfo}
+                        userInfo={userInfo}
+                    />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <UserRatingList 
+                            uuid={uuid}
+                            loadUserRatings={getUserRatings}
+                            setUserRatings={setUserRatings}
+                            userRatings={userRatings}
+                            />
+                    </Grid>
+                    
+
+                    <Grid item xs={12}>
+                        <UserReviewList 
+                            uuid={uuid}
+                            loadUserReviews={getUserReviews}
+                            setUserReviews={setUserReviews}
+                            userReviews={userReviews}
+                            />
+                    </Grid>
+                    
+                </Grid>
             </Grid>
 
             {/* Right Column - Favourites */}

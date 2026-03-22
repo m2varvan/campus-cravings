@@ -46,7 +46,6 @@ const Deals = ({ uuid }) => {
 
       const data = await response.json();
       setTodayDeals(data);
-      setDisplayedTodayDeals(data);
 
       console.log(data);
     } catch (error) {
@@ -76,7 +75,6 @@ const Deals = ({ uuid }) => {
 
       const data = await response.json();
       setWeekDeals(data);
-      setDisplayedWeekDeals(data);
     } catch (error) {
       console.error("Failed to load weekly deals:", error);
       setWeekDealsError(true);
@@ -101,12 +99,12 @@ const Deals = ({ uuid }) => {
     setRestaurantOptions(Array.from(restaurantSet));
   }, [weekDeals])
 
+  // Function to sort deals by vote descending
+  const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
+
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
-
-    // Sort by votes descending
-    const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
 
      // Helper to compute overall rating for a deal
     const getOverallRating = (deal) => {
@@ -115,66 +113,66 @@ const Deals = ({ uuid }) => {
     };
 
     const sortDeals = (deals) => {
-  return [...deals].sort((a, b) => {
+      return [...deals].sort((a, b) => {
 
-    let aRating = null;
-    let bRating = null;
+        let aRating = null;
+        let bRating = null;
 
-    // 🎯 Handle all rating-based sorts (always highest → lowest)
-    if (
-      sort === "Top Rated" ||
-      sort === "Value Rated" ||
-      sort === "Portion Rated" ||
-      sort === "Taste Rated"
-    ) {
-      switch (sort) {
-        case "Top Rated":
-          aRating = getOverallRating(a);
-          bRating = getOverallRating(b);
-          break;
+        // Handle all rating-based sorts (always highest → lowest)
+        if (
+          sort === "Top Rated" ||
+          sort === "Value Rated" ||
+          sort === "Portion Rated" ||
+          sort === "Taste Rated"
+        ) {
+          switch (sort) {
+            case "Top Rated":
+              aRating = getOverallRating(a);
+              bRating = getOverallRating(b);
+              break;
 
-        case "Value Rated":
-          aRating = a.dealValueRating;
-          bRating = b.dealValueRating;
-          break;
+            case "Value Rated":
+              aRating = a.dealValueRating;
+              bRating = b.dealValueRating;
+              break;
 
-        case "Portion Rated":
-          aRating = a.dealPortionRating;
-          bRating = b.dealPortionRating;
-          break;
+            case "Portion Rated":
+              aRating = a.dealPortionRating;
+              bRating = b.dealPortionRating;
+              break;
 
-        case "Taste Rated":
-          aRating = a.dealTasteRating;
-          bRating = b.dealTasteRating;
-          break;
+            case "Taste Rated":
+              aRating = a.dealTasteRating;
+              bRating = b.dealTasteRating;
+              break;
 
-        default:
-          aRating = getOverallRating(a);
-          bRating = getOverallRating(b);
-          
-      }
+            default:
+              aRating = getOverallRating(a);
+              bRating = getOverallRating(b);
+              
+          }
 
-      // Handle nulls (unrated last)
-      if (aRating === null && bRating === null) return 0;
-      if (aRating === null) return 1;
-      if (bRating === null) return -1;
+          // Handle nulls (unrated last)
+          if (aRating === null && bRating === null) return 0;
+          if (aRating === null) return 1;
+          if (bRating === null) return -1;
 
-      return bRating - aRating;
-    }
+          return bRating - aRating;
+        }
 
-    // Price sorting
-    if (sort === "Top Price") {
-      return b.dealPrice - a.dealPrice;
-    }
+        // Price sorting
+        if (sort === "Top Price") {
+          return b.dealPrice - a.dealPrice;
+        }
 
-    if (sort === "Low Price") {
-      return a.dealPrice - b.dealPrice;
-    }
+        if (sort === "Low Price") {
+          return a.dealPrice - b.dealPrice;
+        }
 
-    // No sorting ("None")
-    return 0;
-  });
-};
+        // No sorting ("None")
+        return 0;
+      });
+    };
 
 
 
@@ -208,7 +206,6 @@ const Deals = ({ uuid }) => {
     });
 
     setDisplayedWeekDeals(newWeekDeals);
-    
 
   }, [restaurantFilter, sort, todayDeals, weekDeals])
 
