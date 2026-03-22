@@ -64,11 +64,11 @@ describe("Filtering and Sorting Deals", () => {
 
   it("Sorts deals by rating (highest first)", () => {
 
-    cy.get('[data-testid="rating-sort"]')
+    cy.get('[data-testid="deal-sort"]')
     .find('[role="combobox"]')
     .click();
 
-    cy.contains('li', 'Highest to Lowest').click();
+    cy.contains('li', 'Overall Rating').click();
 
     cy.get('[data-cy="deal-card"]').then(($cards) => {
 

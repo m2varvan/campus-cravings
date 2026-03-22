@@ -22,7 +22,7 @@ const Deals = ({ uuid }) => {
 
   // Variables to hold filter states
   const [restaurantFilter, setRestaurantFilter] = React.useState([]);
-  const [ratingSort, setRatingSort] = React.useState('');
+  const [sort, setSort] = React.useState('');
   const [restaurantOptions, setRestaurantOptions] = React.useState([])
 
 
@@ -108,28 +108,74 @@ const Deals = ({ uuid }) => {
     // Sort by votes descending
     const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
 
-
      // Helper to compute overall rating for a deal
     const getOverallRating = (deal) => {
       if (deal.numRatings === 0) return null; // unrated deals
       return (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) / 3;
     };
 
-    // Function to sort deals by rating, keeping unrated last
-    const sortByRating = (deals) => {
-      return [...deals].sort((a, b) => {
-        const aRating = getOverallRating(a);
-        const bRating = getOverallRating(b);
+    const sortDeals = (deals) => {
+  return [...deals].sort((a, b) => {
 
-        if (aRating === null && bRating === null) return 0; // both unrated
-        if (aRating === null) return 1; // a goes after b
-        if (bRating === null) return -1; // b goes after a
+    let aRating = null;
+    let bRating = null;
 
-        if (ratingSort === "Highest") return bRating - aRating;
-        if (ratingSort === "Lowest") return aRating - bRating;
-        return 0; // no sort
-      });
-    };
+    // 🎯 Handle all rating-based sorts (always highest → lowest)
+    if (
+      sort === "Top Rated" ||
+      sort === "Value Rated" ||
+      sort === "Portion Rated" ||
+      sort === "Taste Rated"
+    ) {
+      switch (sort) {
+        case "Top Rated":
+          aRating = getOverallRating(a);
+          bRating = getOverallRating(b);
+          break;
+
+        case "Value Rated":
+          aRating = a.dealValueRating;
+          bRating = b.dealValueRating;
+          break;
+
+        case "Portion Rated":
+          aRating = a.dealPortionRating;
+          bRating = b.dealPortionRating;
+          break;
+
+        case "Taste Rated":
+          aRating = a.dealTasteRating;
+          bRating = b.dealTasteRating;
+          break;
+
+        default:
+          aRating = getOverallRating(a);
+          bRating = getOverallRating(b);
+          
+      }
+
+      // Handle nulls (unrated last)
+      if (aRating === null && bRating === null) return 0;
+      if (aRating === null) return 1;
+      if (bRating === null) return -1;
+
+      return bRating - aRating;
+    }
+
+    // Price sorting
+    if (sort === "Top Price") {
+      return b.dealPrice - a.dealPrice;
+    }
+
+    if (sort === "Low Price") {
+      return a.dealPrice - b.dealPrice;
+    }
+
+    // No sorting ("None")
+    return 0;
+  });
+};
+
 
 
     // Filter and sort today's deals
@@ -137,11 +183,10 @@ const Deals = ({ uuid }) => {
       restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
     );
 
-    if (ratingSort === '') {
-      // No rating sort so sort by votes
+    if (sort === '') {
       filteredToday = sortByVotes(filteredToday);
     } else {
-      filteredToday = sortByRating(filteredToday);
+      filteredToday = sortDeals(filteredToday)
     }
 
     setDisplayedTodayDeals(filteredToday);
@@ -153,10 +198,10 @@ const Deals = ({ uuid }) => {
         (deal) => restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
       );
 
-      if (ratingSort === '') {
+      if (sort === '') {
         filtered = sortByVotes(filtered);
       } else {
-        filtered = sortByRating(filtered);
+        filtered = sortDeals(filtered);
       }
 
       newWeekDeals[day] = filtered;
@@ -165,7 +210,7 @@ const Deals = ({ uuid }) => {
     setDisplayedWeekDeals(newWeekDeals);
     
 
-  }, [restaurantFilter, ratingSort, todayDeals, weekDeals])
+  }, [restaurantFilter, sort, todayDeals, weekDeals])
 
   // Function to reload all deals
   const reloadDeals = () => {
@@ -185,9 +230,9 @@ const Deals = ({ uuid }) => {
       <Grid item xs={12} justifyContent={'flex-start'}>
         <FilterSortDeals 
           restaurantFilter={restaurantFilter}
-          ratingSort={ratingSort}
           setRestaurantFilter={setRestaurantFilter}
-          setRatingSort={setRatingSort}
+          sort={sort}
+          setSort={setSort}
           restaurantOptions={restaurantOptions} />
       </Grid>
       
