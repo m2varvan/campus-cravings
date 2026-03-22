@@ -60,7 +60,6 @@ useEffect(() => {
               try {
                   const response = await fetch(`/api/user/${user.uid}`);
                   const data = await response.json();
-                  console.log("Profile photo response:", data);
                   setProfilePhoto(data.profilePhoto);
                   const response2 = await fetch(`/api/user/type/${user.uid}`)
                   const data2 = await response2.json();

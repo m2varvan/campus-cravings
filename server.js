@@ -24,42 +24,67 @@ app.post("/api/today/deals", (req, res) => {
   const connection = mysql.createConnection(config);
 
   const sql = `
+    SELECT 
+        d.deal_id, 
+        d.restaurant_id,
+        d.deal_name, 
+        d.description, 
+        d.deal_price, 
+        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+        r.restaurant_name, 
+
+        dh.start_times,
+        dh.end_times,
+
+        AVG(rt.taste_score) AS avg_taste_rating,
+        AVG(rt.value_score) AS avg_value_rating,
+        AVG(rt.portion_score) AS avg_portion_rating,
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
+
+        COALESCE(v.total_votes, 0) AS total_votes,
+        COALESCE(v.user_vote, 0) AS user_vote,
+
+        CASE 
+            WHEN fd.deal_id IS NULL THEN 0
+            ELSE 1
+        END AS is_favourited
+
+    FROM deals d
+
+    JOIN restaurants r 
+        ON r.restaurant_id = d.restaurant_id
+
+    -- aggregate deal_hours 
+    LEFT JOIN (
         SELECT 
-            d.deal_id, 
-            d.restaurant_id,
-            d.deal_name, 
-            d.description, 
-            d.deal_price, 
-            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
-            r.restaurant_name, 
-            GROUP_CONCAT(TIME_FORMAT(dh.start_time, '%H:%i')) AS start_times,
-            GROUP_CONCAT(TIME_FORMAT(dh.end_time, '%H:%i')) AS end_times,
-            AVG(rt.taste_score) AS avg_taste_rating,
-            AVG(rt.value_score) AS avg_value_rating,
-            AVG(rt.portion_score) AS avg_portion_rating,
-            COUNT(rt.rating_id) AS number_of_ratings,
-            COALESCE(SUM(dv.vote), 0) AS total_votes,
-            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
-            CASE 
-                WHEN fd.deal_id IS NULL THEN 0
-                ELSE 1
-            END AS is_favourited
-        FROM deals d
-        RIGHT JOIN deal_hours dh 
-            ON d.deal_id = dh.deal_id
-        JOIN restaurants r 
-            ON r.restaurant_id = d.restaurant_id
-        LEFT JOIN ratings rt 
-            ON rt.deal_id = d.deal_id
-        LEFT JOIN deal_votes dv 
-            ON dv.deal_id = d.deal_id
-        LEFT JOIN favourite_deals fd 
-            ON fd.deal_id = d.deal_id 
-          AND fd.user_id = ?
-        WHERE dh.day_of_week = DAYNAME(NOW())
-        AND (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
-        AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
-        GROUP BY d.deal_id;
+            deal_id,
+            GROUP_CONCAT(DISTINCT TIME_FORMAT(start_time, '%H:%i')) AS start_times,
+            GROUP_CONCAT(DISTINCT TIME_FORMAT(end_time, '%H:%i')) AS end_times
+        FROM deal_hours
+        WHERE day_of_week = DAYNAME(NOW())
+          AND (start_date <= DATE(NOW()) OR start_date IS NULL)
+          AND (end_date >= DATE(NOW()) OR end_date IS NULL)
+        GROUP BY deal_id
+    ) dh ON dh.deal_id = d.deal_id
+
+    -- aggregate votes FIRST
+    LEFT JOIN (
+        SELECT 
+            deal_id,
+            SUM(vote) AS total_votes,
+            MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
+        FROM deal_votes
+        GROUP BY deal_id
+    ) v ON v.deal_id = d.deal_id
+
+    LEFT JOIN ratings rt 
+        ON rt.deal_id = d.deal_id
+    LEFT JOIN favourite_deals fd 
+        ON fd.deal_id = d.deal_id 
+      AND fd.user_id = ?
+    WHERE dh.deal_id IS NOT NULL  -- ensures "today's deals only"
+    GROUP BY d.deal_id
+    ORDER BY v.total_votes DESC;
     `;
 
   connection.query(sql, [userID, userID], (error, results) => {
@@ -378,39 +403,70 @@ app.post("/api/week/deals", (req, res) => {
   const connection = mysql.createConnection(config);
 
   const sql = `
-      SELECT 
-          d.deal_id, 
-          d.restaurant_id, 
-          d.deal_name, 
-          d.description, 
-          d.deal_price, 
-          DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
-          r.restaurant_name, 
-          dh.day_of_week,
-          GROUP_CONCAT(dh.start_time) AS start_times,
-          GROUP_CONCAT(dh.end_time) AS end_times,
-          AVG(rt.taste_score) AS avg_taste_rating,
-          AVG(rt.value_score) AS avg_value_rating,
-          AVG(rt.portion_score) AS avg_portion_rating,
-          COUNT(rt.rating_id) AS number_of_ratings,
-          COALESCE(SUM(dv.vote), 0) AS total_votes,
-          MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
-          (fd.deal_id IS NOT NULL) AS is_favourited
-      FROM deals d
-      RIGHT JOIN deal_hours dh 
-          ON d.deal_id = dh.deal_id
-      JOIN restaurants r 
-          ON r.restaurant_id = d.restaurant_id
-      LEFT JOIN ratings rt 
-          ON rt.deal_id = d.deal_id
-      LEFT JOIN deal_votes dv 
-          ON dv.deal_id = d.deal_id
-      LEFT JOIN favourite_deals fd 
-          ON fd.deal_id = d.deal_id 
-        AND fd.user_id = ?
-      WHERE (dh.start_date <= DATE(NOW()) OR dh.start_date IS NULL)
-      AND (dh.end_date >= DATE(NOW()) OR dh.end_date IS NULL)
-      GROUP BY d.deal_id, dh.day_of_week;
+    SELECT 
+        d.deal_id, 
+        d.restaurant_id, 
+        d.deal_name, 
+        d.description, 
+        d.deal_price, 
+        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
+        r.restaurant_name, 
+
+        dh.day_of_week,
+        dh.start_times,
+        dh.end_times,
+
+        AVG(rt.taste_score) AS avg_taste_rating,
+        AVG(rt.value_score) AS avg_value_rating,
+        AVG(rt.portion_score) AS avg_portion_rating,
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
+
+        COALESCE(v.total_votes, 0) AS total_votes,
+        COALESCE(v.user_vote, 0) AS user_vote,
+
+        (fd.deal_id IS NOT NULL) AS is_favourited
+
+    FROM deals d
+
+    JOIN restaurants r 
+        ON r.restaurant_id = d.restaurant_id
+
+    -- aggregate deal_hours by deal + day
+    LEFT JOIN (
+        SELECT 
+            deal_id,
+            day_of_week,
+            GROUP_CONCAT(DISTINCT TIME_FORMAT(start_time, '%H:%i')) AS start_times,
+            GROUP_CONCAT(DISTINCT TIME_FORMAT(end_time, '%H:%i')) AS end_times
+        FROM deal_hours
+        WHERE (start_date <= DATE(NOW()) OR start_date IS NULL)
+          AND (end_date >= DATE(NOW()) OR end_date IS NULL)
+        GROUP BY deal_id, day_of_week
+    ) dh ON dh.deal_id = d.deal_id
+
+    -- aggregate votes once
+    LEFT JOIN (
+        SELECT 
+            deal_id,
+            SUM(vote) AS total_votes,
+            MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
+        FROM deal_votes
+        GROUP BY deal_id
+    ) v ON v.deal_id = d.deal_id
+
+    -- ratings (safe with DISTINCT)
+    LEFT JOIN ratings rt 
+        ON rt.deal_id = d.deal_id
+
+    LEFT JOIN favourite_deals fd 
+        ON fd.deal_id = d.deal_id 
+      AND fd.user_id = ?
+
+    -- only include deals that actually have hours
+    WHERE dh.deal_id IS NOT NULL
+
+    GROUP BY d.deal_id, dh.day_of_week
+    ORDER BY v.total_votes DESC;
   `;
 
   connection.query(sql, [userID, userID], (error, results) => {
@@ -1446,7 +1502,7 @@ app.post("/api/deal", (req, res) => {
   const connection = mysql.createConnection(config);
 
   const sql = `
-        SELECT 
+      SELECT 
           d.deal_id, 
           d.restaurant_id,
           d.deal_name, 
@@ -1458,31 +1514,25 @@ app.post("/api/deal", (req, res) => {
           AVG(rt.value_score) AS avg_value_rating,
           AVG(rt.portion_score) AS avg_portion_rating,
           COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
-          COALESCE(SUM(DISTINCT dv.vote), 0) AS total_votes,
-          MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
+          COALESCE(v.total_votes, 0) AS total_votes,
+          COALESCE(v.user_vote, 0) AS user_vote,
           CASE 
               WHEN fd.deal_id IS NULL THEN 0
               ELSE 1
-          END AS is_favourited,
-          dh.start_times,
-          dh.end_times
+          END AS is_favourited
       FROM deals d
       JOIN restaurants r 
           ON r.restaurant_id = d.restaurant_id
+      LEFT JOIN ratings rt 
+          ON rt.deal_id = d.deal_id
       LEFT JOIN (
           SELECT 
               deal_id,
-              GROUP_CONCAT(DISTINCT start_time) AS start_times,
-              GROUP_CONCAT(DISTINCT end_time) AS end_times
-          FROM deal_hours
-          WHERE (start_date <= DATE(NOW()) OR start_date IS NULL)
-            AND (end_date >= DATE(NOW()) OR end_date IS NULL)
+              SUM(vote) AS total_votes,
+              MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
+          FROM deal_votes
           GROUP BY deal_id
-      ) dh ON dh.deal_id = d.deal_id
-      LEFT JOIN ratings rt 
-          ON rt.deal_id = d.deal_id
-      LEFT JOIN deal_votes dv 
-          ON dv.deal_id = d.deal_id
+      ) v ON v.deal_id = d.deal_id
       LEFT JOIN favourite_deals fd 
           ON fd.deal_id = d.deal_id 
         AND fd.user_id = ?
@@ -1505,9 +1555,6 @@ app.post("/api/deal", (req, res) => {
       dealDescription: deal.description || "n/a",
       dealPrice: deal.deal_price.toFixed(2),
       dealEditData: deal.edited_at_formatted,
-      dayOfWeek: deal.day_of_week,
-      dealStartTime: deal.start_times ? deal.start_times.split(",") : [],
-      dealEndTime: deal.end_times ? deal.end_times.split(",") : [],
       dealValueRating: deal.avg_value_rating
         ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1))
         : 0,

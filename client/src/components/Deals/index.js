@@ -45,9 +45,7 @@ const Deals = ({ uuid }) => {
       }
 
       const data = await response.json();
-      const sortedData = sortByVotes(data);
       setTodayDeals(data);
-      setDisplayedTodayDeals(sortedData);
 
       console.log(data);
     } catch (error) {
@@ -76,13 +74,7 @@ const Deals = ({ uuid }) => {
       }
 
       const data = await response.json();
-      // Sort each day's deals by votes
-      const sortedData = {};
-      Object.keys(data).forEach((day) => {
-        sortedData[day] = sortByVotes(data[day] || []);
-      });
       setWeekDeals(data);
-      setDisplayedWeekDeals(sortedData);
     } catch (error) {
       console.error("Failed to load weekly deals:", error);
       setWeekDealsError(true);

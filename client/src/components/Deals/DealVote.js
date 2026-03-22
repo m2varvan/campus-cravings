@@ -11,6 +11,16 @@ const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
     const [displayedUserVote, setDisplayedUserVote] = React.useState(userVote)
     const [displayedTotalVote, setDisplayedTotalVote] = React.useState(totalVote)
 
+    // UseEffect to update totalVote
+    React.useEffect(() => {
+        setDisplayedTotalVote(totalVote)
+    }, [totalVote])
+
+    // UseEffect to update userVote
+    React.useEffect(() => {
+        setDisplayedUserVote(userVote)
+    }, [userVote])
+
     // API to add / edit vote
     const onVote = async (vote) => {
 

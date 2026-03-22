@@ -26,9 +26,6 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
   const [loadingDeal, setLoadingDeal] = React.useState(false)
   const [error, setError] = React.useState(false)
 
-  // Track if deal information was updated (vote, favorite, or ratings)
-  const [dealUpdated, setDealUpdated] = React.useState(false)
-
   // Deal hours states
   const [dealHours, setDealHours] = React.useState([]);
   const [dealHoursError, setDealHoursError] = React.useState(false);
@@ -125,6 +122,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
 
       const data = await res.json();
       setDeal(data);
+      console.log('Deal', data)
     } catch (err) {
       console.error('Failed to get deal info:', err);
       setError(true);
@@ -133,7 +131,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
     }
   }
 
-  // Load hours when dialog opens
+  // Load hours and deal information when dialog opens
   React.useEffect(() => {
     if (open && dealID) {
       getDealHours();
