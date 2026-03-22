@@ -1566,19 +1566,15 @@ app.post("/api/user/reviews", (req, res) => {
       d.deal_name,
       d.restaurant_id,
       r.helpful_votes,
-
+      rest.restaurant_name,
       DATE_FORMAT(r.created_at,'%Y-%m-%d %H:%i') AS created_at,
       DATE_FORMAT(r.edited_at,'%Y-%m-%d %H:%i') AS edited_at
 
     FROM reviews r
-    JOIN users u 
-      ON r.user_id = u.id
-
-    JOIN deals d 
-      ON r.deal_id = d.deal_id
-
+    JOIN users u ON r.user_id = u.id
+    JOIN deals d ON r.deal_id = d.deal_id
+    JOIN restaurants rest ON d.restaurant_id = rest.restaurant_id
     WHERE r.user_id = ?
-
     ORDER BY r.created_at DESC
   `;
 

@@ -36,7 +36,7 @@ const User = ({uuid}) => {
 
             {/* Left Column - User Info */}
             
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
                     <UserInfo 
@@ -71,7 +71,7 @@ const User = ({uuid}) => {
 
             {/* Right Column - Favourites */}
             
-            <Grid item xs={12} md={8} >
+            <Grid item xs={12} md={6} >
 
                 <Grid container spacing={2}>
                     <Grid item xs={12}>

@@ -29,44 +29,6 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) =
         }
     }, [uuid, loadUserRatings, setUserRatings]);
 
-
-    if (loading) {
-        return (
-            <Box 
-                display="flex" 
-                justifyContent="center" 
-                justifySelf={'center'} 
-                mt={3}
-                sx={{
-                border: "3px solid",
-                borderColor: "secondary.dark",
-                borderRadius: 2,
-                p: 1,
-                }} >
-                Loading your Account Information
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box 
-                display="flex" 
-                justifyContent="center" 
-                justifySelf={'center'} 
-                mt={3}
-                sx={{
-                border: "3px solid",
-                borderColor: "secondary.dark",
-                borderRadius: 2,
-                p: 1,
-                }} >
-                 Error loading user information.
-            </Box>
-        );
-    }
-
     return (
     <>
     <Box sx={{
@@ -77,9 +39,13 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) =
                 }} 
             >
         {/* Header*/}
-        <Typography variant="h5" gutterBottom>
-            My Deal Ratings
-        </Typography>
+        {/* Header with count*/}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h5">My Ratings</Typography>
+            <Typography variant="body1">
+                ({userRatings.length} {userRatings.length === 1 ? 'rating' : 'ratings'})
+            </Typography>
+        </Box>
 
         {/* Loading */}
         {loading && (
