@@ -7,7 +7,7 @@ const UserReviewList = ({ uuid, loadUserReviews, setUserReviews, userReviews}) =
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
 
-    // Show only 4 favourite restaurants by default
+    // Show only 3 reviews by default
     const defaultVisible = 3;
     const [visibleCount, setVisibleCount] = React.useState(defaultVisible);
     const handleShowMore = () => setVisibleCount(userReviews.length);
@@ -99,7 +99,6 @@ const UserReviewList = ({ uuid, loadUserReviews, setUserReviews, userReviews}) =
                 onUpdate={onUpdate}
             />
             ))}
-            </Box>
 
             {/* Show More / Show Less Buttons */}
             <Box textAlign="center" mt={2}>
@@ -122,6 +121,7 @@ const UserReviewList = ({ uuid, loadUserReviews, setUserReviews, userReviews}) =
                 Show Less
                 </Button>
             )}
+            </Box>
             </Box>
         </>
         )}

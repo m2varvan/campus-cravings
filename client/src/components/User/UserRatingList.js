@@ -1,11 +1,18 @@
 import React from 'react';
-import {Typography, CircularProgress, Box } from '@mui/material';
+import {Typography, CircularProgress, Box, Button } from '@mui/material';
 import UserRating from './UserRating';
 
 const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) => {
 
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
+
+    // Show only 3 reviews by default
+    const defaultVisible = 3;
+    const [visibleCount, setVisibleCount] = React.useState(defaultVisible);
+    const handleShowMore = () => setVisibleCount(userRatings.length);
+    const handleShowLess = () => setVisibleCount(defaultVisible);
+    
 
     const onDelete = (id) => {
         setUserRatings(prev => prev.filter(r => r.ratingID !== id))
@@ -83,17 +90,43 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) =
         )}
 
         {/* Display Rated Deals in UserRating Boxes*/}
-        {!loading && !error && userRatings && userRatings.length > 0 && (
-            userRatings.map((rating) => (
-                <UserRating 
-                    key={rating.dealID}
-                    rating={rating}
-                    uuid={uuid}
-                    onDelete={onDelete}
-                    onUpdate={onUpdate}
-                />
-            ))
-        )}
+        <Box sx={{ maxHeight: 300, overflowY: 'auto', pr: 1 }}>
+            {!loading && !error && userRatings && userRatings.length > 0 && (
+                userRatings.slice(0, visibleCount).map((rating) => (
+                    <UserRating 
+                        key={rating.dealID}
+                        rating={rating}
+                        uuid={uuid}
+                        onDelete={onDelete}
+                        onUpdate={onUpdate}
+                    />
+                ))
+            )}
+            {/* Show More / Show Less Buttons */}
+            <Box textAlign="center" mt={2}>
+            {visibleCount < userRatings.length && (
+                <Button
+                variant="contained"
+                color="primary"
+                onClick={handleShowMore}
+                sx={{ mr: 1 }}
+                >
+                Show More
+                </Button>
+            )}
+            {visibleCount > defaultVisible && (
+                <Button
+                variant="contained"
+                color="primary"
+                onClick={handleShowLess}
+                >
+                Show Less
+                </Button>
+            )}
+            </Box>
+        </Box>
+
+        
     </Box>
     </>
 );
