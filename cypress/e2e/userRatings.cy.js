@@ -16,8 +16,9 @@ describe('UserRating', () => {
   });
 
   it('should display empty state when user has no ratings', () => {
+    cy.intercept('POST', '/api/user/rated/deals', mockRatings).as('getRatings');
     cy.visit('/User');
-    cy.intercept('POST', '**/api/user/rated/deals**', []);
+    cy.wait('@getRatings');
     cy.contains('No ratings submitted.').should('exist');
   });
 
@@ -34,8 +35,10 @@ describe('UserRating', () => {
       }
     ];
 
+    cy.intercept('POST', '/api/user/rated/deals', mockRatings).as('getRatings');
     cy.visit('/User');
-    cy.intercept('POST', '**/api/user/rated/deals**', mockRatings);
+    cy.wait('@getRatings');
+   
     
     cy.contains(/Half Off Pizza/i).should('exist');
     cy.contains(/Pizza Palace/i).should('exist');
@@ -63,8 +66,9 @@ describe('UserRating', () => {
       }
     ];
 
+    cy.intercept('POST', '/api/user/rated/deals', mockRatings).as('getRatings');
     cy.visit('/User');
-    cy.intercept('POST', '**/api/ratings/**', mockRatings);
+    cy.wait('@getRatings');
     
     cy.contains(/Deal 1/i).should('exist');
     cy.contains(/Deal 2/i).should('exist');
@@ -83,9 +87,11 @@ describe('UserRating', () => {
         userPortionRating: 3
       }));
 
+      cy.intercept('POST', '/api/user/rated/deals', mockRatings).as('getRatings');
       cy.visit('/User');
-      cy.intercept('POST', '**/api/ratings/**', mockRatings);
+      cy.wait('@getRatings');
       
+
       cy.contains(/Deal 4/).should('not.exist');
       cy.contains('button', /Show More/i).click();
       cy.contains(/Deal 4/i).should('exist');

@@ -1,4 +1,4 @@
-describe('User Reviews E2E Tests', () => {
+describe('User Reviews', () => {
   const testUserId = 'test-user-123';
 
   beforeEach(() => {
@@ -28,8 +28,10 @@ describe('User Reviews E2E Tests', () => {
       }
     ];
 
+    cy.intercept('POST', '/api/reviews/', mockReviews).as('getReviews')
     cy.visit('/User');
-    cy.intercept('POST', '**/api/reviews/**', mockReviews);
+    cy.wait('@getReviews')
+    
     
     cy.contains(/Great Pizza/i).should('exist');
     cy.contains(/Amazing deal!/i).should('exist');
@@ -62,8 +64,9 @@ describe('User Reviews E2E Tests', () => {
       }
     ];
 
+    cy.intercept('POST', '/api/reviews/', mockReviews).as('getReviews')
     cy.visit('/User');
-    cy.intercept('POST', '**/api/reviews/**', mockReviews);
+    cy.wait('@getReviews')
     
     cy.contains('(2 reviews)').should('exist');
     cy.contains(/Review 1/i).should('exist');
@@ -72,7 +75,4 @@ describe('User Reviews E2E Tests', () => {
     cy.contains(/Body 2/i).should('exist');
   });
 
-
-       
-     
 });
