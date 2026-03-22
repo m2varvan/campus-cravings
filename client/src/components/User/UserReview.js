@@ -1,4 +1,4 @@
-import { Typography, Button, Divider, Box, TextField, Alert } from "@mui/material";
+import { Typography, Button, Box, TextField, Alert } from "@mui/material";
 import React, { useState } from "react";
 
 const UserReview = ({ review, uuid, onDelete, onUpdate }) => {

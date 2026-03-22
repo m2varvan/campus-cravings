@@ -7,6 +7,21 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) =
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
 
+    const onDelete = (id) => {
+        setUserRatings(prev => prev.filter(r => r.ratingID !== id))
+    }
+
+    const onUpdate = (ratingID, taste, value, portion) => {
+        setUserRatings(prev =>
+            prev.map(r => r.ratingID === ratingID ? {
+                ...r,
+                userTasteRating: taste,
+                userValueRating: value,
+                userPortionRating: portion
+            } : r)
+        )
+    }
+
     React.useEffect(() => {
         const getInfo = async () => {
             try {
@@ -74,6 +89,8 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings}) =
                     key={rating.dealID}
                     rating={rating}
                     uuid={uuid}
+                    onDelete={onDelete}
+                    onUpdate={onUpdate}
                 />
             ))
         )}

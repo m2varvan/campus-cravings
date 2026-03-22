@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import { Typography, CircularProgress, Box } from '@mui/material';
 
 const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
 
