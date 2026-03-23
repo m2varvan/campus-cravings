@@ -2,11 +2,13 @@ import { IconButton } from "@mui/material";
 import React from "react";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { useDeals } from "../../Hooks/useDeals";
 
-const Favourite = ({uuid, itemID, fave, saveFave, removeFave, size='23px' }) => {
+const Favourite = ({uuid, itemID, fave, saveFave, removeFave, size='23px'}) => {
 
     // State to keep track locally if item is favourited or not
     const [isFavourited, setIsFavourited] = React.useState(fave);
+    const { updateDealFavorite } = useDeals();
 
     const heartSize = size
 
@@ -25,10 +27,12 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave, size='23px' }) => 
             if (isFavourited) {
                 await removeFave(uuid, itemID);
                 setIsFavourited(false);
+                updateDealFavorite(itemID, false); // Update context state
             // If the current value is not favourite, favourite
             } else {
                 await saveFave(uuid, itemID);
                 setIsFavourited(true);
+                updateDealFavorite(itemID, true); // Update context state
             }
 
         } catch (error) {

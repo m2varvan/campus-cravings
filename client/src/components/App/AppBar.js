@@ -12,7 +12,6 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from "../Search/SearchBar";
-import { useLocation } from 'react-router-dom';
 import { FirebaseContext } from '../Firebase';
 
 

@@ -325,7 +325,7 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose, onFavourite
                         open={openDeal}
                         handleClose={() => setOpenDeal(false)}
                         uuid={uuid}
-                        deal={deal}
+                        dealID={deal.dealID}
                       />
                     </Box>
                   </Box>

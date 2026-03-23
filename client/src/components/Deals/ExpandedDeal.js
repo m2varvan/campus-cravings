@@ -18,8 +18,11 @@ import Favourite from './Favourite';
 import DealVote from './DealVote';
 import saveFaveDeal from '../../APIs/saveFaveDeal';
 import removeFaveDeal from '../../APIs/removeFaveDeal';
+import { useDeals } from '../../Hooks/useDeals';
 
-const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
+const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
+
+  const {loadAllDeals} = useDeals();
 
   // States to hold deal information
   const [deal, setDeal] = React.useState({})
@@ -42,7 +45,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
   const [averageRating, setAverageRating] = React.useState(0);
   const [numRatings, setNumRatings] = React.useState(0);
 
-  // Track if ratings were updated
+  //Track if ratings were updated
   const [ratingsUpdated, setRatingsUpdated] = React.useState(false);
 
   // States to open link to Restaurant Page
@@ -60,6 +63,8 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
         body: JSON.stringify({ dealID }),
       });
 
+      setRatingsUpdated(true)
+
       if (!res.ok) throw new Error('Failed to load ratings');
 
       const data = await res.json();
@@ -72,8 +77,6 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
         ((data.dealValueRating + data.dealPortionRating + data.dealTasteRating) / 3).toFixed(1)
       );
       setNumRatings(data.numRatings);
-
-      setRatingsUpdated(true);
     } catch (err) {
       console.error(err);
       setDealRatingsError(true);
@@ -152,8 +155,8 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose, reloadDeals }) => {
 
   // Handle dialog close
   const handleDialogClose = () => {
-    if (ratingsUpdated) {
-      reloadDeals?.();
+    if (ratingsUpdated ) {
+      loadAllDeals();
       setRatingsUpdated(false);
     }
     handleClose?.();

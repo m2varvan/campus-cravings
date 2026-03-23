@@ -6,7 +6,7 @@ import Favourite from "./Favourite";
 import saveFaveDeal from "../../APIs/saveFaveDeal";
 import removeFaveDeal from "../../APIs/removeFaveDeal";
 
-const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
+const Deal = ({uuid, deal, size='lg'}) => {
 
     // State to open dialog box with deal details
     const [openDetails, setOpenDetails] = React.useState(false);
@@ -112,7 +112,7 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                     dealID={deal.dealID} 
                     handleClose={() => setOpenDetails(false)} 
                     open={openDetails} 
-                    reloadDeals={reloadDeals} />
+                    />
         </>
 
     )

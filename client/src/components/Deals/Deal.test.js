@@ -2,6 +2,7 @@ import { render, screen, } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 import Deal from './Deal';
+import { renderWithDealsProvider } from '../../utils/test-utils';
 
 describe('Deal', () => {
 
@@ -35,7 +36,7 @@ describe('Deal', () => {
 
     function renderComponent(props = {}) {
         
-        render(
+        renderWithDealsProvider(
         <Deal
             deal={mockDeal}
             uuid={null}
@@ -52,7 +53,7 @@ describe('Deal', () => {
     });
 
     test('deals with no ratings display "No ratings yet" on deal card', () => {
-        render(<Deal
+        renderWithDealsProvider(<Deal
             deal={mockDeal2}
             uuid={null}
             />);

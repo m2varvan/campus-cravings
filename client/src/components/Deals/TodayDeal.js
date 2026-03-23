@@ -10,7 +10,6 @@ const TodayDeal = ({
       loading,
       error,
       loadTodayDeals,
-      reloadDeals,
     }) => {
 
   // Load today's deals on render
@@ -119,7 +118,6 @@ const TodayDeal = ({
                 <Deal
                   uuid={uuid}
                   deal={deal}
-                  reloadDeals={reloadDeals}
                 />
               </Grid>
             ))}

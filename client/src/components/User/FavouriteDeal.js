@@ -107,7 +107,7 @@ const FavouriteDeal = ({uuid, deal, reloadDeals, handleRemoveDeal}) => {
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} 
-                    deal={deal} 
+                    dealID={deal.dealID} 
                     handleClose={() => setOpenDetails(false)} 
                     open={openDetails} 
                     reloadDeals={reloadDeals} />

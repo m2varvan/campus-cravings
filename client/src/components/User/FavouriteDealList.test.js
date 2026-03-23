@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import React from "react";
 import FavouriteDealList from "./FavouriteDealList";
+import { renderWithDealsProvider } from "../../utils/test-utils";
 
 describe("FavouriteDeals Component", () => {
   const mockDeals = [
@@ -32,7 +33,7 @@ describe("FavouriteDeals Component", () => {
     mockLoadFaveDeals = jest.fn();
     setFaveDeals = jest.fn();
 
-    render(
+    renderWithDealsProvider(
       <FavouriteDealList 
         uuid={1}
         loadFaveDeals={mockLoadFaveDeals}
@@ -71,7 +72,7 @@ describe("FavouriteDeals Component", () => {
     mockLoadFaveDeals = jest.fn();
     setFaveDeals = jest.fn();
 
-    render(
+    renderWithDealsProvider(
       <FavouriteDealList 
         uuid={1}
         loadFaveDeals={mockLoadFaveDeals}

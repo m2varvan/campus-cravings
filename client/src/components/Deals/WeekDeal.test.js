@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react'; 
 import WeekDeal from './WeekDeal';
+import { renderWithDealsProvider } from '../../utils/test-utils';
 
 
 
@@ -102,7 +103,7 @@ describe('WeekDeal', () => {
     function renderComponent(props = {}) {
         loadWeekDeals = jest.fn().mockName('loadWeekDeals');
 
-        render(<WeekDeal
+        renderWithDealsProvider(<WeekDeal
             loadWeekDeals={loadWeekDeals}
             error={false}
             loading={false}
@@ -152,7 +153,7 @@ describe('WeekDeal', () => {
 
     test('displays error message if promotions fail to load', () => {
         const loadWeekDeals= jest.fn().mockName('loadWeekDeals');
-        render(<WeekDeal weekDeals={[]}
+        renderWithDealsProvider(<WeekDeal weekDeals={[]}
                         loadWeekDeals={loadWeekDeals}
                         loading={false}
                         error={true}
@@ -162,7 +163,7 @@ describe('WeekDeal', () => {
 
     test('displays loading message while deals are loading', () => {
         const loadWeekDeals = jest.fn().mockName('loadWeekDeals');
-        render(<WeekDeal weekDeals={[]}
+        renderWithDealsProvider(<WeekDeal weekDeals={[]}
                         loadWeekDeals={loadWeekDeals}
                         loading={true}
                         error={false}
@@ -189,7 +190,7 @@ describe('WeekDeal', () => {
         }));
         const manyPromosObject = {Monday: manyPromos}
         const loadWeekDeals = jest.fn().mockName('loadWeekDeals');
-        render(<WeekDeal weekDeals={manyPromosObject}
+        renderWithDealsProvider(<WeekDeal weekDeals={manyPromosObject}
                         loadWeekDeals={loadWeekDeals}
                         loading={false}
                         error={false}
