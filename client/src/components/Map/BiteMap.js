@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import RestaurantDetails from "../Restaurant/RestaurantDetails";
 
+// deleting default marker icons to nicer looking marker
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -11,11 +12,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-const BiteMap = () => {
-  const navigate = useNavigate();
+const BiteMap = ({ uuid }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [clickedRestaurant, setClickedRestaurant] = useState(null);
 
   const mapCenter = [43.4723, -80.5373];
   const defaultZoom = 16;
@@ -68,7 +69,7 @@ const BiteMap = () => {
   }
 
   return (
-    <div style={{ height: "500px", width: "100%" }}>
+    <div style={{ height: "100vh", width: "100%" }}>
       <MapContainer
         center={mapCenter}
         zoom={defaultZoom}
@@ -91,10 +92,11 @@ const BiteMap = () => {
             <Popup>
               <div className="restaurant-popup">
                 <h4>{restaurant.name}</h4>
-                <p>Rating: ⭐ {restaurant.rating}</p>
 
                 <button
-                  onClick={() => navigate(`/restaurant/${restaurant.id}`)}
+                  onClick={() => {
+                    setClickedRestaurant(restaurant.id);
+                  }}
                   style={{
                     cursor: "pointer",
                     padding: "5px 10px",
@@ -111,6 +113,14 @@ const BiteMap = () => {
           </Marker>
         ))}
       </MapContainer>
+
+      {/* Dialog to open Restaurant Details */}
+      <RestaurantDetails
+        restaurant_id={clickedRestaurant}
+        open={!!clickedRestaurant}
+        handleClose={() => setClickedRestaurant(null)}
+        uuid={uuid}
+      />
     </div>
   );
 };

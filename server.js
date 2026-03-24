@@ -569,12 +569,10 @@ app.post("/api/user/rating", (req, res) => {
   connection.end();
 });
 
-// Route to get all restaurants for the BiteMap
+// API to get all restaurants for BiteMap
 app.get("/api/map/restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  // Fetching the essential location data for the map markers.
-  // We filter out any restaurants missing coordinates to prevent map crashes.
   const sql = `
     SELECT 
         restaurant_id, 
@@ -1769,8 +1767,9 @@ app.post("/api/all/deals", (req, res) => {
     connection.end();
     res.json(deals);
   });
-app.post("/api/user/reviews", (req, res) => {
+});
 
+app.post("/api/user/reviews", (req, res) => {
   const { userID } = req.body;
 
   const connection = mysql.createConnection(config);
@@ -1801,9 +1800,7 @@ app.post("/api/user/reviews", (req, res) => {
   connection.query(sql, [userID], (err, results) => {
     if (err) {
       console.error(err);
-      return res
-        .status(500)
-        .json({ error: "Failed to fetch user reviews" });
+      return res.status(500).json({ error: "Failed to fetch user reviews" });
     }
 
     res.json(results);
