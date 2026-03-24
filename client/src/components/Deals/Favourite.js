@@ -4,8 +4,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
-
-    // State to keep track locally if item is favourited or not
     const [isFavourited, setIsFavourited] = React.useState(fave);
 
 
