@@ -30,7 +30,7 @@ describe('RateDeal', () => {
             <RateDeal 
                 uuid={null}
                 deal={deal1}
-                uapdateRatings={updateRatingsMock}
+                updateRatings={updateRatingsMock}
             />
         );
 
