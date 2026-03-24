@@ -1738,6 +1738,9 @@ app.post("/api/all/deals", (req, res) => {
     connection.end();
     res.json(deals);
   });
+
+});
+
 app.post("/api/user/reviews", (req, res) => {
 
   const { userID } = req.body;
