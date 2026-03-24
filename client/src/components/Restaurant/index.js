@@ -17,7 +17,7 @@ const RestaurantList = ({ uuid }) => {
   const [cuisineFilter, setCuisineFilter] = useState([]);
   const [openNowFilter, setOpenNowFilter] = useState(false);
 
-  // Variables and functions to show only 24 by default
+  // Variables and functions to show only 18 by default
   const defaultVisible = 18;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
@@ -26,6 +26,17 @@ const RestaurantList = ({ uuid }) => {
   };
   const handleShowLess = () => {
     setVisibleCount(defaultVisible);
+  };
+
+  // Callback to update favorite status in the restaurants list
+  const handleFavouriteChange = (restaurantID, isFavourited) => {
+    setRestaurants(prevRestaurants =>
+      prevRestaurants.map(r =>
+        r.restaurant_id === restaurantID
+          ? { ...r, is_favourited: isFavourited }
+          : r
+      )
+    );
   };
 
   useEffect(() => {
@@ -110,7 +121,11 @@ const RestaurantList = ({ uuid }) => {
     loadRestaurants();
     loadRestaurantRatings();
     loadRestaurantHours();
-  }, []);
+  }, [uuid]);
+
+    useEffect(() => {
+      console.log("Restaurants", restaurants);
+  }, [restaurants]);
 
   // Get times for open now feature
   const getOpenStatus = (startTime, endTime, isYesterday) => {
@@ -387,6 +402,7 @@ const RestaurantList = ({ uuid }) => {
                       uuid={uuid}
                       restaurant={restaurant}
                       ratings={restaurantRatings}
+                      onFavouriteChange={handleFavouriteChange}
                     />
                   ))}
               </Grid>

@@ -12,6 +12,7 @@ import User from "../User/User";
 import Owner from "../User/Owner";
 import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
+import { DealsProvider } from '../../Contexts/DealsContext';
 
 const theme = createTheme({
   palette: {
@@ -60,7 +61,6 @@ useEffect(() => {
               try {
                   const response = await fetch(`/api/user/${user.uid}`);
                   const data = await response.json();
-                  console.log("Profile photo response:", data);
                   setProfilePhoto(data.profilePhoto);
                   const response2 = await fetch(`/api/user/type/${user.uid}`)
                   const data2 = await response2.json();
@@ -80,26 +80,28 @@ useEffect(() => {
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <SiteAppBar
-          authUser={authUser}
-          profilePhoto={profilePhoto}
-          setProfilePhoto={setProfilePhoto}
-          userTypeAfter={userTypeAfter}
-        />
+      <DealsProvider uuid={uuid}>
+        <CssBaseline />
+        <Router>
+          <SiteAppBar
+            authUser={authUser}
+            profilePhoto={profilePhoto}
+            setProfilePhoto={setProfilePhoto}
+            userTypeAfter={userTypeAfter}
+          />
 
-        <Routes>
-          <Route path="/" element={<Deals uuid={uuid} />} />
-          <Route path="/Restaurant" element={<RestaurantList uuid={uuid} />} />
-          <Route path="/restaurant" element={<RestaurantList uuid={uuid} />} />
-          <Route path="/Login" element={<Login />} />
-          <Route path="/Signup" element={<SignUp />} />
-          <Route path="/User" element={<User uuid={uuid} />} />
-          <Route path="/Owner" element={<Owner uuid={uuid} />} />
-          <Route path="/search" element={<SearchPage uuid={uuid} />} />
-        </Routes>
-      </Router>
+          <Routes>
+            <Route path="/" element={<Deals uuid={uuid} />} />
+            <Route path="/Restaurant" element={<RestaurantList uuid={uuid} />} />
+            <Route path="/restaurant" element={<RestaurantList uuid={uuid} />} />
+            <Route path="/Login" element={<Login />} />
+            <Route path="/Signup" element={<SignUp />} />
+            <Route path="/User" element={<User uuid={uuid} />} />
+            <Route path="/Owner" element={<Owner uuid={uuid} />} />
+            <Route path="/search" element={<SearchPage uuid={uuid} />} />
+          </Routes>
+        </Router>
+      </DealsProvider>
     </ThemeProvider>
   );
 };

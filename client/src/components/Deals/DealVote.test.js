@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithDealsProvider, screen, fireEvent, waitFor } from '../../utils/test-utils';
 import '@testing-library/jest-dom';
 import React from 'react';
 import DealVote from './DealVote';
@@ -13,7 +13,7 @@ describe('DealVote', () => {
 
     test('If user is not logged in total votes are shown but the vote function is disabled', () => {
 
-        render(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null} />);
+        renderWithDealsProvider(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null} />);
 
         expect(screen.getByText('3')).toBeInTheDocument();
 
@@ -30,7 +30,7 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
+        renderWithDealsProvider(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>, { uuid: 1 });
 
         const upvote = screen.getByLabelText(/upvote/i);
         fireEvent.click(upvote);
@@ -48,7 +48,7 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
+        renderWithDealsProvider(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>, { uuid: 1 });
 
         const downvote = screen.getByLabelText(/downvote/i);
         fireEvent.click(downvote);
@@ -66,7 +66,7 @@ describe('DealVote', () => {
             ok: true,
         });
 
-        render(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>);
+        renderWithDealsProvider(<DealVote uuid={1} totalVote={3} dealID={1} userVote={null}/>, { uuid: 1 });
 
         fireEvent.click(screen.getByLabelText(/upvote/i));
 
@@ -81,7 +81,7 @@ describe('DealVote', () => {
             ok: false
         });
 
-        render(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null}/>);
+        renderWithDealsProvider(<DealVote uuid={null} totalVote={3} dealID={1} userVote={null}/>);
 
         fireEvent.click(screen.getByLabelText(/upvote/i));
 

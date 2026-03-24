@@ -5,7 +5,7 @@ import Favourite from "../Deals/Favourite";
 import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
 import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
-const Restaurant = ({ uuid, restaurant, ratings }) => {
+const Restaurant = ({ uuid, restaurant, ratings, onFavouriteChange }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const { isOpen, isClosingSoon } = restaurant;
 
@@ -20,6 +20,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
         restaurantRating.avg_taste_rating +
         restaurantRating.avg_portion_rating) / 3).toFixed(1)
     : null;
+
 
   return (
     <>
@@ -111,16 +112,13 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
               <Box sx={{ mt: 1, textAlign: "right" }}>
                 {averageRating ? (
                   <>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                      ⭐ {averageRating}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                      ({restaurantRating.total_ratings} reviews)
+                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      ⭐ {averageRating}/5 ({restaurantRating.total_ratings})
                     </Typography>
                   </>
                 ) : (
-                  <Typography variant="caption" color="text.secondary">
-                    No ratings
+                  <Typography variant="body2" color="text.secondary">
+                    No ratings yet
                   </Typography>
                 )}
               </Box>
@@ -134,6 +132,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
         restaurant_id={restaurant.restaurant_id}
         handleClose={() => setOpenDetails(false)}
         open={openDetails}
+        onFavouriteChange={onFavouriteChange}
       />
     </>
   );

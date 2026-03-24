@@ -8,7 +8,6 @@ const WeekDeal = ({
   loadWeekDeals,
   loading,
   error,
-  reloadDeals,
 }) => {
 
   // Load all deals for week view
@@ -69,7 +68,6 @@ const WeekDeal = ({
                 uuid={uuid}
                 day={dayOfWeek}
                 dealList={weekDeals[dayOfWeek]}
-                reloadDeals={reloadDeals}
               />
             </Grid>
           ))}

@@ -2,10 +2,20 @@ import { IconButton } from "@mui/material";
 import React from "react";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { useDeals } from "../../Hooks/useDeals";
 
-const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
+const Favourite = ({uuid, itemID, fave, saveFave, removeFave, size='23px'}) => {
+
+    // State to keep track locally if item is favourited or not
     const [isFavourited, setIsFavourited] = React.useState(fave);
+    const { updateDealFavorite } = useDeals();
 
+    const heartSize = size
+
+    // Sync local state with prop changes
+    React.useEffect(() => {
+        setIsFavourited(fave);
+    }, [fave]);
 
     const handleFavourite = async () => {
         
@@ -17,10 +27,12 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
             if (isFavourited) {
                 await removeFave(uuid, itemID);
                 setIsFavourited(false);
+                updateDealFavorite(itemID, false); // Update context state
             // If the current value is not favourite, favourite
             } else {
                 await saveFave(uuid, itemID);
                 setIsFavourited(true);
+                updateDealFavorite(itemID, true); // Update context state
             }
 
         } catch (error) {
@@ -38,13 +50,12 @@ const Favourite = ({uuid, itemID, fave, saveFave, removeFave }) => {
                 background: "none",
                 border: "none",
                 cursor: uuid ? "pointer" : "not-allowed",
-                fontSize: "20px"
             }}
         >
             {isFavourited ? 
-                <FavoriteIcon sx={{ color: "#ba000d" }} data-testid='filled-heart'/>  // Red heart for favourited
+                <FavoriteIcon sx={{ color: "#ba000d", fontSize: heartSize }} data-testid='filled-heart'/>  // Red heart for favourited
             : 
-                <FavoriteBorderIcon data-testid='empty-heart'/> // Outlined heart for not favourited
+                <FavoriteBorderIcon sx={{fontSize: heartSize}} data-testid='empty-heart'/> // Outlined heart for not favourited
             }
         </IconButton>
     );
