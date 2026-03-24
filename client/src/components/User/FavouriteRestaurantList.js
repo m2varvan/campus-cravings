@@ -31,7 +31,7 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
     // Load favourite restaurants when uuid changes
     React.useEffect(() => {
         loadRestaurants();
-    }, [uuid, loadFaveRestaurants, setFaveRestaurants]);
+    }, [uuid]);
 
     // Remove favourite restaurant from list
     const handleRemoveRestaurant = (restaurantID) => {

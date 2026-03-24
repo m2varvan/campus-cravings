@@ -4,12 +4,24 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
+import { useDeals } from "../../Hooks/useDeals";
 
-const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
+const DealVote = ({uuid, totalVote=0, userVote=null, dealID}) => {
 
     // Local states to track the user's vote and the total vote
     const [displayedUserVote, setDisplayedUserVote] = React.useState(userVote)
     const [displayedTotalVote, setDisplayedTotalVote] = React.useState(totalVote)
+    const { updateDealVote } = useDeals();
+
+    // UseEffect to update totalVote
+    React.useEffect(() => {
+        setDisplayedTotalVote(totalVote)
+    }, [totalVote])
+
+    // UseEffect to update userVote
+    React.useEffect(() => {
+        setDisplayedUserVote(userVote)
+    }, [userVote])
 
     // API to add / edit vote
     const onVote = async (vote) => {
@@ -20,7 +32,6 @@ const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
         }
 
         try {
-
             const body = {
                         userID: uuid, 
                         dealID: dealID, 
@@ -36,32 +47,34 @@ const DealVote = ({uuid, totalVote=0, userVote=null, dealID, }) => {
                 body: JSON.stringify(body),
             });
 
-            // Update local state for total vote
+            // Calculate the vote change
+            let totalVoteChange = 0;
             if (!displayedUserVote || displayedUserVote === 0) {
-                setDisplayedTotalVote(displayedTotalVote + vote)
-                
-            } else if (displayedUserVote === 1 ){
-                setDisplayedTotalVote(displayedTotalVote - (Math.abs(vote) + 1))
-         
-            } else if (displayedUserVote === -1){
-                setDisplayedTotalVote(displayedTotalVote + (Math.abs(vote) + 1))
-                
+                totalVoteChange = vote;
+            } else if (displayedUserVote === 1) {
+                totalVoteChange = -(Math.abs(vote) + 1);
+            } else if (displayedUserVote === -1) {
+                totalVoteChange = Math.abs(vote) + 1;
             }
 
-            // Update local state for user's vote
-            setDisplayedUserVote(vote)
+            // Update local state for total vote
+            setDisplayedTotalVote(displayedTotalVote + totalVoteChange);
 
+            // Update local state for user's vote
+            setDisplayedUserVote(vote);
+
+            // Update context state
+            updateDealVote(dealID, vote, totalVoteChange);
 
             if (!response.ok) {
                 throw new Error(`Server error: ${response.status}`);
             }
-
+            
         } catch (error) {
             console.error("Failed to record vote:", error);
         }
 
     };
-
 
     return(
         <Stack direction="row" alignItems="center" spacing={0}>

@@ -39,7 +39,7 @@ describe("Filtering and Sorting Deals", () => {
   const deals = [deal1, deal2, deal3];
 
   beforeEach(() => {
-    cy.intercept("POST", "/api/today/deals", deals);
+    cy.intercept("POST", "/api/all/deals", deals);
     cy.visit("/");
   });
 

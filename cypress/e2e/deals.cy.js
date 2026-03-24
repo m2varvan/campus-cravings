@@ -84,7 +84,7 @@ describe("Showing Deals", () => {
   };
 
   it("Shows Monday's Deals from the server", () => {
-    cy.intercept("POST", "/api/today/deals", [deal1, deal2, deal3, deal4, deal5]);
+    cy.intercept("POST", "/api/all/deals", [deal1, deal2, deal3, deal4, deal5]);
 
     cy.visit("/");
     cy.contains("Today's Deals");
