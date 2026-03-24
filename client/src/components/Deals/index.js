@@ -67,7 +67,7 @@ const Deals = ({ uuid }) => {
 
     setTodayDeals(todayDealsArray);
     setWeekDeals(separatedByDay);
-  }, [allDeals]);
+  }, [allDeals])
 
   // Function to find restaurants for dropdown list once deals load
   React.useEffect(() => {
@@ -83,8 +83,7 @@ const Deals = ({ uuid }) => {
   }, [allDeals]);
 
   // Function to sort deals by vote descending
-  const sortByVotes = (deals) =>
-    [...deals].sort((a, b) => b.totalVote - a.totalVote);
+  const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
