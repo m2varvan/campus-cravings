@@ -1495,57 +1495,56 @@ app.get("/api/search", (req, res) => {
   });
 });
 
-// Route to get deals valid for current day
+// Route to get deal details
 app.post("/api/deal", (req, res) => {
   const { userID, dealID } = req.body;
 
   const connection = mysql.createConnection(config);
 
   const sql = `
-      SELECT 
-          d.deal_id, 
-          d.restaurant_id,
-          d.deal_name, 
-          d.description, 
-          d.deal_price, 
-          DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
-          r.restaurant_name, 
-          AVG(rt.taste_score) AS avg_taste_rating,
-          AVG(rt.value_score) AS avg_value_rating,
-          AVG(rt.portion_score) AS avg_portion_rating,
-          COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
-          COALESCE(v.total_votes, 0) AS total_votes,
-          COALESCE(v.user_vote, 0) AS user_vote,
-          CASE 
-              WHEN fd.deal_id IS NULL THEN 0
-              ELSE 1
-          END AS is_favourited
-      FROM deals d
-      JOIN restaurants r 
-          ON r.restaurant_id = d.restaurant_id
-      LEFT JOIN ratings rt 
-          ON rt.deal_id = d.deal_id
-      LEFT JOIN (
-          SELECT 
-              deal_id,
-              SUM(vote) AS total_votes,
-              MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
-          FROM deal_votes
-          GROUP BY deal_id
-      ) v ON v.deal_id = d.deal_id
-      LEFT JOIN favourite_deals fd 
-          ON fd.deal_id = d.deal_id 
-        AND fd.user_id = ?
-      WHERE d.deal_id = ?
-      GROUP BY d.deal_id;
-    `;
+    SELECT 
+        d.deal_id, 
+        d.restaurant_id,
+        d.deal_name, 
+        d.description, 
+        d.deal_price, 
+        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+        r.restaurant_name, 
+        AVG(rt.taste_score) AS avg_taste_rating,
+        AVG(rt.value_score) AS avg_value_rating,
+        AVG(rt.portion_score) AS avg_portion_rating,
+        COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
+        COALESCE(v.total_votes, 0) AS total_votes,
+        COALESCE(v.user_vote, 0) AS user_vote,
+        CASE 
+            WHEN fd.deal_id IS NULL THEN 0
+            ELSE 1
+        END AS is_favourited
+    FROM deals d
+    JOIN restaurants r 
+        ON r.restaurant_id = d.restaurant_id
+    LEFT JOIN ratings rt 
+        ON rt.deal_id = d.deal_id
+    LEFT JOIN (
+        SELECT 
+            deal_id,
+            SUM(vote) AS total_votes,
+            MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
+        FROM deal_votes
+        GROUP BY deal_id
+    ) v ON v.deal_id = d.deal_id
+    LEFT JOIN favourite_deals fd 
+        ON fd.deal_id = d.deal_id 
+      AND fd.user_id = ?
+    WHERE d.deal_id = ?
+    GROUP BY d.deal_id;
+  `;
 
   connection.query(sql, [userID, userID, dealID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch deal" });
     }
-
 
     const dealInfo = results.map((deal) => ({
       dealID: deal.deal_id,
@@ -1554,7 +1553,7 @@ app.post("/api/deal", (req, res) => {
       dealName: deal.deal_name,
       dealDescription: deal.description || "n/a",
       dealPrice: deal.deal_price.toFixed(2),
-      dealEditData: deal.edited_at_formatted,
+      dealEditDate: deal.edited_at_formatted,
       dealValueRating: deal.avg_value_rating
         ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1))
         : 0,
@@ -1576,6 +1575,55 @@ app.post("/api/deal", (req, res) => {
     }));
 
     res.json(dealInfo[0]);
+  });
+
+  connection.end();
+});
+
+// Route to get deals rated by a user
+app.post("/api/user/rated/deals", (req, res) => {
+  const { userID } = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT
+      d.deal_id,
+      d.restaurant_id,
+      d.deal_name,
+      d.description,
+      d.deal_price,
+      r.restaurant_name,
+      rt.taste_score AS user_taste_rating,
+      rt.value_score AS user_value_rating,
+      rt.portion_score AS user_portion_rating,
+      rt.rating_id
+    FROM ratings rt
+    JOIN deals d ON rt.deal_id = d.deal_id
+    JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+    WHERE rt.user_id = ?;
+  `;
+
+  connection.query(sql, [userID], (error, results) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      return res.status(500).json({ error: "Failed to fetch rated deals" });
+    }
+
+    const deals = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name,
+      dealDescription: deal.description || "n/a",
+      dealPrice: deal.deal_price.toFixed(2),
+      ratingID: deal.rating_id,
+      userTasteRating: parseFloat(deal.user_taste_rating).toFixed(1),
+      userValueRating: parseFloat(deal.user_value_rating).toFixed(1),
+      userPortionRating: parseFloat(deal.user_portion_rating).toFixed(1),
+    }));
+
+    res.json(deals);
   });
 
   connection.end();
@@ -1690,6 +1738,47 @@ app.post("/api/all/deals", (req, res) => {
     connection.end();
     res.json(deals);
   });
+app.post("/api/user/reviews", (req, res) => {
+
+  const { userID } = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+      r.review_id,
+      r.user_id,
+      u.username,
+      r.title,
+      r.body,
+      d.deal_id,
+      d.deal_name,
+      d.restaurant_id,
+      r.helpful_votes,
+      rest.restaurant_name,
+      DATE_FORMAT(r.created_at,'%Y-%m-%d %H:%i') AS created_at,
+      DATE_FORMAT(r.edited_at,'%Y-%m-%d %H:%i') AS edited_at
+
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    JOIN deals d ON r.deal_id = d.deal_id
+    JOIN restaurants rest ON d.restaurant_id = rest.restaurant_id
+    WHERE r.user_id = ?
+    ORDER BY r.created_at DESC
+  `;
+
+  connection.query(sql, [userID], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch user reviews" });
+    }
+
+    res.json(results);
+  });
+
+  connection.end();
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
