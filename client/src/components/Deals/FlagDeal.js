@@ -12,6 +12,7 @@ const FlagDeal = ({ uuid, dealID, totalFlags, userFlag }) => {
   const [flagged, setFlagged] = useState(userFlag);
   const [flagCount, setFlagCount] = useState(totalFlags ?? 0);
 
+  // Update local flagged and flagCount when props update. 
   React.useEffect(() => {
     setFlagCount(userFlag)
     setFlagCount(totalFlags ?? 0)
@@ -19,6 +20,7 @@ const FlagDeal = ({ uuid, dealID, totalFlags, userFlag }) => {
 
   const open = Boolean(anchorEl);
 
+  // Options to select when flagging a deal
   const flagReasons = [
     "Inaccurate Price",
     "Inaccurate Description",
@@ -87,7 +89,9 @@ const FlagDeal = ({ uuid, dealID, totalFlags, userFlag }) => {
       <Typography>
         Flags: {flagCount ? flagCount : 0}
       </Typography>
-
+    
+      {/* If the deal has not been flagged by the user, 
+      show flagging button */}
       {!flagged ? (
         <>
           <Button
@@ -109,6 +113,9 @@ const FlagDeal = ({ uuid, dealID, totalFlags, userFlag }) => {
           </Menu>
         </>
       ) : (
+
+        // If the deal has been flagged by the user, 
+        // show the remove flag button
         <Button 
             variant="outlined"
             size='small'

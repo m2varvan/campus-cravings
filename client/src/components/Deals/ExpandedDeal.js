@@ -126,7 +126,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
 
       const data = await res.json();
       setDeal(data);
-      console.log('Deal', data)
+      // console.log('Deal', data)
     } catch (err) {
       console.error('Failed to get deal info:', err);
       setError(true);
@@ -358,6 +358,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
             Deal information last updated: {deal.dealEditData}
           </Typography>
 
+          {/* Button to Flag Deal in Footer of Dialog */}
           <FlagDeal
             uuid={uuid}
             dealID={deal.dealID}
