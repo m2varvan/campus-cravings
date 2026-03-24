@@ -16,6 +16,7 @@ import Review from '../Review';
 import RestaurantDetails from '../Restaurant/RestaurantDetails';
 import Favourite from './Favourite';
 import DealVote from './DealVote';
+import FlagDeal from './FlagDeal';
 import saveFaveDeal from '../../APIs/saveFaveDeal';
 import removeFaveDeal from '../../APIs/removeFaveDeal';
 import { useDeals } from '../../Hooks/useDeals';
@@ -356,6 +357,13 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
           <Typography variant="caption" color="text.secondary" sx={{mr: 'auto'}}>
             Deal information last updated: {deal.dealEditData}
           </Typography>
+
+          <FlagDeal
+            uuid={uuid}
+            dealID={deal.dealID}
+            totalFlags={deal.totalFlags}
+            userFlag={deal.userFlag}
+            />
 
           <Button
             onClick={handleDialogClose}
