@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Divider, CircularProgress } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { Box, Typography, Divider, CircularProgress, Grid, Paper } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
+import PersonIcon from "@mui/icons-material/Person";
 
 import Deal from "../Deals/Deal";
 import Restaurant from "../Restaurant/Restaurant";
 
 function SearchPage({ uuid }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const query = params.get("q");
 
   const [restaurants, setRestaurants] = useState([]);
   const [deals, setDeals] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,42 +23,49 @@ function SearchPage({ uuid }) {
 
     setLoading(true);
     setError("");
+    setUsers([]);
 
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      .then((res) => {
+    // Run user search and existing deal/restaurant search in parallel
+    Promise.all([
+      fetch(`/api/search?q=${encodeURIComponent(query)}`).then((res) => {
         if (!res.ok) throw new Error("API request failed");
         return res.json();
-      })
-      .then(async (searchResults) => {
-        // Fetch all restaurants to get favorite status
+      }),
+      fetch(`/api/search/users?q=${encodeURIComponent(query)}`).then((res) => {
+        if (!res.ok) return []; // gracefully degrade if endpoint not available yet
+        return res.json();
+      }),
+    ])
+      .then(async ([searchResults, userResults]) => {
+        // ---------- Users ----------
+        setUsers(userResults || []);
+
+        // ---------- Restaurants ----------
         const restRes = await fetch("/api/get-restaurants", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userID: uuid }),
         });
         const allRestaurants = restRes.ok ? await restRes.json() : [];
-        
-        // Build a map of restaurant_id -> is_favourited
+
         const restFavMap = {};
         allRestaurants.forEach((r) => {
           restFavMap[r.restaurant_id] = !!r.is_favourited;
         });
 
-        // Enrich search results with favorite status
         const enrichedRestaurants = (searchResults.restaurants || []).map((r) => ({
           ...r,
           is_favourited: restFavMap[r.restaurant_id] || false,
         }));
-        
         setRestaurants(enrichedRestaurants);
 
+        // ---------- Deals ----------
         const dealResults = searchResults.deals || [];
         if (dealResults.length === 0) {
           setDeals([]);
           return;
         }
 
-        // Group deal IDs by restaurant so we can fetch them in batches
         const dealsByRestaurant = {};
         dealResults.forEach((d) => {
           const rid = d.restaurant_id;
@@ -63,7 +73,6 @@ function SearchPage({ uuid }) {
           dealsByRestaurant[rid].push(d.deal_id);
         });
 
-        // Fetch full deals for each restaurant using the existing API
         const dealFetches = Object.entries(dealsByRestaurant).map(
           async ([restaurantId, dealIds]) => {
             const res = await fetch("/api/restaurant-deals", {
@@ -80,13 +89,10 @@ function SearchPage({ uuid }) {
         const dealsArrays = await Promise.all(dealFetches);
         const fullDeals = dealsArrays.flat();
 
-        // backend returns a row per hour; just dedupe and keep first instance
         const dedup = {};
         fullDeals.forEach((d) => {
           const id = d.dealID ?? d.deal_id;
-          if (!dedup[id]) {
-            dedup[id] = d;
-          }
+          if (!dedup[id]) dedup[id] = d;
         });
         const uniqueDeals = Object.values(dedup);
 
@@ -103,7 +109,6 @@ function SearchPage({ uuid }) {
           });
         });
 
-        // map into the shape expected by the Deal component
         const mappedDeals = uniqueDeals.map((d) => {
           const dayCount = d.daysOfWeek?.length || 1;
           return {
@@ -131,6 +136,12 @@ function SearchPage({ uuid }) {
       .finally(() => setLoading(false));
   }, [query, uuid]);
 
+  // Navigate to the correct profile page based on user type
+  const handleUserClick = (user) => {
+    const route = user.user_type === "restaurant_owner" ? "/Owner" : "/User";
+    navigate(`${route}?id=${user.id}`);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
@@ -140,7 +151,79 @@ function SearchPage({ uuid }) {
       {loading && <CircularProgress sx={{ mt: 2 }} />}
       {error && <Typography color="error">{error}</Typography>}
 
-      {/* Restaurants */}
+      {/* ── Users ── */}
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6" gutterBottom>
+        Users
+      </Typography>
+
+      {!loading && users.length === 0 && (
+        <Typography>No users found.</Typography>
+      )}
+
+      <Grid container spacing={2}>
+        {users.map((user) => (
+          <Grid item xs={12} sm={6} md={4} key={user.id}>
+            <Paper
+              data-testid={`user-result-${user.id}`}
+              elevation={1}
+              onClick={() => handleUserClick(user)}
+              sx={{
+                p: 2,
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                cursor: "pointer",
+                borderRadius: 2,
+                "&:hover": { filter: "brightness(0.96)", boxShadow: 3 },
+              }}
+            >
+              {/* Avatar placeholder */}
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  bgcolor: "secondary.main",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  color: "white",
+                  fontWeight: 700,
+                  fontSize: "1.1rem",
+                }}
+              >
+                {user.profile_photo && user.profile_photo.length <= 2
+                  ? user.profile_photo
+                  : <PersonIcon />}
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={700}
+                  sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {user.username}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {user.first_name} {user.last_name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "capitalize" }}>
+                  {user.user_type === "restaurant_owner" ? "Restaurant Owner" : "Regular User"}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* ── Restaurants ── */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" gutterBottom>
         Restaurants
@@ -150,7 +233,7 @@ function SearchPage({ uuid }) {
         <Restaurant key={restaurant.restaurant_id} restaurant={restaurant} uuid={uuid} />
       ))}
 
-      {/* Deals */}
+      {/* ── Deals ── */}
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" gutterBottom>
         Deals
