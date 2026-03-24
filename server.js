@@ -1738,6 +1738,8 @@ app.post("/api/all/deals", (req, res) => {
     connection.end();
     res.json(deals);
   });
+});
+
 app.post("/api/user/reviews", (req, res) => {
 
   const { userID } = req.body;
@@ -1779,6 +1781,117 @@ app.post("/api/user/reviews", (req, res) => {
   });
 
   connection.end();
+});
+
+app.get("/api/search/users", (req, res) => {
+  const search = req.query.q;
+ 
+  if (!search || search.trim() === "") {
+    return res.json([]);
+  }
+ 
+  const connection = mysql.createConnection(config);
+ 
+  const sql = `
+    SELECT id, username, first_name, last_name, profile_photo, user_type
+    FROM users
+    WHERE LOWER(username) LIKE LOWER(?)
+       OR LOWER(first_name) LIKE LOWER(?)
+       OR LOWER(last_name) LIKE LOWER(?)
+    LIMIT 20
+  `;
+ 
+  const pattern = `%${search}%`;
+ 
+  connection.query(sql, [pattern, pattern, pattern], (err, results) => {
+    connection.end();
+    if (err) {
+      console.error("User search error:", err);
+      return res.status(500).json({ error: "User search failed" });
+    }
+    res.json(results);
+  });
+});
+ 
+// Follow a user
+app.post("/api/follow", (req, res) => {
+  const { followerID, followingID } = req.body;
+ 
+  if (!followerID || !followingID) {
+    return res.status(400).json({ error: "Missing followerID or followingID" });
+  }
+ 
+  // Prevent following yourself
+  if (followerID === followingID) {
+    return res.status(400).json({ error: "You cannot follow yourself" });
+  }
+ 
+  const connection = mysql.createConnection(config);
+ 
+  const sql = `
+    INSERT IGNORE INTO follows (follower_id, following_id)
+    VALUES (?, ?)
+  `;
+ 
+  connection.query(sql, [followerID, followingID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error("Follow error:", err);
+      return res.status(500).json({ error: "Failed to follow user" });
+    }
+    res.json({ success: true });
+  });
+});
+ 
+// Unfollow a user
+app.post("/api/unfollow", (req, res) => {
+  const { followerID, followingID } = req.body;
+ 
+  if (!followerID || !followingID) {
+    return res.status(400).json({ error: "Missing followerID or followingID" });
+  }
+ 
+  const connection = mysql.createConnection(config);
+ 
+  const sql = `
+    DELETE FROM follows
+    WHERE follower_id = ? AND following_id = ?
+  `;
+ 
+  connection.query(sql, [followerID, followingID], (err, result) => {
+    connection.end();
+    if (err) {
+      console.error("Unfollow error:", err);
+      return res.status(500).json({ error: "Failed to unfollow user" });
+    }
+    res.json({ success: true });
+  });
+});
+ 
+// Check if a user is following another user
+app.post("/api/follow/status", (req, res) => {
+  const { followerID, followingID } = req.body;
+ 
+  if (!followerID || !followingID) {
+    return res.json({ isFollowing: false });
+  }
+ 
+  const connection = mysql.createConnection(config);
+ 
+  const sql = `
+    SELECT id FROM follows
+    WHERE follower_id = ? AND following_id = ?
+    LIMIT 1
+  `;
+ 
+  connection.query(sql, [followerID, followingID], (err, results) => {
+    connection.end();
+    if (err) {
+      console.error("Follow status error:", err);
+      return res.status(500).json({ error: "Failed to check follow status" });
+    }
+    res.json({ isFollowing: results.length > 0 });
+  });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
