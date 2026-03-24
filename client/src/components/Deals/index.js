@@ -52,13 +52,8 @@ const Deals = ({ uuid }) => {
       Sunday: [],
     };
 
-<<<<<<< ahide/like-vote-expanded-details
     const todayDealsArray = [];
     const dealMap = new Map(); // To avoid duplicates in today's deals
-=======
-      const data = await response.json();
-      setTodayDeals(data);
->>>>>>> Sprint3
 
     allDeals.forEach((deal) => {
       // Add to byDay
@@ -71,22 +66,9 @@ const Deals = ({ uuid }) => {
       }
     });
 
-<<<<<<< ahide/like-vote-expanded-details
     setTodayDeals(todayDealsArray);
     setWeekDeals(separatedByDay);
   }, [allDeals])
-=======
-      const data = await response.json();
-      setWeekDeals(data);
-    } catch (error) {
-      console.error("Failed to load weekly deals:", error);
-      setWeekDealsError(true);
-    } finally {
-      setLoadingWeekDeals(false);
-    }
-  };
-
->>>>>>> Sprint3
 
   // Function to find restaurants for dropdown list once deals load
   React.useEffect(() => {
@@ -103,10 +85,6 @@ const Deals = ({ uuid }) => {
 
   // Function to sort deals by vote descending
   const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
-
-  // Function to sort deals by vote descending
-  const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
-
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
