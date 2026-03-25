@@ -569,6 +569,40 @@ app.post("/api/user/rating", (req, res) => {
   connection.end();
 });
 
+// API to get all restaurants for BiteMap
+app.get("/api/map/restaurants", (req, res) => {
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT 
+        restaurant_id, 
+        restaurant_name, 
+        latitude, 
+        longitude
+    FROM restaurants
+    WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
+  `;
+
+  connection.query(sql, (error, results) => {
+    if (error) {
+      console.error("Database error fetching map data:", error.message);
+      return res.status(500).json({ error: "Failed to fetch map data" });
+    }
+
+    const mapData = results.map((restaurant) => ({
+      id: restaurant.restaurant_id,
+      name: restaurant.restaurant_name,
+      lat: parseFloat(restaurant.latitude),
+      lng: parseFloat(restaurant.longitude),
+      rating: "N/A",
+    }));
+
+    res.json(mapData);
+  });
+
+  connection.end();
+});
+
 // API to add a new rating
 app.post("/api/add/rating", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -899,10 +933,12 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { uid, email, username, firstName, lastName, userType, profilePhoto } = req.body;
+  const { uid, email, username, firstName, lastName, userType, profilePhoto } =
+    req.body;
 
   // Check if email or username already exists
-  const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
+  const checkQuery =
+    "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
@@ -929,11 +965,18 @@ app.post("/api/signup", (req, res) => {
     }
 
     //  Insert user into the database, defaulting user_type to 'Regular'
-    const insertQuery =
-      `INSERT INTO users 
+    const insertQuery = `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const values = [uid, email, firstName, lastName, profilePhoto, username, userType];
+    const values = [
+      uid,
+      email,
+      firstName,
+      lastName,
+      profilePhoto,
+      username,
+      userType,
+    ];
 
     connection.query(insertQuery, values, (err, result) => {
       connection.end();
@@ -1077,7 +1120,6 @@ app.post("/api/vote", (req, res) => {
 });
 
 app.post("/api/review/helpful", (req, res) => {
-
   const { reviewID, userID } = req.body;
 
   if (!userID) {
@@ -1093,7 +1135,6 @@ app.post("/api/review/helpful", (req, res) => {
   `;
 
   connection.query(checkVote, [reviewID, userID], (err, results) => {
-
     if (err) {
       connection.end();
       return res.status(500).json({ error: "Database error" });
@@ -1101,14 +1142,12 @@ app.post("/api/review/helpful", (req, res) => {
 
     // USER ALREADY VOTED → REMOVE VOTE
     if (results.length > 0) {
-
       const deleteVote = `
         DELETE FROM review_helpful_votes
         WHERE review_id = ? AND user_id = ?
       `;
 
       connection.query(deleteVote, [reviewID, userID], (err) => {
-
         if (err) {
           connection.end();
           return res.status(500).json({ error: "Failed to remove vote" });
@@ -1121,7 +1160,6 @@ app.post("/api/review/helpful", (req, res) => {
         `;
 
         connection.query(decrement, [reviewID], (err) => {
-
           connection.end();
 
           if (err) {
@@ -1129,23 +1167,18 @@ app.post("/api/review/helpful", (req, res) => {
           }
 
           return res.json({ voted: false });
-
         });
-
       });
-
     }
 
     // USER HAS NOT VOTED → ADD VOTE
     else {
-
       const insertVote = `
         INSERT INTO review_helpful_votes (review_id, user_id)
         VALUES (?, ?)
       `;
 
       connection.query(insertVote, [reviewID, userID], (err) => {
-
         if (err) {
           connection.end();
           return res.status(500).json({ error: "Failed to insert vote" });
@@ -1158,7 +1191,6 @@ app.post("/api/review/helpful", (req, res) => {
         `;
 
         connection.query(increment, [reviewID], (err) => {
-
           connection.end();
 
           if (err) {
@@ -1166,15 +1198,10 @@ app.post("/api/review/helpful", (req, res) => {
           }
 
           return res.json({ voted: true });
-
         });
-
       });
-
     }
-
   });
-
 });
 
 app.get("/api/review/:reviewID/helpful", async (req, res) => {
@@ -1194,7 +1221,6 @@ app.get("/api/review/:reviewID/helpful", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 app.post("/api/save/fave/deal", (req, res) => {
   const { uuid, dealID } = req.body;
@@ -1434,17 +1460,20 @@ app.post("/api/load/fave/restaurants", (req, res) => {
   });
 });
 
-app.get('/api/signup/restaurants', (req, res) => {
-    const connection = mysql.createConnection(config);
+app.get("/api/signup/restaurants", (req, res) => {
+  const connection = mysql.createConnection(config);
 
-    connection.query("SELECT DISTINCT restaurant_name FROM restaurants", (err, data) => {
-        connection.end();
-        if (err) {
-            console.error("Select Error:", err);
-            return res.status(500).json({ message: "Failed to fetch restaurants" });
-        }
-        return res.status(200).json(data);
-    });
+  connection.query(
+    "SELECT DISTINCT restaurant_name FROM restaurants",
+    (err, data) => {
+      connection.end();
+      if (err) {
+        console.error("Select Error:", err);
+        return res.status(500).json({ message: "Failed to fetch restaurants" });
+      }
+      return res.status(200).json(data);
+    },
+  );
 });
 
 app.get("/api/search", (req, res) => {
@@ -1741,7 +1770,6 @@ app.post("/api/all/deals", (req, res) => {
 });
 
 app.post("/api/user/reviews", (req, res) => {
-
   const { userID } = req.body;
 
   const connection = mysql.createConnection(config);
@@ -1772,9 +1800,7 @@ app.post("/api/user/reviews", (req, res) => {
   connection.query(sql, [userID], (err, results) => {
     if (err) {
       console.error(err);
-      return res
-        .status(500)
-        .json({ error: "Failed to fetch user reviews" });
+      return res.status(500).json({ error: "Failed to fetch user reviews" });
     }
 
     res.json(results);

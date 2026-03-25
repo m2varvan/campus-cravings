@@ -7,7 +7,6 @@ import { useDeals } from "../../Hooks/useDeals";
 
 // Inner component that uses the context
 const Deals = ({ uuid }) => {
-
   const { allDeals, loading, error, loadAllDeals } = useDeals();
 
   // Separated deals for display
@@ -23,13 +22,13 @@ const Deals = ({ uuid }) => {
   });
 
   // Variables to hold displayed deals
-  const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([])
+  const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([]);
   const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
 
   // Variables to hold filter states
   const [restaurantFilter, setRestaurantFilter] = React.useState([]);
-  const [sort, setSort] = React.useState('');
-  const [restaurantOptions, setRestaurantOptions] = React.useState([])
+  const [sort, setSort] = React.useState("");
+  const [restaurantOptions, setRestaurantOptions] = React.useState([]);
 
   // Load all deals on component mount
   React.useEffect(() => {
@@ -81,23 +80,24 @@ const Deals = ({ uuid }) => {
     });
 
     setRestaurantOptions(Array.from(restaurantSet));
-  }, [allDeals])
+  }, [allDeals]);
 
   // Function to sort deals by vote descending
   const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
-
-     // Helper to compute overall rating for a deal
+    // Helper to compute overall rating for a deal
     const getOverallRating = (deal) => {
       if (deal.numRatings === 0) return null; // unrated deals
-      return (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) / 3;
+      return (
+        (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) /
+        3
+      );
     };
 
     const sortDeals = (deals) => {
       return [...deals].sort((a, b) => {
-
         let aRating = null;
         let bRating = null;
 
@@ -132,7 +132,6 @@ const Deals = ({ uuid }) => {
             default:
               aRating = getOverallRating(a);
               bRating = getOverallRating(b);
-              
           }
 
           // Handle nulls (unrated last)
@@ -157,17 +156,17 @@ const Deals = ({ uuid }) => {
       });
     };
 
-
-
     // Filter and sort today's deals
-    let filteredToday = todayDeals.filter((deal) =>
-      restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+    let filteredToday = todayDeals.filter(
+      (deal) =>
+        restaurantFilter.length === 0 ||
+        restaurantFilter.includes(deal.restaurantName),
     );
 
-    if (sort === '') {
+    if (sort === "") {
       filteredToday = sortByVotes(filteredToday);
     } else {
-      filteredToday = sortDeals(filteredToday)
+      filteredToday = sortDeals(filteredToday);
     }
 
     setDisplayedTodayDeals(filteredToday);
@@ -176,10 +175,12 @@ const Deals = ({ uuid }) => {
     const newWeekDeals = {};
     Object.keys(weekDeals).forEach((day) => {
       let filtered = (weekDeals[day] || []).filter(
-        (deal) => restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+        (deal) =>
+          restaurantFilter.length === 0 ||
+          restaurantFilter.includes(deal.restaurantName),
       );
 
-      if (sort === '') {
+      if (sort === "") {
         filtered = sortByVotes(filtered);
       } else {
         filtered = sortDeals(filtered);
@@ -189,27 +190,25 @@ const Deals = ({ uuid }) => {
     });
 
     setDisplayedWeekDeals(newWeekDeals);
-
-  }, [restaurantFilter, sort, todayDeals, weekDeals])
+  }, [restaurantFilter, sort, todayDeals, weekDeals]);
 
   return (
     <Grid container p={4} display={"flex"}>
-
       {/* Page Title */}
       <Grid item xs={12}>
         <Typography variant="h3">University Shops Plaza Deals</Typography>
       </Grid>
 
       {/* Filter Options */}
-      <Grid item xs={12} justifyContent={'flex-start'}>
-        <FilterSortDeals 
+      <Grid item xs={12} justifyContent={"flex-start"}>
+        <FilterSortDeals
           restaurantFilter={restaurantFilter}
           setRestaurantFilter={setRestaurantFilter}
           sort={sort}
           setSort={setSort}
-          restaurantOptions={restaurantOptions} />
+          restaurantOptions={restaurantOptions}
+        />
       </Grid>
-      
 
       {/* Today's Deals */}
       <TodayDeal
@@ -228,7 +227,6 @@ const Deals = ({ uuid }) => {
         error={error}
         loadWeekDeals={loadAllDeals}
       />
-
     </Grid>
   );
 };

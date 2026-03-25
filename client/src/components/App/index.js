@@ -13,6 +13,7 @@ import Owner from "../User/Owner";
 import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
 import { DealsProvider } from "../../Contexts/DealsContext";
+import BiteMap from "../Map/BiteMap";
 
 const theme = createTheme({
   palette: {
@@ -91,14 +92,21 @@ const App = () => {
 
           <Routes>
             <Route path="/" element={<Deals uuid={uuid} />} />
-            <Route path="/Restaurant" element={<RestaurantList uuid={uuid} />} />
-            <Route path="/restaurant" element={<RestaurantList uuid={uuid} />} />
+            <Route
+              path="/Restaurant"
+              element={<RestaurantList uuid={uuid} />}
+            />
+            <Route
+              path="/restaurant"
+              element={<RestaurantList uuid={uuid} />}
+            />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<SignUp />} />
             {/* /User and /Owner support optional ?id= query param for public profiles */}
             <Route path="/User" element={<User uuid={uuid} />} />
             <Route path="/Owner" element={<Owner uuid={uuid} />} />
             <Route path="/search" element={<SearchPage uuid={uuid} />} />
+            <Route path="/BiteMap" element={<BiteMap uuid={uuid} />} />
           </Routes>
         </Router>
       </DealsProvider>

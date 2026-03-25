@@ -1,28 +1,33 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import { useNavigate } from 'react-router-dom';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Menu from "@mui/material/Menu";
+import Container from "@mui/material/Container";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "../Search/SearchBar";
 import { useLocation } from 'react-router-dom';
 import { FirebaseContext } from '../Firebase';
 
 
 const pages = [
-  { label: 'Deals', path: '/', id: 'nav-promotions' },
-  { label: 'Restaurants', path: '/Restaurant', id: 'nav-restaurant' },
+  { label: "Deals", path: "/", id: "nav-promotions" },
+  { label: "Restaurants", path: "/Restaurant", id: "nav-restaurant" },
+  { label: "BiteMap", path: "/BiteMap", id: "nav-locations" },
 ];
 
-const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) => {
-
+const SiteAppBar = ({
+  authUser,
+  profilePhoto,
+  setProfilePhoto,
+  userTypeAfter,
+}) => {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
   const firebase = React.useContext(FirebaseContext);
@@ -31,30 +36,28 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
 
   const handleSignOut = async () => {
     await firebase.doSignOut();
-    setProfilePhoto('U');
-    navigate('/');
+    setProfilePhoto("U");
+    navigate("/");
   };
 
   if (authUser == null) {
     settings = [
-      { label: 'Login', path: '/Login', id: 'nav-login' },
-      { label: 'SignUp', path: '/SignUp', id: 'nav-signup' },
+      { label: "Login", path: "/Login", id: "nav-login" },
+      { label: "SignUp", path: "/SignUp", id: "nav-signup" },
     ];
   } else {
-      if (userTypeAfter === 'restaurant_owner') {
-        settings = [
-          { label: 'My Owner Account', path: '/Owner', id: 'nav-owner' },
-          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
-        ];
-      } else {
-        settings = [
-          { label: 'My Account', path: '/User', id: 'nav-user' },
-          { label: 'SignOut', action: handleSignOut, id: 'nav-signout' }
-        ];
-      }
-    
+    if (userTypeAfter === "restaurant_owner") {
+      settings = [
+        { label: "My Owner Account", path: "/Owner", id: "nav-owner" },
+        { label: "SignOut", action: handleSignOut, id: "nav-signout" },
+      ];
+    } else {
+      settings = [
+        { label: "My Account", path: "/User", id: "nav-user" },
+        { label: "SignOut", action: handleSignOut, id: "nav-signout" },
+      ];
+    }
   }
-  
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -69,10 +72,12 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
   };
 
   return (
-    <AppBar position="sticky" sx={{bgcolor: 'secondary.dark', color: 'background.default'}}>
+    <AppBar
+      position="sticky"
+      sx={{ bgcolor: "secondary.dark", color: "background.default" }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-
           {/* Logo for md and up */}
           <Typography
             variant="h6"
@@ -81,11 +86,11 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
             href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
+              display: { xs: "none", md: "flex" },
+              fontFamily: "monospace",
               fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
+              color: "inherit",
+              textDecoration: "none",
             }}
           >
             Campus Cravings
@@ -99,39 +104,39 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
             href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
-              display: { xs: 'flex', md: 'none' },
+              display: { xs: "flex", md: "none" },
               flexGrow: 1,
-              fontFamily: 'monospace',
-              fontSize: '1.8rem', 
+              fontFamily: "monospace",
+              fontSize: "1.8rem",
               fontWeight: 700,
-              color: 'inherit',
+              color: "inherit",
             }}
           >
             CampusCravings
           </Typography>
 
           {/* Page Buttons */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
                 key={page.label}
                 id={page.id}
                 onClick={() => handleNavigate(page.path)}
                 sx={{
-                  color: 'white',
-                  display: 'block',
-                  fontSize: '1.1rem',      
-                  px: 3,   
+                  color: "white",
+                  display: "block",
+                  fontSize: "1.1rem",
+                  px: 3,
                   py: 1.5,
                   minWidth: 120,
-                  textTransform: 'none'
+                  textTransform: "none",
                 }}
               >
                 {page.label}
               </Button>
             ))}
           </Box>
-          
+
           {/* Search Bar */}
           <SearchBar />
 
@@ -143,17 +148,17 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
               </IconButton>
             </Tooltip>
             <Menu
-              sx={{ mt: '45px' }}
+              sx={{ mt: "45px" }}
               id="menu-appbar"
               anchorEl={anchorElUser}
               anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
@@ -163,9 +168,9 @@ const SiteAppBar = ({ authUser, profilePhoto, setProfilePhoto, userTypeAfter }) 
                   key={setting.label}
                   onClick={() => {
                     if (setting.action) {
-                      setting.action()
+                      setting.action();
                     } else if (setting.path) {
-                        handleNavigate(setting.path);
+                      handleNavigate(setting.path);
                     }
                     handleCloseUserMenu();
                   }}
