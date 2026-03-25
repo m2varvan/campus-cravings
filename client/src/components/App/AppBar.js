@@ -49,7 +49,13 @@ const SiteAppBar = ({
         { label: "My Owner Account", path: "/Owner", id: "nav-owner" },
         { label: "SignOut", action: handleSignOut, id: "nav-signout" },
       ];
-    } else {
+    } else if (userTypeAfter === "admin"){
+      settings = [
+        { label: "Admin Page", path: "/Admin", id: "nav-admin" },
+        { label: "SignOut", action: handleSignOut, id: "nav-signout" },
+      ];
+
+    }else {
       settings = [
         { label: "My Account", path: "/User", id: "nav-user" },
         { label: "SignOut", action: handleSignOut, id: "nav-signout" },

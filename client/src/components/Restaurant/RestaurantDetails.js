@@ -68,18 +68,17 @@ const RestaurantDetails = ({ uuid, restaurant_id, open, handleClose, onFavourite
       ]);
 
       // Debugging
-      console.log("Deals:", deals);
-      console.log("Hours:", hours);
-      console.log("Ratings:", ratings);
-      console.log("Details:", details);
+      // console.log("Deals:", deals);
+      // console.log("Hours:", hours);
+      // console.log("Ratings:", ratings);
+      // console.log("Details:", details);
 
       // Set states
       setDeals(deals || []);
       setRestaurantHours(hours || []);
       setRatings(ratings || {});
       setRestaurant(details || {});
-
-      console.log('Deatails', details)
+      
     } catch (error) {
       console.error("Failed to load restaurant data:", error);
       setError(true);

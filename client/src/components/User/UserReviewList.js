@@ -31,7 +31,7 @@ const UserReviewList = ({ uuid, loadUserReviews, setUserReviews, userReviews}) =
                 setError(false);
                 const response = await loadUserReviews(uuid);
                 setUserReviews(response);
-                console.log('My Reviews:', response)
+                // console.log('My Reviews:', response)
 
             } catch (err) {
                 console.error(err);

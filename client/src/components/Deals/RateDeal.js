@@ -2,6 +2,7 @@ import React from "react";
 import { Typography, Box, Button, Alert } from "@mui/material";
 import RateDealButtons from "./RateDealButtons";
 
+
 const RateDeal = ({uuid, deal, updateRatings}) => {
 
     // States to load the user's ratings

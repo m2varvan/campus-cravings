@@ -11,6 +11,11 @@ Sample login input for restaurant owner account:
 email: ownersample@gmail.com  
 password: 1234Owner  
 
+Sample login input for admin account:  
+email: admin@gmail.com
+password: 123Admin
+
+
 
 #### Generative AI use:
 Generative AI was used to debug code when errors occured, help with styling, and find bugs in tests. 
