@@ -93,7 +93,6 @@ const Owner = ({ uuid }) => {
   return (
     <>
       <Grid container p={4}>
-
         {/* Header */}
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
@@ -131,29 +130,35 @@ const Owner = ({ uuid }) => {
 
           {/* Right Side */}
           <Grid item xs={12} md={8}>
-
             {/* Dashboard (OWN PROFILE) */}
             {isOwnProfile && (
               <>
-                <Box sx={{ pb: 2 }}>
+                {/* Post New Deal Button on Right */}
+                <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
                   <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
                     + Post New Deal
                   </Button>
                 </Box>
 
-                <OwnerDealList
-                  uuid={uuid}
-                  loadOwnerDeals={loadOwnerDeals}
-                  ownerDeals={ownerDeals}
-                  setOwnerDeals={setOwnerDeals}
-                />
+                {/* Deals Section */}
+                <Box sx={{ mb: 4 }}>
+                  <OwnerDealList
+                    uuid={uuid}
+                    loadOwnerDeals={loadOwnerDeals}
+                    ownerDeals={ownerDeals}
+                    setOwnerDeals={setOwnerDeals}
+                  />
+                </Box>
 
-                <OwnerRestaurantList
-                  uuid={uuid}
-                  loadOwnerRestaurants={loadOwnerRestaurants}
-                  ownerRestaurants={ownerRestaurants}
-                  setOwnerRestaurants={setOwnerRestaurants}
-                />
+                {/* Restaurants Section */}
+                <Box>
+                  <OwnerRestaurantList
+                    uuid={uuid}
+                    loadOwnerRestaurants={loadOwnerRestaurants}
+                    ownerRestaurants={ownerRestaurants}
+                    setOwnerRestaurants={setOwnerRestaurants}
+                  />
+                </Box>
 
                 <CreateDealDialog
                   open={openCreateDeal}
@@ -185,7 +190,6 @@ const Owner = ({ uuid }) => {
                 />
               </>
             )}
-
           </Grid>
         </Grid>
       </Grid>

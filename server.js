@@ -2343,4 +2343,35 @@ app.post('/api/clear/flags', (req, res) => {
 
 })
 
+// Edit an existing restaurant
+app.put("/api/owner/restaurants/:restaurantId", (req, res) => {
+    const connection = mysql.createConnection(config);
+    const { restaurantId } = req.params;
+    const { restaurantName, streetAddress, unit, city, province, postalCode, websiteUrl, phoneNumber, cuisine, openingTime, closingTime, image } = req.body;
+
+    if (!restaurantName || !streetAddress || !city || !province || !postalCode) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const sql = `
+        UPDATE restaurants
+        SET restaurant_name = ?, street_address = ?, unit = ?, city = ?, province = ?,
+            postal_code = ?, website_url = ?, phone_number = ?, cuisine = ?,
+            opening_time = ?, closing_time = ?, image = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE restaurant_id = ?
+    `;
+
+    connection.query(sql,
+        [restaurantName, streetAddress, unit || null, city, province, postalCode, websiteUrl || null, phoneNumber || null, cuisine || null, openingTime || null, closingTime || null, image || null, restaurantId],
+        (err) => {
+            connection.end();
+            if (err) {
+                console.error("Update restaurant error:", err);
+                return res.status(500).json({ error: "Failed to update restaurant" });
+            }
+            res.status(200).json({ message: "Restaurant updated successfully" });
+        }
+    );
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
