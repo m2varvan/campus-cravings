@@ -933,12 +933,9 @@ app.delete("/api/review/:reviewID", (req, res) => {
 app.post("/api/signup", (req, res) => {
   const connection = mysql.createConnection(config);
 
-  const { uid, email, username, firstName, lastName, userType, profilePhoto } =
-    req.body;
+  const { uid, username, email, firstName, lastName, profilePhoto, userType, restaurantId } = req.body;
 
-  // Check if email or username already exists
-  const checkQuery =
-    "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
+  const checkQuery = "SELECT email_address, username FROM users WHERE email_address = ? OR username = ?";
   connection.query(checkQuery, [email, username], (err, data) => {
     if (err) {
       console.error("Select Error:", err);
@@ -949,23 +946,17 @@ app.post("/api/signup", (req, res) => {
     const emailExists = data.some((user) => user.email_address === email);
     if (emailExists) {
       connection.end();
-      return res.status(409).json({
-        field: "email",
-        message: "This email already has an account",
-      });
+      return res.status(409).json({ field: "email", message: "This email already has an account" });
     }
 
     const usernameExists = data.some((user) => user.username === username);
     if (usernameExists) {
       connection.end();
-      return res.status(409).json({
-        field: "username",
-        message: "This username is already taken.",
-      });
+      return res.status(409).json({ field: "username", message: "This username is already taken." });
     }
 
-    //  Insert user into the database, defaulting user_type to 'Regular'
-    const insertQuery = `INSERT INTO users 
+    const insertQuery =
+      `INSERT INTO users 
       (id, email_address, first_name, last_name, profile_photo, username, user_type) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const values = [
@@ -979,12 +970,26 @@ app.post("/api/signup", (req, res) => {
     ];
 
     connection.query(insertQuery, values, (err, result) => {
-      connection.end();
       if (err) {
         console.error("Insert Error:", err);
+        connection.end();
         return res.status(500).json("User entry failed");
       }
-      return res.status(200).json({ message: "User has been created." });
+
+      if (userType === 'restaurant_owner' && restaurantId) {
+        const ownerQuery = "INSERT INTO restaurant_owners (user_id, restaurant_id) VALUES (?, ?)";
+        connection.query(ownerQuery, [uid, restaurantId], (err) => {
+          connection.end();
+          if (err) {
+            console.error("Restaurant owner insert error:", err);
+            return res.status(500).json("Failed to link restaurant owner");
+          }
+          return res.status(200).json({ message: "User has been created." });
+        });
+      } else {
+        connection.end();
+        return res.status(200).json({ message: "User has been created." });
+      }
     });
   });
 });
@@ -1522,6 +1527,211 @@ app.get("/api/search", (req, res) => {
       });
     });
   });
+});
+
+app.get("/api/owner/restaurants/:uuid", (req, res) => {
+  const connection = mysql.createConnection(config);
+  const { uuid } = req.params;
+
+  connection.connect((err) => {
+    if (err) {
+      console.error("Connection error:", err.message);
+      return res.status(500).json({ error: "Database connection failed" });
+    }
+
+    const query = `
+      SELECT 
+          r.*,
+          ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
+          COUNT(rt.rating_id) AS num_ratings
+      FROM restaurants r
+      JOIN restaurant_owners ro
+          ON r.restaurant_id = ro.restaurant_id
+      LEFT JOIN deals d
+          ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ratings rt
+          ON rt.deal_id = d.deal_id
+      WHERE ro.user_id = ?
+      GROUP BY r.restaurant_id;
+    `;
+
+    connection.query(query, [uuid], (error, results) => {
+      if (error) {
+        console.error("Database error:", error.message);
+        connection.end();
+        return res.status(500).json({ error: "Failed to fetch owner restaurants" });
+      }
+
+      res.json(results);
+      connection.end();
+    });
+  });
+});
+
+app.get("/api/owner/deals/:uuid", (req, res) => {
+    const { uuid } = req.params;
+    const connection = mysql.createConnection(config);
+
+    const sql = `
+        SELECT 
+            d.deal_id, 
+            d.restaurant_id,
+            d.deal_name, 
+            d.description, 
+            d.deal_price, 
+            DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+            r.restaurant_name,
+            MIN(dh.start_date) AS valid_from,
+            MAX(dh.end_date) AS valid_to,
+            GROUP_CONCAT(DISTINCT dh.day_of_week) AS deal_days,
+            MIN(dh.start_time) AS start_time,
+            MIN(dh.end_time) AS end_time,
+            AVG(rt.taste_score) AS avg_taste_rating,
+            AVG(rt.value_score) AS avg_value_rating,
+            AVG(rt.portion_score) AS avg_portion_rating,
+            COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
+            COALESCE(SUM(dv.vote), 0) AS total_votes,
+            MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
+        FROM deals d
+        JOIN restaurant_owners ro ON ro.restaurant_id = d.restaurant_id AND ro.user_id = ?
+        JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+        LEFT JOIN deal_hours dh ON dh.deal_id = d.deal_id
+        LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
+        LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
+        GROUP BY d.deal_id;
+    `;
+
+    connection.query(sql, [uuid, uuid], (error, results) => {
+        if (error) {
+            console.error("Database error:", error.message);
+            connection.end();
+            return res.status(500).json({ error: "Failed to fetch owner deals" });
+        }
+
+        const ownerDeals = results.map((deal) => ({
+            dealID: deal.deal_id,
+            restaurantID: deal.restaurant_id,
+            restaurantName: deal.restaurant_name,
+            dealName: deal.deal_name,
+            dealDescription: deal.description || "n/a",
+            dealPrice: deal.deal_price.toFixed(2),
+            dealEditData: deal.edited_at_formatted,
+            validFrom: deal.valid_from ? deal.valid_from.toISOString().split('T')[0] : '',
+            validTo: deal.valid_to ? deal.valid_to.toISOString().split('T')[0] : '',
+            dealDays: deal.deal_days ? deal.deal_days.split(',') : [], 
+            startTime: deal.start_time || '',                            
+            endTime: deal.end_time || '',                                
+            dealValueRating: deal.avg_value_rating ? parseFloat(deal.avg_value_rating.toFixed(1)) : 0,
+            dealTasteRating: deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
+            dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
+            numRatings: deal.number_of_ratings ? parseInt(deal.number_of_ratings, 10) : 0,
+            totalVote: parseInt(deal.total_votes) || 0,
+            userVote: parseInt(deal.user_vote) === 0 ? null : parseInt(deal.user_vote) || null,
+        }));
+
+        res.json(ownerDeals);
+        connection.end();
+    });
+});
+
+// Create a new deal
+app.post("/api/owner/deals", (req, res) => {
+    const connection = mysql.createConnection(config);
+    const { restaurantId, dealName, description, dealPrice, validFrom, validTo, selectedDays, startTime, endTime, createdBy } = req.body;
+
+    if (!dealName || !dealPrice || !validFrom || !restaurantId || !selectedDays?.length || !startTime || !endTime) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const insertDeal = `
+        INSERT INTO deals (restaurant_id, deal_name, description, deal_price, created_by)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    connection.query(insertDeal, [restaurantId, dealName, description, dealPrice, createdBy], (err, result) => {
+        if (err) {
+            connection.end();
+            return res.status(500).json({ error: "Failed to create deal" });
+        }
+
+        const dealId = result.insertId;
+
+        // One row per selected day, same times for all
+        const hourRows = selectedDays.map(day => [dealId, day, startTime, endTime, 0, validFrom, validTo || null]);
+        const insertHours = `
+            INSERT INTO deal_hours (deal_id, day_of_week, start_time, end_time, normal_hours, start_date, end_date)
+            VALUES ?
+        `;
+
+        connection.query(insertHours, [hourRows], (err) => {
+            connection.end();
+            if (err) {
+                console.error("Insert deal_hours error:", err);
+                return res.status(500).json({ error: "Failed to create deal hours" });
+            }
+            res.status(201).json({ message: "Deal created successfully", dealId });
+        });
+    });
+});
+
+// Edit an existing deal
+app.put("/api/owner/deals/:dealId", (req, res) => {
+    const connection = mysql.createConnection(config);
+    const { dealId } = req.params;
+    const { dealName, description, dealPrice, validFrom, validTo, selectedDays, startTime, endTime } = req.body;
+
+    if (!dealName || !dealPrice || !validFrom || !selectedDays?.length || !startTime || !endTime) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const updateDeal = `
+        UPDATE deals 
+        SET deal_name = ?, description = ?, deal_price = ?, edited_at = CURRENT_TIMESTAMP
+        WHERE deal_id = ?
+    `;
+
+    connection.query(updateDeal, [dealName, description, dealPrice, dealId], (err) => {
+        if (err) {
+            connection.end();
+            return res.status(500).json({ error: "Failed to update deal" });
+        }
+
+        // Delete existing hours then re-insert with new values
+        connection.query("DELETE FROM deal_hours WHERE deal_id = ?", [dealId], (err) => {
+            if (err) {
+                connection.end();
+                return res.status(500).json({ error: "Failed to update deal hours" });
+            }
+
+            const hourRows = selectedDays.map(day => [dealId, day, startTime, endTime, 0, validFrom, validTo || null]);
+            connection.query(
+                "INSERT INTO deal_hours (deal_id, day_of_week, start_time, end_time, normal_hours, start_date, end_date) VALUES ?",
+                [hourRows],
+                (err) => {
+                    connection.end();
+                    if (err) {
+                        return res.status(500).json({ error: "Failed to insert updated deal hours" });
+                    }
+                    res.status(200).json({ message: "Deal updated successfully" });
+                }
+            );
+        });
+    });
+});
+
+// Delete a deal
+app.delete("/api/owner/deals/:dealId", (req, res) => {
+    const connection = mysql.createConnection(config);
+    const { dealId } = req.params;
+
+    connection.query("DELETE FROM deals WHERE deal_id = ?", [dealId], (err) => {
+        connection.end();
+        if (err) {
+            console.error("Delete deal error:", err);
+            return res.status(500).json({ error: "Failed to delete deal" });
+        }
+        res.status(200).json({ message: "Deal deleted successfully" });
+    });
 });
 
 // Route to get deal details
