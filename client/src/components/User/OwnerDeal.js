@@ -42,8 +42,13 @@ const OwnerDeal = ({ uuid, deal, reloadDeals }) => {
                 </Box>
             </Box>
 
-            <ExpandedDeal uuid={uuid} deal={deal}
-                handleClose={() => setOpenDetails(false)} open={openDetails} reloadDeals={reloadDeals} />
+            <ExpandedDeal 
+                uuid={uuid} 
+                dealID={deal.dealID}
+                handleClose={() => setOpenDetails(false)} 
+                open={openDetails} 
+                reloadDeals={reloadDeals} 
+            />
 
             <EditDealDialog
                 open={openEdit}
