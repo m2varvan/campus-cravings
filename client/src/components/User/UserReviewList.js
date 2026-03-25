@@ -29,6 +29,7 @@ const UserReviewList = ({ uuid, loadUserReviews, setUserReviews, userReviews, re
                 setError(false);
                 const response = await loadUserReviews(uuid);
                 setUserReviews(response);
+
             } catch (err) {
                 console.error(err);
                 setError(true);

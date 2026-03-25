@@ -14,6 +14,7 @@ import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
 import { DealsProvider } from "../../Contexts/DealsContext";
 import BiteMap from "../Map/BiteMap";
+import Admin from "../User/Admin";
 
 const theme = createTheme({
   palette: {
@@ -107,6 +108,7 @@ const App = () => {
             <Route path="/Owner" element={<Owner uuid={uuid} />} />
             <Route path="/search" element={<SearchPage uuid={uuid} />} />
             <Route path="/BiteMap" element={<BiteMap uuid={uuid} />} />
+            <Route path='/Admin' element={<Admin uuid={uuid} />} />
           </Routes>
         </Router>
       </DealsProvider>

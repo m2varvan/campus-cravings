@@ -1545,6 +1545,8 @@ app.post("/api/deal", (req, res) => {
         COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
         COALESCE(v.total_votes, 0) AS total_votes,
         COALESCE(v.user_vote, 0) AS user_vote,
+        COALESCE(f.total_flags, 0) AS total_flags,
+        COALESCE(f.user_flagged, 0) AS user_flagged,
         CASE 
             WHEN fd.deal_id IS NULL THEN 0
             ELSE 1
@@ -1562,6 +1564,14 @@ app.post("/api/deal", (req, res) => {
         FROM deal_votes
         GROUP BY deal_id
     ) v ON v.deal_id = d.deal_id
+    LEFT JOIN (
+        SELECT 
+            deal_id,
+            COUNT(*) AS total_flags,
+            MAX(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS user_flagged
+        FROM flag_deals
+        GROUP BY deal_id
+    ) f ON f.deal_id = d.deal_id
     LEFT JOIN favourite_deals fd 
         ON fd.deal_id = d.deal_id 
       AND fd.user_id = ?
@@ -1569,7 +1579,7 @@ app.post("/api/deal", (req, res) => {
     GROUP BY d.deal_id;
   `;
 
-  connection.query(sql, [userID, userID, dealID], (error, results) => {
+  connection.query(sql, [userID, userID, userID, dealID], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch deal" });
@@ -1601,6 +1611,8 @@ app.post("/api/deal", (req, res) => {
           ? null
           : parseInt(deal.user_vote) || null,
       fave: deal.is_favourited || 0,
+      totalFlags: deal.total_flags,
+      userFlag: deal.user_flag
     }));
 
     res.json(dealInfo[0]);
@@ -1971,5 +1983,154 @@ app.post("/api/follow/list", (req, res) => {
     res.json(results);
   });
 });
+app.post("/api/flag/deal", (req, res) => {
+  const { userID, dealID, reason } = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    INSERT INTO flag_deals(user_id, deal_id, reason)
+    VALUES(?, ?, ?);
+  `;
+
+  connection.query(sql, [userID, dealID, reason], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to flag deal" });
+    }
+
+    return res.status(200).json({ message: "Deal flagged successfully" });
+  });
+
+  connection.end();
+});
+
+app.post("/api/unflag/deal", (req, res) => {
+  const { userID, dealID} = req.body;
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    DELETE FROM flag_deals
+    WHERE deal_id = ? AND user_id = ?;
+  `;
+
+  connection.query(sql, [dealID, userID], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to flag deal" });
+    }
+
+    return res.status(200).json({ message: "Deal unflagged successfully" });
+  });
+
+  connection.end();
+});
+
+app.get('/api/get/flagged/deals', (req, res) => {
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+      SELECT
+          d.deal_id,
+          d.deal_name,
+          d.deal_price,
+          d.description,
+          r.restaurant_id,
+          r.restaurant_name,
+          -- Count of flags for each reason as separate columns
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Deal does not exist' THEN fd.user_id END) AS dne_count,
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Price' THEN fd.user_id END) AS inaccurate_price_count,
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Description' THEN fd.user_id END) AS inaccurate_description_count
+      FROM deals d
+      LEFT JOIN flag_deals fd
+          ON d.deal_id = fd.deal_id
+      JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+      GROUP BY
+          d.deal_id,
+          d.deal_name,
+          d.deal_price,
+          d.description
+      HAVING
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Deal does not exist' THEN fd.user_id END) > 0
+          OR COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Price' THEN fd.user_id END) > 0
+          OR COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Description' THEN fd.user_id END) > 0;
+    `;
+
+    connection.query(sql, (error, results) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to fetch flagged deals" });
+    }
+
+    // Transform results to deal objects
+    const deals = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name,
+      dealDescription: deal.description || "n/a",
+      dealPrice: deal.deal_price.toFixed(2),
+      dneCount: deal.dne_count || 0,
+      inaccuratePriceCount: deal.inaccurate_price_count || 0,
+      inaccurateDescriptionCount: deal. inaccurate_description_count || 0,
+    }));
+
+    connection.end();
+    res.json(deals);
+  });
+
+})
+
+app.post('/api/delete/deal', (req, res) => {
+
+  const connection = mysql.createConnection(config);
+
+  const {dealID} = req.body;
+
+  const sql = `
+      DELETE FROM deals WHERE deal_id = ?;
+    `;
+
+    connection.query(sql, [dealID, dealID], (error, results) => {
+
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to delete deal" });
+    }
+
+    connection.end();
+    return res.status(200).json({message: "Deal deleted sucessfully"})
+  });
+
+})
+
+app.post('/api/clear/flags', (req, res) => {
+
+  const connection = mysql.createConnection(config);
+
+  const {dealID} = req.body;
+
+  const sql = `
+      DELETE FROM flag_deals
+      WHERE deal_id = ?;
+    `;
+
+    connection.query(sql, [dealID], (error, results) => {
+
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to remove flags" });
+    }
+
+    connection.end();
+    return res.status(200).json({message: "Flags cleared sucessfully"})
+  });
+
+})
 
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version

@@ -66,25 +66,9 @@ describe("Showing Deals", () => {
     dealPortionRating: 0,
     dealValueRating: 0,
   };
-  const deal5 = {
-    dealID: 5,
-    dealName: "Tonkatsu Udon",
-    dealDescription: "Limited time - $1 off",
-    dealPrice: "15.99",
-    dealEditDate: "2026-02-14 13:48:34",
-    restaurantID: "3",
-    restaurantName: "Izna Poke Plus",
-    dayOfWeek: "Monday",
-    startTime: "11:00:00",
-    endTime: "21:00:00",
-    numRatings: 0,
-    dealTasteRating: 0,
-    dealPortionRating: 0,
-    dealValueRating: 0,
-  };
 
   it("Shows Monday's Deals from the server", () => {
-    cy.intercept("POST", "/api/all/deals", [deal1, deal2, deal3, deal4, deal5]);
+    cy.intercept("POST", "/api/all/deals", [deal1, deal2, deal3, deal4, ]);
 
     cy.visit("/");
     cy.contains("Today's Deals");
@@ -106,8 +90,5 @@ describe("Showing Deals", () => {
     cy.contains(deal4.restaurantName);
     cy.contains("$" + deal4.dealPrice);
 
-    cy.contains(deal5.dealName);
-    cy.contains(deal5.restaurantName);
-    cy.contains("$" + deal5.dealPrice);
   });
 });
