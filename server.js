@@ -1865,4 +1865,62 @@ app.post("/api/unflag/deal", (req, res) => {
   connection.end();
 });
 
+app.get('api/get/flagged/deals', (req, res) => {
+
+  const {dealID} = req.body;
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+      SELECT
+          d.deal_id,
+          d.deal_name,
+          d.deal_price,
+          d.description,
+          r.restaurant_id,
+          r.restaurant_name,
+          -- Count of flags for each reason as separate columns
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Deal does not exist' THEN fd.user_id END) AS dne_count,
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Price' THEN fd.user_id END) AS inaccurate_price_count,
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Description' THEN fd.user_id END) AS inaccurate_description_count
+      FROM deals d
+      LEFT JOIN flag_deals fd
+          ON d.deal_id = fd.deal_id
+      JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+      GROUP BY
+          d.deal_id,
+          d.deal_name,
+          d.deal_price,
+          d.description;
+    `;
+
+    connection.query(sql, (error, results) => {
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to fetch flagged deals" });
+    }
+
+    // Transform results to deal objects
+    const deals = results.map((deal) => ({
+      dealID: deal.deal_id,
+      restaurantID: deal.restaurant_id,
+      restaurantName: deal.restaurant_name,
+      dealName: deal.deal_name,
+      dealDescription: deal.description || "n/a",
+      dealPrice: deal.deal_price.toFixed(2),
+      dneCount: deal.dne_count || 0,
+      inaccuratePriceCount: deal.inaccurate_price_count || 0,
+      inaccurateDescriptionCount: deal. inaccurate_description_count || 0,
+    }));
+
+    connection.end();
+    res.json(deals);
+  });
+
+
+
+
+
+})
+
 app.listen(port, () => console.log(`Listening on port ${port}`)); //for the dev version
