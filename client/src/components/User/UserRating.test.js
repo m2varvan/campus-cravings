@@ -40,9 +40,9 @@ describe('UserRating', () => {
 
     expect(screen.getByText(/Half Off Pizza/)).toBeInTheDocument();
     expect(screen.getByText(/Pizza Palace/)).toBeInTheDocument();
-    expect(screen.getByText(/My Value Rating/)).toBeInTheDocument();
-    expect(screen.getByText(/My Taste Rating/)).toBeInTheDocument();
-    expect(screen.getByText(/My Portion Size Rating/)).toBeInTheDocument();
+    expect(screen.getByText(/Value Rating/)).toBeInTheDocument();
+    expect(screen.getByText(/Taste Rating/)).toBeInTheDocument();
+    expect(screen.getByText(/Portion Size Rating/)).toBeInTheDocument();
   });
 
   test('displays edit and delete buttons initially', () => {
