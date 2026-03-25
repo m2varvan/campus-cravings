@@ -9,14 +9,27 @@ import {
   DialogTitle,
   CircularProgress,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import RateDeal from './RateDeal';
 import Review from '../Review';
 
 import RestaurantDetails from '../Restaurant/RestaurantDetails';
+import Favourite from './Favourite';
+import DealVote from './DealVote';
+import FlagDeal from './FlagDeal';
+import saveFaveDeal from '../../APIs/saveFaveDeal';
+import removeFaveDeal from '../../APIs/removeFaveDeal';
+import { useDeals } from '../../Hooks/useDeals';
 
-const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
+const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
+
+  const {loadAllDeals} = useDeals();
+
+  // States to hold deal information
+  const [deal, setDeal] = React.useState({})
+  const [loadingDeal, setLoadingDeal] = React.useState(false)
+  const [error, setError] = React.useState(false)
+
   // Deal hours states
   const [dealHours, setDealHours] = React.useState([]);
   const [dealHoursError, setDealHoursError] = React.useState(false);
@@ -27,15 +40,13 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
   const [loadingRatings, setLoadingRatings] = React.useState(false);
 
   // Local states to store rating information
-  const [tasteRating, setTasteRating] = React.useState(deal.dealTasteRating.toFixed(1));
-  const [valueRating, setValueRating] = React.useState(deal.dealValueRating.toFixed(1));
-  const [portionRating, setPortionRating] = React.useState(deal.dealPortionRating.toFixed(1));
-  const [averageRating, setAverageRating] = React.useState(
-    ((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1)
-  );
-  const [numRatings, setNumRatings] = React.useState(deal.numRatings);
+  const [tasteRating, setTasteRating] = React.useState(0);
+  const [valueRating, setValueRating] = React.useState(0);
+  const [portionRating, setPortionRating] = React.useState(0);
+  const [averageRating, setAverageRating] = React.useState(0);
+  const [numRatings, setNumRatings] = React.useState(0);
 
-  // Track if ratings were updated
+  //Track if ratings were updated
   const [ratingsUpdated, setRatingsUpdated] = React.useState(false);
 
   // States to open link to Restaurant Page
@@ -50,8 +61,10 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
       const res = await fetch('/api/deal/ratings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dealID: deal.dealID }),
+        body: JSON.stringify({ dealID }),
       });
+
+      setRatingsUpdated(true)
 
       if (!res.ok) throw new Error('Failed to load ratings');
 
@@ -65,8 +78,6 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
         ((data.dealValueRating + data.dealPortionRating + data.dealTasteRating) / 3).toFixed(1)
       );
       setNumRatings(data.numRatings);
-
-      setRatingsUpdated(true);
     } catch (err) {
       console.error(err);
       setDealRatingsError(true);
@@ -84,7 +95,7 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
       const res = await fetch('/api/deal/hours', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dealID: deal.dealID }),
+        body: JSON.stringify({ dealID }),
       });
 
       if (!res.ok) throw new Error(res.statusText);
@@ -99,17 +110,54 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
     }
   };
 
-  // Load hours when dialog opens
-  React.useEffect(() => {
-    if (open && dealHours.length === 0) {
-      getDealHours();
+  // Load deal information
+  const getDealInfo = async () => {
+    try{
+      setLoadingDeal(true)
+      setError(false)
+
+      const res = await fetch('/api/deal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealID, userID: uuid }),
+      });
+
+      if (!res.ok) throw new Error(res.statusText);
+
+      const data = await res.json();
+      setDeal(data);
+      // console.log('Deal', data)
+    } catch (err) {
+      console.error('Failed to get deal info:', err);
+      setError(true);
+    } finally {
+      setLoadingDeal(false);
     }
-  }, [open]);
+  }
+
+  // Load hours and deal information when dialog opens
+  React.useEffect(() => {
+    if (open && dealID) {
+      getDealHours();
+      getDealInfo();
+    }
+  }, [open, dealID]);
+
+  // Update deal ratings when information loads.
+  React.useEffect(() => {
+    if (Object.keys(deal).length !== 0){
+      setTasteRating(deal.dealTasteRating.toFixed(1))
+      setValueRating(deal.dealValueRating.toFixed(1))
+      setPortionRating(deal.dealPortionRating.toFixed(1))
+      setAverageRating(((deal.dealValueRating + deal.dealPortionRating + deal.dealTasteRating) / 3).toFixed(1))
+      setNumRatings(deal.numRatings)
+    }
+  }, [deal])
 
   // Handle dialog close
   const handleDialogClose = () => {
-    if (ratingsUpdated) {
-      reloadDeals?.();
+    if (ratingsUpdated ) {
+      loadAllDeals();
       setRatingsUpdated(false);
     }
     handleClose?.();
@@ -124,44 +172,77 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
       PaperProps={{ sx: { bgcolor: 'background.default', borderRadius: 3, p: 2 } }}
     >
       {/* Header */}
-      <DialogTitle>
-        <Typography variant="h5" fontWeight={600}>
-          {deal.dealName}
-        </Typography>
+      {!loadingDeal && !error && (
+        <>
+          <DialogTitle>
+            <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
 
-        <Typography
-          component={RouterLink}
-          onClick={() => setOpenRestaurant(true)}
-          variant="body1"
-          sx={{ color: 'primary.dark', textDecoration: 'underline', cursor: 'pointer' }}
-        >
-          {deal.restaurantName}
-        </Typography>
-      </DialogTitle>
+              {/* Deal name and restaurant */}
+              <Box>
+              <Typography variant="h5" fontWeight={600}>
+                {deal.dealName}
+              </Typography>
 
-      <Divider />
+              <Typography
+                onClick={() => setOpenRestaurant(true)}
+                variant="body1"
+                sx={{ color: 'primary.dark', textDecoration: 'underline', cursor: 'pointer' }}
+              >
+                {deal.restaurantName}
+              </Typography>
+              </Box>
+
+              {/* Favourite Button */}
+              <Favourite 
+                  uuid={uuid}
+                  itemID={deal.dealID}
+                  fave={deal.fave}
+                  saveFave={saveFaveDeal}
+                  removeFave={removeFaveDeal}
+                  size='43px'
+                  />
+            </Box>
+          </DialogTitle>
+
+          <Divider />
+        </>
+      )}
 
       <DialogContent sx={{ mt: 1 }}>
-        {/* Price + Description */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap' }}>
-          <Box sx={{ width: '80%' }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Description
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {deal.dealDescription}
-            </Typography>
+        {/* Loading State */}
+        {loadingDeal ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, py: 4 }}>
+            <CircularProgress size={24} />
+            <Typography variant="body2">Loading deal information...</Typography>
           </Box>
 
-          <Box sx={{ width: '20%' }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Price
-            </Typography>
-            <Typography variant="h6" color="primary.dark">
-              ${deal.dealPrice}
-            </Typography>
-          </Box>
-        </Box>
+        // Error State
+        ) : error ? (
+          <Typography variant="body2" color="error" sx={{ py: 4 }}>
+            Failed to load deal information. Please try again.
+          </Typography>
+        ) : (
+          <>
+            {/* Price + Description */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ width: '80%' }}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Description
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {deal.dealDescription}
+                </Typography>
+              </Box>
+
+              <Box sx={{ width: '20%' }}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Price
+                </Typography>
+                <Typography variant="h6" color="primary.dark">
+                  ${deal.dealPrice}
+                </Typography>
+              </Box>
+            </Box>
 
         <Divider sx={{ my: 2 }} />
 
@@ -256,31 +337,48 @@ const ExpandedDeal = ({ uuid, deal, open, handleClose, reloadDeals }) => {
           <RateDeal uuid={uuid} deal={deal} updateRatings={updateRatings} />
         </Box>
 
-          <Review uuid={uuid} dealID={deal.dealID} />
+            <Review uuid={uuid} dealID={deal.dealID} />
 
-        <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2 }} />
+          </>
+        )}
 
       </DialogContent>
 
       {/* Last Updated & Close Button */}
       <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
-        <Typography variant="caption" color="text.secondary">
-          Deal information last updated: {deal.dealEditData}
-        </Typography>
+         <DealVote 
+            uuid={uuid}
+            totalVote={deal.totalVote}
+            userVote={deal.userVote}
+            dealID={deal.dealID}
+            />
 
-        <Button
-          onClick={handleDialogClose}
-          sx={{
-            bgcolor: 'primary.dark',
-            color: 'secondary.dark',
-            px: 3,
-            '&:hover': {
-              bgcolor: 'primary.main',
-            },
-          }}
-        >
-          Close
-        </Button>
+          <Typography variant="caption" color="text.secondary" sx={{mr: 'auto'}}>
+            Deal information last updated: {deal.dealEditData}
+          </Typography>
+
+          {/* Button to Flag Deal in Footer of Dialog */}
+          <FlagDeal
+            uuid={uuid}
+            dealID={deal.dealID}
+            totalFlags={deal.totalFlags}
+            userFlag={deal.userFlag}
+            />
+
+          <Button
+            onClick={handleDialogClose}
+            sx={{
+              bgcolor: 'primary.dark',
+              color: 'secondary.dark',
+              px: 3,
+              '&:hover': {
+                bgcolor: 'primary.main',
+              },
+            }}
+          >
+            Close
+          </Button>
       </DialogActions>
       
       {/* Dialog to open Restaurant Details */}

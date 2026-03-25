@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, CircularProgress, Alert, Box } from '@mui/material';
+import { Typography, CircularProgress, Box } from '@mui/material';
 
 const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
 
@@ -11,7 +11,6 @@ const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
             try {
                 setLoadingUserInfo(true);
                 setError(false);
-
                 const response = await loadUserInfo(uuid);
                 setUserInfo(response);
 
@@ -28,54 +27,64 @@ const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
         }
     }, [uuid, loadUserInfo, setUserInfo]);
 
-    if (loadingUserInfo) {
-        return (
-            <Box display="flex" justifyContent="center" justifySelf={'center'} mt={3}>
-                Loading your Account Information
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Alert severity="error">
-                Error loading user information.
-            </Alert>
-        );
-    }
-
-    if (!userInfo) return null;
 
     return (
+        <>
         <Box sx={{
-            border: "3px solid",
-            borderColor: "secondary.dark",
-            borderRadius: 2,
-            p: 1,
-            }} 
-        >
-            
+                    border: "3px solid",
+                    borderColor: "secondary.dark",
+                    borderRadius: 2,
+                    p: 1,
+                    }} 
+                >
+            {/* Header*/}
             <Typography variant="h5" gutterBottom>
                 Account Information
             </Typography>
+    
+            {/* Loading */}
+            {loadingUserInfo && (
+            <Box display="flex" justifyContent="center" mt={3}>
+                Loading your Account Information...
+                <CircularProgress sx={{ ml: 2 }} />
+            </Box>
+            )}
+    
+            {/* Error  */}
+            {error && (
+                <Typography>
+                   Error loading user information.
+                </Typography>
+            )}
+    
+            {/* No Account Found */}
+            {!loadingUserInfo && !error && (!userInfo) && (
+                <Typography>No Account Found.</Typography>
+            )}
+    
+            {/* Display Deals in FavourtiteDeal Boxes */}
+            {!loadingUserInfo && !error && userInfo && Object.keys(userInfo).length > 0 && (
+                <>
+                <Typography variant="body1">
+                    <strong>Name:</strong> {userInfo.firstName} {userInfo.lastName}
+                </Typography>
 
-            <Typography variant="body1">
-                <strong>Name:</strong> {userInfo.firstName} {userInfo.lastName}
-            </Typography>
+                <Typography variant="body1">
+                    <strong>Email:</strong> {userInfo.email}
+                </Typography>
 
-            <Typography variant="body1">
-                <strong>Email:</strong> {userInfo.email}
-            </Typography>
+                <Typography variant="body1">
+                    <strong>Username:</strong> {userInfo.userName}
+                </Typography>
 
-            <Typography variant="body1">
-                <strong>Username:</strong> {userInfo.userName}
-            </Typography>
-
-            <Typography variant="body1">
-                <strong>Account Created:</strong> {userInfo.createdDate}
-            </Typography>
+                <Typography variant="body1">
+                    <strong>Account Created:</strong> {userInfo.createdDate}
+                </Typography>
+                </>
+            
+            )}
         </Box>
+        </>
     );
 };
 

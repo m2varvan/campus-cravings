@@ -1,3 +1,4 @@
+import { renderWithDealsProvider } from "../../utils/test-utils";
 const {
   render,
   screen,
@@ -87,7 +88,7 @@ describe("RestaurantDetails", () => {
 
   function renderComponent(props = {}) {
     handleClose = jest.fn().mockName("handleClose");
-    return render(
+    return renderWithDealsProvider(
       React.createElement(RestaurantDetails, {
         restaurant_id: 1,
         uuid: "test-uuid",
