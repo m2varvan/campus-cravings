@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, Box, CircularProgress } from '@mui/material';
+import { Grid, Typography, Box, CircularProgress, Button } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 
 import UserInfo from './UserInfo';
@@ -13,11 +13,11 @@ import UserReviewList from './UserReviewList';
 import { getUserRatings } from '../../APIs/getUserRatings';
 import { getUserReviews } from '../../APIs/getUserReviews';
 import FollowButton from './FollowButton';
+import FollowersFollowingModal from './FollowersFollowingModal';
 
 const User = ({ uuid }) => {
 
   const [searchParams] = useSearchParams();
-  // If ?id= is present we are viewing someone else's profile; otherwise own profile
   const profileUserID = searchParams.get('id') || uuid;
   const isOwnProfile = !searchParams.get('id') || searchParams.get('id') === uuid;
 
@@ -27,11 +27,13 @@ const User = ({ uuid }) => {
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
 
-  // Follow state for public profiles
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
+  const [followerCount, setFollowerCount] = React.useState(0);
+  const [followingCount, setFollowingCount] = React.useState(0);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [modalMode, setModalMode] = React.useState("followers");
 
-  // Load follow status when viewing another user's profile
   React.useEffect(() => {
     if (!isOwnProfile && uuid && profileUserID) {
       setLoadingFollow(true);
@@ -47,36 +49,67 @@ const User = ({ uuid }) => {
     }
   }, [uuid, profileUserID, isOwnProfile]);
 
-  const pageTitle = isOwnProfile ? 'My Account' : (userInfo ? `${userInfo.firstName} ${userInfo.lastName}'s Profile` : 'User Profile');
+  React.useEffect(() => {
+    if (!profileUserID) return;
+    fetch('/api/follow/counts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userID: profileUserID }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setFollowerCount(data.followers || 0);
+        setFollowingCount(data.following || 0);
+      })
+      .catch((err) => console.error('Failed to load follow counts:', err));
+  }, [profileUserID]);
+
+  const openModal = (mode) => {
+    setModalMode(mode);
+    setModalOpen(true);
+  };
+
+  const pageTitle = isOwnProfile
+    ? 'My Account'
+    : userInfo
+    ? `${userInfo.firstName} ${userInfo.lastName}'s Profile`
+    : 'User Profile';
 
   return (
     <>
       <Grid container p={4}>
 
-        {/* Page Title + Follow Button */}
         <Grid item xs={12}>
-          <Box sx={{ pb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Typography variant="h3">{pageTitle}</Typography>
-
-            {/* Follow/Unfollow button — only shown when viewing someone else's profile */}
             {!isOwnProfile && !loadingFollow && (
-              <FollowButton
-                uuid={uuid}
-                targetUserID={profileUserID}
-                initialFollow={isFollowing}
-              />
+              <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
             )}
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
+
+          <Box sx={{ display: 'flex', gap: 2, pb: 2 }}>
+            <Button
+              variant="text"
+              onClick={() => openModal("followers")}
+              sx={{ textTransform: 'none', fontFamily: 'monospace' }}
+            >
+              <strong>{followerCount}</strong>&nbsp;Followers
+            </Button>
+            <Button
+              variant="text"
+              onClick={() => openModal("following")}
+              sx={{ textTransform: 'none', fontFamily: 'monospace' }}
+            >
+              <strong>{followingCount}</strong>&nbsp;Following
+            </Button>
+          </Box>
         </Grid>
 
-        {/* Row */}
         <Grid container item xs={12} spacing={2}>
 
-          {/* Left Column - User Info + Ratings + Reviews */}
           <Grid item xs={12} md={6}>
             <Grid container spacing={2}>
-
               <Grid item xs={12}>
                 <UserInfo
                   uuid={profileUserID}
@@ -85,7 +118,6 @@ const User = ({ uuid }) => {
                   userInfo={userInfo}
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <UserRatingList
                   uuid={profileUserID}
@@ -95,7 +127,6 @@ const User = ({ uuid }) => {
                   readOnly={!isOwnProfile}
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <UserReviewList
                   uuid={profileUserID}
@@ -105,15 +136,12 @@ const User = ({ uuid }) => {
                   readOnly={!isOwnProfile}
                 />
               </Grid>
-
             </Grid>
           </Grid>
 
-          {/* Right Column - Favourites (only on own profile) */}
           {isOwnProfile && (
             <Grid item xs={12} md={6}>
               <Grid container spacing={2}>
-
                 <Grid item xs={12}>
                   <FavouriteDealList
                     uuid={uuid}
@@ -122,7 +150,6 @@ const User = ({ uuid }) => {
                     setFaveDeals={setFaveDeals}
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <FavouriteRestaurantList
                     uuid={uuid}
@@ -131,13 +158,19 @@ const User = ({ uuid }) => {
                     faveRestaurants={faveRestaurants}
                   />
                 </Grid>
-
               </Grid>
             </Grid>
           )}
 
         </Grid>
       </Grid>
+
+      <FollowersFollowingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        mode={modalMode}
+        userID={profileUserID}
+      />
     </>
   );
 };
