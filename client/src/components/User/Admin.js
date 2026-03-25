@@ -2,9 +2,39 @@ import React from 'react';
 import {Grid, Typography, Box} from '@mui/material';
 import FlaggedDealsList from './FlaggedDealsList';
 
-const Admin = ({uuid}) => {
+const Admin = () => {
 
     const [flaggedDeals, setFlaggedDeals] = React.useState([])
+    const [loading, setLoading] = React.useState(false)
+    const [error, setError] = React.useState(false)
+
+    React.useEffect(() => {
+        const getFlaggedDeals = async () => {
+            try {
+                setLoading(true);
+                setError(false);
+
+                const response = await fetch('/api/get/flagged/deals');
+
+                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+
+                const data = await response.json();
+                setFlaggedDeals(data);
+
+                console.log(data)
+            } catch(err) {
+                console.log('An error occurred loading flagged deals:', err.message);
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getFlaggedDeals()
+    }, [])
+
+    
+    
 
     return (
     <>
@@ -20,7 +50,12 @@ const Admin = ({uuid}) => {
         {/* Flagged Deals */}
         <Grid container item xs={12} spacing={2}>
             <Grid item xs={12}>
-                <FlaggedDealsList />
+                <FlaggedDealsList 
+                    flaggedDeals={flaggedDeals}
+                    setFlaggedDeals={setFlaggedDeals}
+                    loading={loading}
+                    error={error}
+                    />
             </Grid>
         </Grid>
         </Grid>

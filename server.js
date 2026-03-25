@@ -1865,9 +1865,8 @@ app.post("/api/unflag/deal", (req, res) => {
   connection.end();
 });
 
-app.get('api/get/flagged/deals', (req, res) => {
+app.get('/api/get/flagged/deals', (req, res) => {
 
-  const {dealID} = req.body;
   const connection = mysql.createConnection(config);
 
   const sql = `
@@ -1890,7 +1889,11 @@ app.get('api/get/flagged/deals', (req, res) => {
           d.deal_id,
           d.deal_name,
           d.deal_price,
-          d.description;
+          d.description
+      HAVING
+          COUNT(DISTINCT CASE WHEN fd.reason = 'Deal does not exist' THEN fd.user_id END) > 0
+          OR COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Price' THEN fd.user_id END) > 0
+          OR COUNT(DISTINCT CASE WHEN fd.reason = 'Inaccurate Description' THEN fd.user_id END) > 0;
     `;
 
     connection.query(sql, (error, results) => {
@@ -1917,9 +1920,54 @@ app.get('api/get/flagged/deals', (req, res) => {
     res.json(deals);
   });
 
+})
 
+app.post('/api/delete/deal', (req, res) => {
 
+  const connection = mysql.createConnection(config);
 
+  const {dealID} = req.body;
+
+  const sql = `
+      DELETE FROM deals WHERE deal_id = ?;
+    `;
+
+    connection.query(sql, [dealID, dealID], (error, results) => {
+
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to delete deal" });
+    }
+
+    connection.end();
+    return res.status(200).json({message: "Deal deleted sucessfully"})
+  });
+
+})
+
+app.post('/api/clear/flags', (req, res) => {
+
+  const connection = mysql.createConnection(config);
+
+  const {dealID} = req.body;
+
+  const sql = `
+      DELETE FROM flag_deals
+      WHERE deal_id = ?;
+    `;
+
+    connection.query(sql, [dealID], (error, results) => {
+
+    if (error) {
+      console.error("Database error:", error.message);
+      connection.end();
+      return res.status(500).json({ error: "Failed to remove flags" });
+    }
+
+    connection.end();
+    return res.status(200).json({message: "Flags cleared sucessfully"})
+  });
 
 })
 
