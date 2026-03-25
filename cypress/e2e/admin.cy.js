@@ -49,7 +49,6 @@ describe('Admin', () => {
   });
 
   it('deletes a deal', () => {
-
     cy.intercept('GET', '/api/get/flagged/deals', [mockDeals[0]]);
     cy.visit('/Admin'); 
 
@@ -66,7 +65,7 @@ describe('Admin', () => {
     cy.wait('@deleteDeal');
 
     // Removed from UI
-    cy.contains('Pizza Deal').should('not.exist');
+    cy.contains(/^Pizza Deal$/).should('not.exist');
 
     // Success message
     cy.contains(/was successfully deleted/i).should('exist');
@@ -87,7 +86,7 @@ describe('Admin', () => {
 
     cy.wait('@clearFlags');
 
-    cy.contains('Pizza Deal').should('not.exist');
+    cy.contains(/^Pizza Deal$/).should('not.exist');
     cy.contains(/Flags successfully cleared/i).should('exist');
   });
 
