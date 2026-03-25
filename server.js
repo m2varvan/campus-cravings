@@ -1494,16 +1494,22 @@ app.get("/api/owner/deals/:uuid", (req, res) => {
             d.description, 
             d.deal_price, 
             DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
-            r.restaurant_name, 
+            r.restaurant_name,
+            MIN(dh.start_date) AS valid_from,
+            MAX(dh.end_date) AS valid_to,
+            GROUP_CONCAT(DISTINCT dh.day_of_week) AS deal_days,
+            MIN(dh.start_time) AS start_time,
+            MIN(dh.end_time) AS end_time,
             AVG(rt.taste_score) AS avg_taste_rating,
             AVG(rt.value_score) AS avg_value_rating,
             AVG(rt.portion_score) AS avg_portion_rating,
-            COUNT(rt.rating_id) AS number_of_ratings,
+            COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
             COALESCE(SUM(dv.vote), 0) AS total_votes,
             MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote
         FROM deals d
         JOIN restaurant_owners ro ON ro.restaurant_id = d.restaurant_id AND ro.user_id = ?
         JOIN restaurants r ON r.restaurant_id = d.restaurant_id
+        LEFT JOIN deal_hours dh ON dh.deal_id = d.deal_id
         LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
         LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
         GROUP BY d.deal_id;
@@ -1524,6 +1530,11 @@ app.get("/api/owner/deals/:uuid", (req, res) => {
             dealDescription: deal.description || "n/a",
             dealPrice: deal.deal_price.toFixed(2),
             dealEditData: deal.edited_at_formatted,
+            validFrom: deal.valid_from ? deal.valid_from.toISOString().split('T')[0] : '',
+            validTo: deal.valid_to ? deal.valid_to.toISOString().split('T')[0] : '',
+            dealDays: deal.deal_days ? deal.deal_days.split(',') : [],  // add
+            startTime: deal.start_time || '',                            // ✅ for time fields
+            endTime: deal.end_time || '',                                // ✅ for time fields
             dealValueRating: deal.avg_value_rating ? parseFloat(deal.avg_value_rating.toFixed(1)) : 0,
             dealTasteRating: deal.avg_taste_rating ? parseFloat(deal.avg_taste_rating.toFixed(1)) : 0,
             dealPortionRating: deal.avg_portion_rating ? parseFloat(deal.avg_portion_rating.toFixed(1)) : 0,
@@ -1540,24 +1551,40 @@ app.get("/api/owner/deals/:uuid", (req, res) => {
 // Create a new deal
 app.post("/api/owner/deals", (req, res) => {
     const connection = mysql.createConnection(config);
-    const { restaurantId, dealName, description, dealPrice, validFrom, validTo, createdBy } = req.body;
+    const { restaurantId, dealName, description, dealPrice, validFrom, validTo, selectedDays, startTime, endTime, createdBy } = req.body;
 
-    if (!dealName || !dealPrice || !validFrom || !validTo || !restaurantId) {
+    if (!dealName || !dealPrice || !validFrom || !restaurantId || !selectedDays?.length || !startTime || !endTime) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const sql = `
-        INSERT INTO deals (restaurant_id, deal_name, description, deal_price, valid_from, valid_to, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+    const insertDeal = `
+        INSERT INTO deals (restaurant_id, deal_name, description, deal_price, created_by)
+        VALUES (?, ?, ?, ?, ?)
     `;
 
-    connection.query(sql, [restaurantId, dealName, description, dealPrice, validFrom, validTo, createdBy], (err, result) => {
-        connection.end();
+    connection.query(insertDeal, [restaurantId, dealName, description, dealPrice, createdBy], (err, result) => {
         if (err) {
-            console.error("Insert deal error:", err);
+            connection.end();
             return res.status(500).json({ error: "Failed to create deal" });
         }
-        res.status(201).json({ message: "Deal created successfully", dealId: result.insertId });
+
+        const dealId = result.insertId;
+
+        // One row per selected day, same times for all
+        const hourRows = selectedDays.map(day => [dealId, day, startTime, endTime, 0, validFrom, validTo || null]);
+        const insertHours = `
+            INSERT INTO deal_hours (deal_id, day_of_week, start_time, end_time, normal_hours, start_date, end_date)
+            VALUES ?
+        `;
+
+        connection.query(insertHours, [hourRows], (err) => {
+            connection.end();
+            if (err) {
+                console.error("Insert deal_hours error:", err);
+                return res.status(500).json({ error: "Failed to create deal hours" });
+            }
+            res.status(201).json({ message: "Deal created successfully", dealId });
+        });
     });
 });
 
@@ -1565,25 +1592,44 @@ app.post("/api/owner/deals", (req, res) => {
 app.put("/api/owner/deals/:dealId", (req, res) => {
     const connection = mysql.createConnection(config);
     const { dealId } = req.params;
-    const { dealName, description, dealPrice, validFrom, validTo } = req.body;
+    const { dealName, description, dealPrice, validFrom, validTo, selectedDays, startTime, endTime } = req.body;
 
-    if (!dealName || !dealPrice || !validFrom || !validTo) {
+    if (!dealName || !dealPrice || !validFrom || !selectedDays?.length || !startTime || !endTime) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const sql = `
+    const updateDeal = `
         UPDATE deals 
-        SET deal_name = ?, description = ?, deal_price = ?, valid_from = ?, valid_to = ?, edited_at = CURRENT_TIMESTAMP
+        SET deal_name = ?, description = ?, deal_price = ?, edited_at = CURRENT_TIMESTAMP
         WHERE deal_id = ?
     `;
 
-    connection.query(sql, [dealName, description, dealPrice, validFrom, validTo, dealId], (err) => {
-        connection.end();
+    connection.query(updateDeal, [dealName, description, dealPrice, dealId], (err) => {
         if (err) {
-            console.error("Update deal error:", err);
+            connection.end();
             return res.status(500).json({ error: "Failed to update deal" });
         }
-        res.status(200).json({ message: "Deal updated successfully" });
+
+        // Delete existing hours then re-insert with new values
+        connection.query("DELETE FROM deal_hours WHERE deal_id = ?", [dealId], (err) => {
+            if (err) {
+                connection.end();
+                return res.status(500).json({ error: "Failed to update deal hours" });
+            }
+
+            const hourRows = selectedDays.map(day => [dealId, day, startTime, endTime, 0, validFrom, validTo || null]);
+            connection.query(
+                "INSERT INTO deal_hours (deal_id, day_of_week, start_time, end_time, normal_hours, start_date, end_date) VALUES ?",
+                [hourRows],
+                (err) => {
+                    connection.end();
+                    if (err) {
+                        return res.status(500).json({ error: "Failed to insert updated deal hours" });
+                    }
+                    res.status(200).json({ message: "Deal updated successfully" });
+                }
+            );
+        });
     });
 });
 
