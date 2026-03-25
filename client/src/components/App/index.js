@@ -81,8 +81,8 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <DealsProvider uuid={uuid}>
-        <CssBaseline />
         <Router>
           <SiteAppBar
             authUser={authUser}
@@ -103,6 +103,7 @@ const App = () => {
             />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<SignUp />} />
+            {/* /User and /Owner support optional ?id= query param for public profiles */}
             <Route path="/User" element={<User uuid={uuid} />} />
             <Route path="/Owner" element={<Owner uuid={uuid} />} />
             <Route path="/search" element={<SearchPage uuid={uuid} />} />
