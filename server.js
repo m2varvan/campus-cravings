@@ -1785,13 +1785,14 @@ app.post("/api/user/reviews", (req, res) => {
 
 app.get("/api/search/users", (req, res) => {
   const search = req.query.q;
- 
+
   if (!search || search.trim() === "") {
     return res.json([]);
   }
- 
+
   const connection = mysql.createConnection(config);
- 
+  const pattern = `%${search}%`;
+
   const sql = `
     SELECT id, username, first_name, last_name, profile_photo, user_type
     FROM users
@@ -1800,9 +1801,7 @@ app.get("/api/search/users", (req, res) => {
        OR LOWER(last_name) LIKE LOWER(?)
     LIMIT 20
   `;
- 
-  const pattern = `%${search}%`;
- 
+
   connection.query(sql, [pattern, pattern, pattern], (err, results) => {
     connection.end();
     if (err) {
@@ -1812,28 +1811,24 @@ app.get("/api/search/users", (req, res) => {
     res.json(results);
   });
 });
- 
-// Follow a user
+
 app.post("/api/follow", (req, res) => {
   const { followerID, followingID } = req.body;
- 
+
   if (!followerID || !followingID) {
     return res.status(400).json({ error: "Missing followerID or followingID" });
   }
- 
-  // Prevent following yourself
+
   if (followerID === followingID) {
     return res.status(400).json({ error: "You cannot follow yourself" });
   }
- 
+
   const connection = mysql.createConnection(config);
- 
-  const sql = `
-    INSERT IGNORE INTO follows (follower_id, following_id)
-    VALUES (?, ?)
-  `;
- 
-  connection.query(sql, [followerID, followingID], (err, result) => {
+
+  // INSERT IGNORE prevents duplicate follows (UNIQUE KEY on table handles it)
+  const sql = `INSERT IGNORE INTO follows (follower_id, following_id) VALUES (?, ?)`;
+
+  connection.query(sql, [followerID, followingID], (err) => {
     connection.end();
     if (err) {
       console.error("Follow error:", err);
@@ -1842,23 +1837,19 @@ app.post("/api/follow", (req, res) => {
     res.json({ success: true });
   });
 });
- 
-// Unfollow a user
+
 app.post("/api/unfollow", (req, res) => {
   const { followerID, followingID } = req.body;
- 
+
   if (!followerID || !followingID) {
     return res.status(400).json({ error: "Missing followerID or followingID" });
   }
- 
+
   const connection = mysql.createConnection(config);
- 
-  const sql = `
-    DELETE FROM follows
-    WHERE follower_id = ? AND following_id = ?
-  `;
- 
-  connection.query(sql, [followerID, followingID], (err, result) => {
+
+  const sql = `DELETE FROM follows WHERE follower_id = ? AND following_id = ?`;
+
+  connection.query(sql, [followerID, followingID], (err) => {
     connection.end();
     if (err) {
       console.error("Unfollow error:", err);
@@ -1867,23 +1858,18 @@ app.post("/api/unfollow", (req, res) => {
     res.json({ success: true });
   });
 });
- 
-// Check if a user is following another user
+
 app.post("/api/follow/status", (req, res) => {
   const { followerID, followingID } = req.body;
- 
+
   if (!followerID || !followingID) {
     return res.json({ isFollowing: false });
   }
- 
+
   const connection = mysql.createConnection(config);
- 
-  const sql = `
-    SELECT id FROM follows
-    WHERE follower_id = ? AND following_id = ?
-    LIMIT 1
-  `;
- 
+
+  const sql = `SELECT id FROM follows WHERE follower_id = ? AND following_id = ? LIMIT 1`;
+
   connection.query(sql, [followerID, followingID], (err, results) => {
     connection.end();
     if (err) {
@@ -1891,6 +1877,72 @@ app.post("/api/follow/status", (req, res) => {
       return res.status(500).json({ error: "Failed to check follow status" });
     }
     res.json({ isFollowing: results.length > 0 });
+  });
+});
+
+app.post("/api/follow/counts", (req, res) => {
+  const { userID } = req.body;
+
+  if (!userID) {
+    return res.json({ followers: 0, following: 0 });
+  }
+
+  const connection = mysql.createConnection(config);
+
+  const sql = `
+    SELECT
+      (SELECT COUNT(*) FROM follows WHERE following_id = ?) AS followers,
+      (SELECT COUNT(*) FROM follows WHERE follower_id = ?)  AS following
+  `;
+
+  connection.query(sql, [userID, userID], (err, results) => {
+    connection.end();
+    if (err) {
+      console.error("Follow counts error:", err);
+      return res.status(500).json({ error: "Failed to get follow counts" });
+    }
+    const row = results[0] || {};
+    res.json({
+      followers: Number(row.followers) || 0,
+      following: Number(row.following) || 0,
+    });
+  });
+});
+
+
+app.post("/api/follow/list", (req, res) => {
+  const { userID, mode } = req.body;
+
+  if (!userID || !["followers", "following"].includes(mode)) {
+    return res.status(400).json({ error: "Invalid request" });
+  }
+
+  const connection = mysql.createConnection(config);
+
+  const sql =
+    mode === "followers"
+      ? `
+        SELECT u.id, u.username, u.first_name, u.last_name, u.profile_photo, u.user_type
+        FROM follows f
+        JOIN users u ON u.id = f.follower_id
+        WHERE f.following_id = ?
+        ORDER BY f.created_at DESC
+      `
+      : `
+        SELECT u.id, u.username, u.first_name, u.last_name, u.profile_photo, u.user_type
+        FROM follows f
+        JOIN users u ON u.id = f.following_id
+        WHERE f.follower_id = ?
+        ORDER BY f.created_at DESC
+      `;
+
+  connection.query(sql, [userID], (err, results) => {
+    connection.end();
+    if (err) {
+      console.error("Follow list error:", err);
+      return res.status(500).json({ error: "Failed to load follow list" });
+    }
+    res.json(results);
   });
 });
 
