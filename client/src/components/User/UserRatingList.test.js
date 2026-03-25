@@ -61,7 +61,7 @@ describe('UserRatingList', () => {
       />
     );
 
-    expect(screen.getByText(/Loading your Ratings/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading ratings/i)).toBeInTheDocument();
   });
 
   test('loads and displays ratings on mount', async () => {
