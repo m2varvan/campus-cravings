@@ -36,7 +36,7 @@ const OwnerDeal = ({ uuid, deal, reloadDeals }) => {
 
                 {/* Edit button */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
-                    <Button size="small" variant="contained" onClick={() => setOpenEdit(true)}>
+                    <Button size="small" variant="contained" data-testid="edit-deal-button" onClick={() => setOpenEdit(true)}>
                         Edit
                     </Button>
                 </Box>
