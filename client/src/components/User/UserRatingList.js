@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, CircularProgress, Box, Button } from '@mui/material';
 import UserRating from './UserRating';
 
-const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings, readOnly = false }) => {
+const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings, readOnly = false, profileName }) => {
 
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
@@ -48,6 +48,12 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings, re
         }
     }, [uuid, loadUserRatings, setUserRatings]);
 
+    const title = readOnly
+        ? profileName
+            ? `${profileName}'s Ratings`
+            : 'Their Ratings'
+        : 'My Ratings';
+
     return (
         <>
         <Box sx={{
@@ -57,7 +63,7 @@ const UserRatingList = ({ uuid, loadUserRatings, setUserRatings, userRatings, re
             p: 1,
         }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5">{readOnly ? 'Their Ratings' : 'My Ratings'}</Typography>
+                <Typography variant="h5">{title}</Typography>
                 <Typography variant="body1">
                     ({userRatings.length} {userRatings.length === 1 ? 'rating' : 'ratings'})
                 </Typography>

@@ -10,10 +10,14 @@ import FollowButton from "./FollowButton";
 import FollowersFollowingModal from "./FollowersFollowingModal";
 import UserRatingList from "./UserRatingList";
 import UserReviewList from "./UserReviewList";
+import FavouriteDealList from "./FavouriteDealList";
+import FavouriteRestaurantList from "./FavouriteRestaurantList";
 
 import loadUserInfo from "../../APIs/loadUserInfo";
 import loadOwnerRestaurants from "../../APIs/loadOwnerRestaurants";
 import loadOwnerDeals from "../../APIs/loadOwnerDeals";
+import loadFaveDeals from "../../APIs/loadFaveDeals";
+import loadFaveRestaurants from "../../APIs/loadFaveRestaurants";
 import { getUserRatings } from "../../APIs/getUserRatings";
 import { getUserReviews } from "../../APIs/getUserReviews";
 
@@ -24,11 +28,16 @@ const Owner = ({ uuid }) => {
 
   // Shared state
   const [userInfo, setUserInfo] = React.useState(null);
+  const profileName = userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : null;
 
   // Dashboard state
   const [ownerRestaurants, setOwnerRestaurants] = React.useState([]);
   const [ownerDeals, setOwnerDeals] = React.useState([]);
   const [openCreateDeal, setOpenCreateDeal] = React.useState(false);
+
+  // Favourite profile state
+  const [faveDeals, setFaveDeals] = React.useState([]);
+  const [faveRestaurants, setFaveRestaurants] = React.useState([]);
 
   // Profile state
   const [userRatings, setUserRatings] = React.useState([]);
@@ -174,6 +183,7 @@ const Owner = ({ uuid }) => {
                   setUserRatings={setUserRatings}
                   userRatings={userRatings}
                   readOnly
+                  profileName={profileName}
                 />
 
                 <UserReviewList
@@ -182,6 +192,23 @@ const Owner = ({ uuid }) => {
                   setUserReviews={setUserReviews}
                   userReviews={userReviews}
                   readOnly
+                  profileName={profileName}
+                />
+
+                <FavouriteDealList
+                  uuid={profileUserID}
+                  loadFaveDeals={loadFaveDeals}
+                  faveDeals={faveDeals}
+                  setFaveDeals={setFaveDeals}
+                  profileName={profileName}
+                />
+
+                <FavouriteRestaurantList
+                  uuid={profileUserID}
+                  loadFaveRestaurants={loadFaveRestaurants}
+                  faveRestaurants={faveRestaurants}
+                  setFaveRestaurants={setFaveRestaurants}
+                  profileName={profileName}
                 />
               </>
             )}
