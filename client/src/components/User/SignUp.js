@@ -59,7 +59,7 @@ const SignUp = ({ firebase }) => {
         setError({});
 
         if (email.trim() === '') newErrors.email = "Enter an email address";
-        else if (!isValidEmail(email)) newErrors.email = "Enter a valid email address";
+        else if (!isValidEmail(email)) newErrors.email = "fivalid email address";
 
         if (username.trim() === '') newErrors.username = "Enter a username";
         else if (!isValidUsername(username))
@@ -212,6 +212,7 @@ const SignUp = ({ firebase }) => {
                                     fontWeight: userType === 'regular' ? 'bold' : 'normal',
                                     borderRight: '1px solid',
                                     borderColor: 'secondary.dark',
+                                    color: 'text.primary'
                                 }}
                             >
                                 Regular User
@@ -225,6 +226,7 @@ const SignUp = ({ firebase }) => {
                                     borderRadius: 0,
                                     py: 1.2,
                                     fontWeight: userType === 'restaurant_owner' ? 'bold' : 'normal',
+                                    color: 'text.primary'
                                 }}
                             >
                                 Restaurant Owner

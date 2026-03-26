@@ -5,8 +5,9 @@ import PersonIcon from "@mui/icons-material/Person";
 
 import Deal from "../Deals/Deal";
 import Restaurant from "../Restaurant/Restaurant";
+import { useDeals } from "../../Hooks/useDeals";
 
-// Exact same open-status logic used in RestaurantList
+
 const getOpenStatus = (startTime, endTime, isYesterday) => {
   if (!startTime || !endTime) return { isOpen: false, isClosingSoon: false };
 
@@ -54,6 +55,8 @@ function SearchPage({ uuid }) {
   const params = new URLSearchParams(location.search);
   const query = params.get("q");
 
+  const { allDeals, loadAllDeals } = useDeals();
+
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantRatings, setRestaurantRatings] = useState([]); // kept separately so Restaurant component receives it the same way as RestaurantList
   const [deals, setDeals] = useState([]);
@@ -64,14 +67,20 @@ function SearchPage({ uuid }) {
   useEffect(() => {
     if (!query) return;
 
-    setLoading(true);
-    setError("");
-    setUsers([]);
-    setRestaurants([]);
-    setRestaurantRatings([]);
-    setDeals([]);
+    const performSearch = async () => {
+      setLoading(true);
+      setError("");
+      setUsers([]);
+      setRestaurants([]);
+      setRestaurantRatings([]);
+      setDeals([]);
 
-    Promise.all([
+      
+      if (allDeals.length === 0) {
+        await loadAllDeals();
+      }
+
+        Promise.all([
       // existing search (restaurants + deals ids)
       fetch(`/api/search?q=${encodeURIComponent(query)}`).then((res) => {
         if (!res.ok) throw new Error("Search API failed");
@@ -100,16 +109,15 @@ function SearchPage({ uuid }) {
         body: JSON.stringify({ getAll: true }),
       }).then((res) => (res.ok ? res.json() : [])),
     ])
-      .then(async ([searchResults, userResults, allRestaurants, allRatings, allHours]) => {
+        .then(async ([searchResults, userResults, allRestaurants, allRatings, allHours]) => {
 
-        // ── Users ──
+        
         setUsers(userResults || []);
 
         // Keep ratings array for passing to Restaurant cards (same shape as RestaurantList)
         setRestaurantRatings(allRatings);
 
-        // ── Restaurants ──
-        // Build a map from the full list so we can merge in cuisine, is_favourited, etc.
+        
         const restMap = {};
         allRestaurants.forEach((r) => { restMap[r.restaurant_id] = r; });
 
@@ -149,91 +157,40 @@ function SearchPage({ uuid }) {
 
         setRestaurants(enrichedRestaurants);
 
-        // ── Deals ──
-        const dealResults = searchResults.deals || [];
-        if (dealResults.length === 0) {
-          setDeals([]);
-          return;
-        }
+        
+        const searchDealIds = new Set((searchResults.deals || []).map(d => d.deal_id));
+        const dealMap = new Map(); // To avoid duplicates
+        const foundDeals = [];
 
-        const dealsByRestaurant = {};
-        dealResults.forEach((d) => {
-          const rid = d.restaurant_id;
-          if (!dealsByRestaurant[rid]) dealsByRestaurant[rid] = [];
-          dealsByRestaurant[rid].push(d.deal_id);
-        });
-
-        const dealFetches = Object.entries(dealsByRestaurant).map(
-          async ([restaurantId, dealIds]) => {
-            const res = await fetch("/api/restaurant-deals", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ restaurant_id: restaurantId, userID: uuid }),
-            });
-            if (!res.ok) return [];
-            const allDeals = await res.json();
-            return allDeals.filter((deal) => dealIds.includes(deal.dealID || deal.deal_id));
+        allDeals.forEach((deal) => {
+          if (searchDealIds.has(deal.dealID) && !dealMap.has(deal.dealID)) {
+            foundDeals.push(deal);
+            dealMap.set(deal.dealID, true);
           }
-        );
-
-        const dealsArrays = await Promise.all(dealFetches);
-        const fullDeals = dealsArrays.flat();
-
-        const dedup = {};
-        fullDeals.forEach((d) => {
-          const id = d.dealID ?? d.deal_id;
-          if (!dedup[id]) dedup[id] = d;
         });
 
-        const favRes = await fetch("/api/week/deals", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userID: uuid }),
-        });
-        const favByDay = favRes.ok ? await favRes.json() : {};
-        const favMap = {};
-        Object.values(favByDay).forEach((arr) => {
-          arr.forEach((dd) => { favMap[dd.dealID] = !!dd.fave; });
-        });
-
-        const mappedDeals = Object.values(dedup).map((d) => {
-          const dayCount = d.daysOfWeek?.length || 1;
-          return {
-            dealID: d.dealID ?? d.deal_id,
-            dealName: d.dealName ?? d.deal_name,
-            dealPrice: d.dealPrice ?? d.deal_price,
-            restaurantName: d.restaurantName ?? d.restaurant_name,
-            dealValueRating: d.dealValueRating ?? d.avg_value_rating ?? 0,
-            dealPortionRating: d.dealPortionRating ?? d.avg_portion_rating ?? 0,
-            dealTasteRating: d.dealTasteRating ?? d.avg_taste_rating ?? 0,
-            numRatings: d.numRatings ?? d.number_of_ratings ?? 0,
-            totalVote: d.totalVote ? Math.round(d.totalVote / dayCount) : 0,
-            userVote: d.userVote ?? d.user_vote ?? 0,
-            fave: d.fave ?? favMap[d.dealID ?? d.deal_id] ?? false,
-            dealDescription: d.dealDescription ?? d.description,
-          };
-        });
-
-        setDeals(mappedDeals);
+        setDeals(foundDeals);
       })
       .catch((e) => {
         console.error("Search error", e);
         setError("Search failed. Please try again.");
       })
       .finally(() => setLoading(false));
-  }, [query, uuid]);
+    };
 
+    performSearch();
+  }, [query, uuid, allDeals, loadAllDeals]);
   const handleUserClick = (user) => {
     const route = user.user_type === "restaurant_owner" ? "/Owner" : "/User";
     navigate(`${route}?id=${user.id}`);
   };
 
   return (
-    <Grid container py={4} px={8} display={"flex"}>
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Search Results for "{query}"
-      </Typography>
+    <Box sx={{ py: 4, px: 8, width: '100%' }}>
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom>
+          Search Results for "{query}"
+        </Typography>
 
       {loading && <CircularProgress sx={{ mt: 2 }} />}
       {error && <Typography color="error">{error}</Typography>}
@@ -244,7 +201,7 @@ function SearchPage({ uuid }) {
 
       {!loading && users.length === 0 && <Typography>No users found.</Typography>}
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} justifyContent="flex-start">
         {users.map((user) => (
           <Grid item xs={12} sm={6} md={4} key={user.id}>
             <Paper
@@ -252,6 +209,7 @@ function SearchPage({ uuid }) {
               elevation={1}
               onClick={() => handleUserClick(user)}
               sx={{
+                width: "100%",
                 p: 2,
                 display: "flex",
                 alignItems: "center",
@@ -311,7 +269,7 @@ function SearchPage({ uuid }) {
       <Typography variant="h6" gutterBottom>Restaurants</Typography>
       {!loading && restaurants.length === 0 && <Typography>No restaurants found.</Typography>}
       {/* Pass restaurantRatings the same way RestaurantList does so the Rating chip renders correctly */}
-      <Grid container>
+      <Grid container spacing={2} justifyContent="flex-start">
         {restaurants.map((restaurant) => (
           <Restaurant
             key={restaurant.restaurant_id}
@@ -327,7 +285,7 @@ function SearchPage({ uuid }) {
       <Typography variant="h6" gutterBottom>Deals</Typography>
       {!loading && deals.length === 0 && <Typography>No deals found.</Typography>}
       {deals.length > 0 && (
-        <Grid container>
+        <Grid container spacing={2} justifyContent="flex-start">
           {deals.map((deal) => (
             <Grid item xs={12} sm={6} lg={4} key={deal.dealID}>
               <Deal deal={deal} uuid={uuid} />
@@ -336,7 +294,7 @@ function SearchPage({ uuid }) {
         </Grid>
       )}
     </Box>
-    </Grid>
+  </Box>
   );
 }
 

@@ -98,16 +98,29 @@ const User = ({ uuid }) => {
             <Button
               variant="text"
               onClick={() => openModal("followers")}
-              sx={{ textTransform: 'none', fontFamily: 'monospace' }}
+              sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                    backgroundColor: 'grey.100',
+                    },
+                }} 
             >
-              <strong>{followerCount}</strong>&nbsp;Followers
+              {`${followerCount} ${followerCount === 1 ? 'Follower' : 'Followers'}`}
             </Button>
+
             <Button
               variant="text"
               onClick={() => openModal("following")}
-              sx={{ textTransform: 'none', fontFamily: 'monospace' }}
+              sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                    backgroundColor: 'grey.100',
+                    },
+                }} 
             >
-              <strong>{followingCount}</strong>&nbsp;Following
+              {`${followingCount} Following`}
             </Button>
           </Box>
         </Grid>
@@ -122,6 +135,7 @@ const User = ({ uuid }) => {
                   loadUserInfo={loadUserInfo}
                   setUserInfo={setUserInfo}
                   userInfo={userInfo}
+                  isOwnProfile={isOwnProfile}
                 />
               </Grid>
               <Grid item xs={12}>

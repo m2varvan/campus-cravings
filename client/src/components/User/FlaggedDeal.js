@@ -137,11 +137,11 @@ const FlaggedDeal = ({ deal, setFlaggedDeals, setErrorMSG, setSuccessMSG }) => {
             color="primary"
             onClick={() => setOpenDelete(false)}
             sx={{
-              borderColor: 'primary.dark',      
-              color: 'primary.dark', 
+              borderColor: 'text.primary',      
+              color: 'text.primary', 
               '&:hover': {
                 borderColor: 'primary.dark',  
-                backgroundColor: 'transparent',
+                backgroundColor: 'grey.100',
               },
             }}
           >
@@ -161,7 +161,21 @@ const FlaggedDeal = ({ deal, setFlaggedDeals, setErrorMSG, setSuccessMSG }) => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color='primary' onClick={() => setOpenClear(false)}>Cancel</Button>
+          <Button 
+            variant="outlined" 
+            color='primary' 
+            onClick={() => setOpenClear(false)}
+            sx={{
+              borderColor: 'text.primary',      
+              color: 'text.primary', 
+              '&:hover': {
+                borderColor: 'text.primary',  
+                backgroundColor: 'grey.100',
+              },
+            }}
+          >
+            Cancel
+          </Button>
           <Button variant="outlined" color='error' data-cy="confirm-remove-btn" onClick={handleClearFlags}>
             Confirm
           </Button>

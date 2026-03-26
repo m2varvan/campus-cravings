@@ -20,10 +20,11 @@ const Deal = ({uuid, deal, size='lg'}) => {
                 data-cy="deal-card"
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
+                    width: '100%',
                     bgcolor: 'secondary.light',
                     p: size==='lg' ? 2 : 1, // If large size, more padding
                     pb: size==='lg' ? 1 : 0.5, // If large size, more padding
-                    m: 1,
+                    m: 0,
                     borderRadius: 1,
                     "&:hover": {
                         filter: "brightness(0.95)",

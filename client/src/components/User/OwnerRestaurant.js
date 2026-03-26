@@ -15,12 +15,15 @@ const OwnerRestaurant = ({ uuid, restaurant, onRestaurantUpdated }) => {
             }}>
                 <Box onClick={() => setOpenDetails(true)} sx={{ cursor: 'pointer' }}>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Box sx={{ width: "70%" }}>
+                        <Box sx={{ width: "%" }}>
                             <Typography variant="subtitle1"
                                 sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {restaurant.restaurant_name}
                             </Typography>
                         </Box>
+                        <Box></Box>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
                         <Typography variant="body2">
                             {restaurant.num_ratings
                                 ? "⭐ " + restaurant.avg_rating.toFixed(1) + "/5 (" + restaurant.num_ratings + ")"

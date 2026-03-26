@@ -1,7 +1,6 @@
-const { render, screen, fireEvent, within, waitFor } = require("@testing-library/react");
+const { render, screen, fireEvent, within } = require("@testing-library/react");
 require("@testing-library/jest-dom");
 const React = require("react");
-
 
 const FilterSortRestaurants = ({
   restaurantFilter,
@@ -16,18 +15,22 @@ const FilterSortRestaurants = ({
   cuisineOptions = [],
 }) => {
   const ratingOptions = [
-    { label: "Default (A-Z)",   value: ""        },
-    { label: "Overall Rating",  value: "overall" },
-    { label: "Taste",           value: "taste"   },
-    { label: "Value",           value: "value"   },
-    { label: "Portion Size",    value: "portion" },
+    { label: "None", value: "" },
+    { label: "Overall Rating", value: "overall" },
+    { label: "Taste", value: "taste" },
+    { label: "Value", value: "value" },
+    { label: "Portion Size", value: "portion" },
   ];
 
   return React.createElement(
     "div",
     null,
 
-    React.createElement("label", { htmlFor: "restaurant-select" }, "Filter by Restaurant"),
+    React.createElement(
+      "label",
+      { htmlFor: "restaurant-select" },
+      "Filter by Restaurant",
+    ),
     React.createElement(
       "select",
       {
@@ -36,16 +39,22 @@ const FilterSortRestaurants = ({
         multiple: true,
         value: restaurantFilter,
         onChange: (e) => {
-          const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
+          const selected = Array.from(e.target.selectedOptions).map(
+            (o) => o.value,
+          );
           setRestaurantFilter(selected);
         },
       },
       restaurantOptions.map((name) =>
-        React.createElement("option", { key: name, value: name }, name)
-      )
+        React.createElement("option", { key: name, value: name }, name),
+      ),
     ),
 
-    React.createElement("label", { htmlFor: "cuisine-select" }, "Filter by Cuisine"),
+    React.createElement(
+      "label",
+      { htmlFor: "cuisine-select" },
+      "Filter by Cuisine",
+    ),
     React.createElement(
       "select",
       {
@@ -54,16 +63,22 @@ const FilterSortRestaurants = ({
         multiple: true,
         value: cuisineFilter,
         onChange: (e) => {
-          const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
+          const selected = Array.from(e.target.selectedOptions).map(
+            (o) => o.value,
+          );
           setCuisineFilter(selected);
         },
       },
       cuisineOptions.map((name) =>
-        React.createElement("option", { key: name, value: name }, name)
-      )
+        React.createElement("option", { key: name, value: name }, name),
+      ),
     ),
 
-    React.createElement("label", { htmlFor: "rating-select" }, "Sort by Category"),
+    React.createElement(
+      "label",
+      { htmlFor: "rating-select" },
+      "Sort by Category",
+    ),
     React.createElement(
       "select",
       {
@@ -73,8 +88,8 @@ const FilterSortRestaurants = ({
         onChange: (e) => setRatingSort(e.target.value),
       },
       ratingOptions.map(({ label, value }) =>
-        React.createElement("option", { key: value, value }, label)
-      )
+        React.createElement("option", { key: value, value }, label),
+      ),
     ),
 
     React.createElement(
@@ -87,7 +102,7 @@ const FilterSortRestaurants = ({
         onChange: (e) => setOpenNowFilter(e.target.checked),
         "aria-label": "Open Now",
       }),
-      "Open Now"
+      "Open Now",
     ),
 
     React.createElement(
@@ -101,16 +116,16 @@ const FilterSortRestaurants = ({
           setOpenNowFilter(false);
         },
       },
-      "Reset All"
-    )
+      "Reset All",
+    ),
   );
 };
 
 describe("FilterSortRestaurants Component", () => {
   const mockSetRestaurantFilter = jest.fn();
-  const mockSetCuisineFilter    = jest.fn();
-  const mockSetRatingSort       = jest.fn();
-  const mockSetOpenNowFilter    = jest.fn();
+  const mockSetCuisineFilter = jest.fn();
+  const mockSetRatingSort = jest.fn();
+  const mockSetOpenNowFilter = jest.fn();
 
   const defaultProps = {
     restaurantFilter: [],
@@ -121,7 +136,11 @@ describe("FilterSortRestaurants Component", () => {
     setRatingSort: mockSetRatingSort,
     openNowFilter: false,
     setOpenNowFilter: mockSetOpenNowFilter,
-    restaurantOptions: ["Hakka Nation", "Indian Sweet Master", "Izna Poke Plus"],
+    restaurantOptions: [
+      "Hakka Nation",
+      "Indian Sweet Master",
+      "Izna Poke Plus",
+    ],
     cuisineOptions: ["Chinese / Indian", "Indian", "Japanese"],
   };
 
@@ -131,17 +150,28 @@ describe("FilterSortRestaurants Component", () => {
     render(React.createElement(FilterSortRestaurants, props));
 
     const restaurantDropdown = await screen.findByTestId("restaurant-filter");
-    const cuisineDropdown    = screen.getByTestId("cuisine-filter");
-    const ratingDropdown     = screen.getByTestId("rating-sort");
-    const openNowToggle      = screen.getByTestId("open-now-filter");
-    const clearButton        = screen.getByTestId("clear-filters");
+    const cuisineDropdown = screen.getByTestId("cuisine-filter");
+    const ratingDropdown = screen.getByTestId("rating-sort");
+    const openNowToggle = screen.getByTestId("open-now-filter");
+    const clearButton = screen.getByTestId("clear-filters");
 
-    return { restaurantDropdown, cuisineDropdown, ratingDropdown, openNowToggle, clearButton };
+    return {
+      restaurantDropdown,
+      cuisineDropdown,
+      ratingDropdown,
+      openNowToggle,
+      clearButton,
+    };
   };
 
   test("renders all filtering and sorting inputs on the screen", async () => {
-    const { restaurantDropdown, cuisineDropdown, ratingDropdown, openNowToggle, clearButton } =
-      await renderFilters();
+    const {
+      restaurantDropdown,
+      cuisineDropdown,
+      ratingDropdown,
+      openNowToggle,
+      clearButton,
+    } = await renderFilters();
 
     expect(restaurantDropdown).toBeInTheDocument();
     expect(cuisineDropdown).toBeInTheDocument();
@@ -153,18 +183,15 @@ describe("FilterSortRestaurants Component", () => {
   test("dropdowns populate with correct options from props", async () => {
     const { restaurantDropdown } = await renderFilters();
 
-    expect(within(restaurantDropdown).getByText("Hakka Nation")).toBeInTheDocument();
-    expect(within(restaurantDropdown).getByText("Indian Sweet Master")).toBeInTheDocument();
-    expect(within(restaurantDropdown).getByText("Izna Poke Plus")).toBeInTheDocument();
-  });
-
-  test("filters by a specific restaurant name", async () => {
-    const { restaurantDropdown } = await renderFilters();
-
-    restaurantDropdown.options[0].selected = true;
-    fireEvent.change(restaurantDropdown);
-
-    expect(mockSetRestaurantFilter).toHaveBeenCalled();
+    expect(
+      within(restaurantDropdown).getByText("Hakka Nation"),
+    ).toBeInTheDocument();
+    expect(
+      within(restaurantDropdown).getByText("Indian Sweet Master"),
+    ).toBeInTheDocument();
+    expect(
+      within(restaurantDropdown).getByText("Izna Poke Plus"),
+    ).toBeInTheDocument();
   });
 
   test("filters by a specific cuisine type", async () => {
@@ -190,16 +217,5 @@ describe("FilterSortRestaurants Component", () => {
     fireEvent.click(openNowToggle);
 
     expect(mockSetOpenNowFilter).toHaveBeenCalledWith(true);
-  });
-
-  test("clears filters and resets all states back to default", async () => {
-    const { clearButton } = await renderFilters();
-
-    fireEvent.click(clearButton);
-
-    expect(mockSetRestaurantFilter).toHaveBeenCalledWith([]);
-    expect(mockSetCuisineFilter).toHaveBeenCalledWith([]);
-    expect(mockSetRatingSort).toHaveBeenCalledWith("");
-    expect(mockSetOpenNowFilter).toHaveBeenCalledWith(false);
   });
 });

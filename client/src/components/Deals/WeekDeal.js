@@ -52,7 +52,7 @@ const WeekDeal = ({
           </Typography>
         </Box>
       ) : ( !loading &&
-        <Grid container justifyContent={"center"}>
+        <Grid container spacing={2} justifyContent={"center"} sx={{ overflowX: "hidden" }}>
           {/*For each day of week, RenderWeekDayDeals* */}
           {Object.keys(weekDeals).map((dayOfWeek, index) => (
             <Grid

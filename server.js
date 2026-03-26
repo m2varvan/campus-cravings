@@ -1210,6 +1210,7 @@ app.post("/api/load/user", (req, res) => {
         last_name,
         email_address,
         username,
+        user_type,
         profile_photo,
         DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at
       FROM users
@@ -1234,6 +1235,7 @@ app.post("/api/load/user", (req, res) => {
       userName: user?.username,
       profilePhoto: user?.profile_photo,
       createdDate: user?.created_at,
+      accountType: user?.user_type
     };
 
     res.json(userInfo);

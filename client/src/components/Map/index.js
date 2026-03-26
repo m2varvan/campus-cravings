@@ -5,7 +5,7 @@ import BiteMap from "./BiteMap";
 const MapPage = ({ uuid }) => {
   return (
     <Grid container py={4} px={8} display={"flex"}>
-      <Typography variant="h4">BiteMap</Typography>
+      <Typography variant="h3" mb={2}>BiteMap</Typography>
 
       <Paper
         elevation={4}

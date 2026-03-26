@@ -177,7 +177,19 @@ const EditDealDialog = ({ open, handleClose, deal, onDealUpdated, onDealDeleted 
                             <Button color="error" variant="contained" onClick={handleDelete} disabled={loading}>
                                 {loading ? <CircularProgress size={20} color="inherit" /> : "Confirm Delete"}
                             </Button>
-                            <Button onClick={() => setConfirmDelete(false)} disabled={loading}>Cancel</Button>
+                            <Button 
+                                onClick={() => setConfirmDelete(false)} 
+                                disabled={loading}
+                                sx={{
+                                    mr: 1,
+                                    color: 'text.primary',
+                                    '&:hover': {
+                                    backgroundColor: 'grey.100',
+                                    },
+                                }} 
+                            >
+                                Cancel
+                            </Button>
                         </Box>
                     )}
                 </Box>
