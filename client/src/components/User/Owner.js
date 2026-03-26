@@ -22,19 +22,12 @@ const Owner = ({ uuid }) => {
   const profileUserID = searchParams.get("id") || uuid;
   const isOwnProfile = profileUserID === uuid;
 
-  // Shared state
   const [userInfo, setUserInfo] = React.useState(null);
-
-  // Dashboard state
   const [ownerRestaurants, setOwnerRestaurants] = React.useState([]);
   const [ownerDeals, setOwnerDeals] = React.useState([]);
   const [openCreateDeal, setOpenCreateDeal] = React.useState(false);
-
-  // Profile state
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
-
-  // Follow system state
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
   const [followerCount, setFollowerCount] = React.useState(0);
@@ -47,7 +40,6 @@ const Owner = ({ uuid }) => {
     setOwnerDeals(deals);
   };
 
-  // Follow status
   React.useEffect(() => {
     if (!isOwnProfile && uuid && profileUserID) {
       setLoadingFollow(true);
@@ -63,7 +55,6 @@ const Owner = ({ uuid }) => {
     }
   }, [uuid, profileUserID, isOwnProfile]);
 
-  // Follow counts
   React.useEffect(() => {
     if (!profileUserID) return;
     fetch("/api/follow/counts", {
@@ -97,22 +88,27 @@ const Owner = ({ uuid }) => {
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="h3">{pageTitle}</Typography>
-
             {!isOwnProfile && !loadingFollow && (
               <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
             )}
-
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
 
-          {/* Followers */}
-          <Box sx={{ display: "flex", gap: 2, pb: 2 }}>
-            <Button onClick={() => openModal("followers")}>
-              <strong>{followerCount}</strong> Followers
-            </Button>
-            <Button onClick={() => openModal("following")}>
-              <strong>{followingCount}</strong> Following
-            </Button>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button onClick={() => openModal("followers")}>
+                <strong>{followerCount}</strong>&nbsp;Followers
+              </Button>
+              <Button onClick={() => openModal("following")}>
+                <strong>{followingCount}</strong>&nbsp;Following
+              </Button>
+            </Box>
+
+            {isOwnProfile && (
+              <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
+                + Post New Deal
+              </Button>
+            )}
           </Box>
         </Grid>
 
@@ -133,13 +129,6 @@ const Owner = ({ uuid }) => {
             {/* Dashboard (OWN PROFILE) */}
             {isOwnProfile && (
               <>
-                {/* Post New Deal Button on Right */}
-                <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-                  <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
-                    + Post New Deal
-                  </Button>
-                </Box>
-
                 {/* Deals Section */}
                 <Box sx={{ mb: 4 }}>
                   <OwnerDealList
@@ -180,7 +169,6 @@ const Owner = ({ uuid }) => {
                   userRatings={userRatings}
                   readOnly
                 />
-
                 <UserReviewList
                   uuid={profileUserID}
                   loadUserReviews={getUserReviews}

@@ -31,7 +31,7 @@ const OwnerRestaurant = ({ uuid, restaurant, onRestaurantUpdated }) => {
 
                 {/* Edit button */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
-                    <Button size="small" variant="outlined" onClick={() => setOpenEdit(true)}>
+                    <Button size="small" variant="contained" onClick={() => setOpenEdit(true)}>
                         Edit
                     </Button>
                 </Box>
