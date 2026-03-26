@@ -2,7 +2,10 @@ import React from 'react';
 import { Typography, Box, CircularProgress, Grid, Button } from '@mui/material';
 import FavouriteRestaurant from './FavouriteRestaurant';
 
-const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, setFaveRestaurants }) => {
+const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, setFaveRestaurants, profileName }) => {
+
+    const title = profileName ? `${profileName}'s Favourite Restaurants` : 'My Favourite Restaurants';
+    const noRestaurantsText = profileName ? `${profileName} has no favourited restaurants.` : 'No restaurants favourited.';
 
     //States for loading / errors
     const [loadingRestaurants, setLoadingRestaurants] = React.useState(false);
@@ -51,7 +54,7 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
 
             {/* Header title and count */}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5">My Favourite Restaurants</Typography>
+                <Typography variant="h5">{title}</Typography>
                 <Typography variant="body1">
                     ({faveRestaurants.length} favourite {faveRestaurants.length === 1 ? 'restaurant' : 'restaurants'})
                 </Typography>
@@ -74,7 +77,7 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
 
             {/* No favourite restaurants */}
             {!loadingRestaurants && !error && (!faveRestaurants || faveRestaurants.length === 0) && (
-                <Typography>No restaurants favourited.</Typography>
+                <Typography>{noRestaurantsText}</Typography>
             )}
 
             {/* Display Restaurants */}

@@ -101,7 +101,9 @@ const FollowersFollowingModal = ({ open, onClose, mode, userID }) => {
                   gap: 2,
                   cursor: "pointer",
                   borderRadius: 2,
-                  "&:hover": { filter: "brightness(0.96)", boxShadow: 3 },
+                  border: "1px solid #000",
+                  bgcolor: "#fff",
+                  "&:hover": { filter: "brightness(0.98)", boxShadow: 3 },
                 }}
               >
                 {/* Avatar */}
