@@ -286,7 +286,7 @@ const RestaurantList = ({ uuid }) => {
     <Grid container py={4} px={8} display={"flex"}>
       <Grid item xs={12} mb={2}>
         {/* Page Title */}
-        <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+        <Typography variant="h3">University Shops Plaza Restaurants</Typography>
 
         <FilterSortRestaurants
           restaurantFilter={restaurantFilter}
