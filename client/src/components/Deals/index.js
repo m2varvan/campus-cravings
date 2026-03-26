@@ -7,6 +7,7 @@ import { useDeals } from "../../Hooks/useDeals";
 
 // Inner component that uses the context
 const Deals = ({ uuid }) => {
+
   const { allDeals, loading, error, loadAllDeals } = useDeals();
 
   // Separated deals for display
@@ -21,6 +22,8 @@ const Deals = ({ uuid }) => {
     Sunday: [],
   });
 
+  const [dealsReady, setDealsReady] = React.useState(false)
+  
   // Variables to hold displayed deals
   const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([]);
   const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
@@ -30,12 +33,27 @@ const Deals = ({ uuid }) => {
   const [sort, setSort] = React.useState("");
   const [restaurantOptions, setRestaurantOptions] = React.useState([]);
 
+  React.useEffect(() => {
+    if (loading) {
+      setDealsReady(false);
+      return;
+    }
+
+    const hasTodayDeals = displayedTodayDeals.length > 0;
+    const hasWeekDeals = Object.values(displayedWeekDeals).some(
+      (dayDeals) => dayDeals.length > 0
+    );
+
+    setDealsReady( hasTodayDeals || hasWeekDeals);
+  }, [loading, displayedTodayDeals, displayedWeekDeals]);
+
   // Load all deals on component mount
   React.useEffect(() => {
     loadAllDeals();
   }, [uuid, loadAllDeals]);
 
-  // Separate deals into today and byDay based on day_of_week
+
+  // Regroup deals when deals updates
   React.useEffect(() => {
     const todayDayName = new Date().toLocaleDateString("en-US", {
       weekday: "long",
@@ -163,7 +181,7 @@ const Deals = ({ uuid }) => {
         restaurantFilter.includes(deal.restaurantName),
     );
 
-    if (sort === "") {
+    if (sort === "Top Voted") {
       filteredToday = sortByVotes(filteredToday);
     } else {
       filteredToday = sortDeals(filteredToday);
@@ -180,7 +198,7 @@ const Deals = ({ uuid }) => {
           restaurantFilter.includes(deal.restaurantName),
       );
 
-      if (sort === "") {
+      if (sort === "Top Voted") {
         filtered = sortByVotes(filtered);
       } else {
         filtered = sortDeals(filtered);
@@ -193,7 +211,7 @@ const Deals = ({ uuid }) => {
   }, [restaurantFilter, sort, todayDeals, weekDeals]);
 
   return (
-    <Grid container p={4} display={"flex"}>
+    <Grid container py={4} px={8} display={"flex"}>
       {/* Page Title */}
       <Grid item xs={12}>
         <Typography variant="h3">University Shops Plaza Deals</Typography>
@@ -214,7 +232,7 @@ const Deals = ({ uuid }) => {
       <TodayDeal
         uuid={uuid}
         todayDeals={displayedTodayDeals}
-        loading={loading}
+        loading={!dealsReady}
         error={error}
         loadTodayDeals={loadAllDeals}
       />
@@ -223,7 +241,7 @@ const Deals = ({ uuid }) => {
       <WeekDeal
         uuid={uuid}
         weekDeals={displayedWeekDeals}
-        loading={loading}
+        loading={!dealsReady}
         error={error}
         loadWeekDeals={loadAllDeals}
       />

@@ -18,7 +18,7 @@ const TodayDeal = ({
   }, [uuid]);
 
   // Variables and functions to show only 12 by default
-  const defaultVisible = 12;
+  const defaultVisible = 9;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
   const handleShowMore = () => {
     setVisibleCount(todayDeals.length);

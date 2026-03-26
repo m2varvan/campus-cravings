@@ -2,7 +2,10 @@ import React from 'react';
 import { Typography, Box, CircularProgress, Grid, Button } from '@mui/material';
 import FavouriteDeal from './FavouriteDeal';
 
-const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals }) => {
+const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals, profileName }) => {
+
+    const title = profileName ? `${profileName}'s Favourite Deals` : 'My Favourite Deals';
+    const noDealsText = profileName ? `${profileName} has no favourited deals.` : 'No deals favourited.';
 
     //States for loading / errors
     const [loadingDeals, setLoadingDeals] = React.useState(false);
@@ -51,7 +54,7 @@ const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals }) => 
             >
         {/* Header with count*/}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">My Favourite Deals</Typography>
+        <Typography variant="h5">{title}</Typography>
         <Typography variant="body1">
             ({faveDeals.length} favourite {faveDeals.length === 1 ? 'deal' : 'deals'})
         </Typography>
@@ -74,7 +77,7 @@ const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals }) => 
 
         {/* No deals */}
         {!loadingDeals && !error && (!faveDeals || faveDeals.length === 0) && (
-            <Typography>No deals favourited.</Typography>
+            <Typography>{noDealsText}</Typography>
         )}
 
         {/* Display Deals in FavourtiteDeal Boxes */}

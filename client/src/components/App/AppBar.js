@@ -12,7 +12,9 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../Search/SearchBar";
-import { FirebaseContext } from "../Firebase";
+import { useLocation } from 'react-router-dom';
+import { FirebaseContext } from '../Firebase';
+
 
 const pages = [
   { label: "Deals", path: "/", id: "nav-promotions" },
@@ -49,7 +51,13 @@ const SiteAppBar = ({
         { label: "My Owner Account", path: "/Owner", id: "nav-owner" },
         { label: "SignOut", action: handleSignOut, id: "nav-signout" },
       ];
-    } else {
+    } else if (userTypeAfter === "admin"){
+      settings = [
+        { label: "Admin Page", path: "/Admin", id: "nav-admin" },
+        { label: "SignOut", action: handleSignOut, id: "nav-signout" },
+      ];
+
+    }else {
       settings = [
         { label: "My Account", path: "/User", id: "nav-user" },
         { label: "SignOut", action: handleSignOut, id: "nav-signout" },

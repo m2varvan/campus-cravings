@@ -21,11 +21,12 @@ function SearchBar() {
 
     <TextField
       size="small"
-      placeholder="Search..."
+      placeholder="Search Users, Deals, Restaurants..."
       value={query}
       onChange={(e)=>setQuery(e.target.value)}
       onKeyDown={handleKeyDown}
-      sx={{ width: 250, mr: 2, bgcolor: "white", borderRadius: 1 }}
+      sx={{ minWidth: 200, width: { xs: '100%', sm: 360 }, mr: 2, bgcolor: 'white', borderRadius: 1 }}
+      inputProps={{ style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }}
     />
 
   );

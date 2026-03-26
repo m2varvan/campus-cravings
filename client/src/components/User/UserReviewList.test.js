@@ -69,7 +69,7 @@ describe('UserReviewList', () => {
       />
     );
 
-    expect(screen.getByText(/Loading your Reviews/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading reviews/i)).toBeInTheDocument();
   });
 
   test('loads and displays reviews on mount', async () => {

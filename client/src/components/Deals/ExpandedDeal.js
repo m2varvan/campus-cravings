@@ -16,6 +16,7 @@ import Review from '../Review';
 import RestaurantDetails from '../Restaurant/RestaurantDetails';
 import Favourite from './Favourite';
 import DealVote from './DealVote';
+import FlagDeal from './FlagDeal';
 import saveFaveDeal from '../../APIs/saveFaveDeal';
 import removeFaveDeal from '../../APIs/removeFaveDeal';
 import { useDeals } from '../../Hooks/useDeals';
@@ -125,7 +126,7 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
 
       const data = await res.json();
       setDeal(data);
-      console.log('Deal', data)
+      // console.log('Deal', data)
     } catch (err) {
       console.error('Failed to get deal info:', err);
       setError(true);
@@ -353,9 +354,26 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
             dealID={deal.dealID}
             />
 
-          <Typography variant="caption" color="text.secondary" sx={{mr: 'auto'}}>
-            Deal information last updated: {deal.dealEditData}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              mr: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <span>Added on: {deal.dealAddDate}</span>
+            <span>Last updated: {deal.dealEditDate}</span>
           </Typography>
+
+          {/* Button to Flag Deal in Footer of Dialog */}
+          <FlagDeal
+            uuid={uuid}
+            dealID={deal.dealID}
+            totalFlags={deal.totalFlags}
+            userFlag={deal.userFlag}
+            />
 
           <Button
             onClick={handleDialogClose}
