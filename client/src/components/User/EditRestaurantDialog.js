@@ -46,13 +46,21 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
 
     const validate = () => {
         const newErrors = {};
+
         if (!values.restaurantName?.trim()) newErrors.restaurantName = "Restaurant name is required";
         if (!values.streetAddress?.trim()) newErrors.streetAddress = "Street address is required";
         if (!values.city?.trim()) newErrors.city = "City is required";
         if (!values.province?.trim()) newErrors.province = "Province is required";
         if (!values.postalCode?.trim()) newErrors.postalCode = "Postal code is required";
-        if (values.openingTime && values.closingTime && values.closingTime <= values.openingTime)
+        if (!values.openingTime) newErrors.openingTime = "Opening time is required";
+        if (!values.closingTime) newErrors.closingTime = "Closing time is required";
+        if (
+            values.openingTime &&
+            values.closingTime &&
+            values.closingTime <= values.openingTime
+        ) {
             newErrors.closingTime = "Closing time must be after opening time";
+        }
         return newErrors;
     };
 
@@ -99,7 +107,7 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
                         {field("Postal Code", "postalCode")}
                     </Box>
 
-                    <Typography variant="body2" color="text.secondary">Contact & Online</Typography>
+                    <Typography variant="body2" color="text.secondary">Contact & Website</Typography>
 
                     {field("Phone Number (optional)", "phoneNumber")}
                     {field("Website URL (optional)", "websiteUrl")}
@@ -109,8 +117,8 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
                     {field("Cuisine Type (optional)", "cuisine")}
 
                     <Box sx={{ display: 'flex', gap: 2 }}>
-                        {field("Opening Time (optional)", "openingTime", { type: 'time', InputLabelProps: { shrink: true } })}
-                        {field("Closing Time (optional)", "closingTime", { type: 'time', InputLabelProps: { shrink: true } })}
+                        {field("Opening Time", "openingTime", { type: 'time', InputLabelProps: { shrink: true } })}
+                        {field("Closing Time", "closingTime", { type: 'time', InputLabelProps: { shrink: true } })}
                     </Box>
                 </Box>
             </DialogContent>
