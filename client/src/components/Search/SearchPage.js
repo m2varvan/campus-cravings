@@ -229,6 +229,7 @@ function SearchPage({ uuid }) {
   };
 
   return (
+    <Grid container py={4} px={8} display={"flex"}>
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
         Search Results for "{query}"
@@ -257,7 +258,9 @@ function SearchPage({ uuid }) {
                 gap: 2,
                 cursor: "pointer",
                 borderRadius: 2,
-                "&:hover": { filter: "brightness(0.96)", boxShadow: 3 },
+                border: "1px solid #000",
+                bgcolor: "#fff",
+                "&:hover": { filter: "brightness(0.98)", boxShadow: 3 },
               }}
             >
               <Box
@@ -323,10 +326,17 @@ function SearchPage({ uuid }) {
       <Divider sx={{ my: 3 }} />
       <Typography variant="h6" gutterBottom>Deals</Typography>
       {!loading && deals.length === 0 && <Typography>No deals found.</Typography>}
-      {deals.map((deal) => (
-        <Deal key={deal.dealID} deal={deal} uuid={uuid} />
-      ))}
+      {deals.length > 0 && (
+        <Grid container>
+          {deals.map((deal) => (
+            <Grid item xs={12} sm={6} lg={4} key={deal.dealID}>
+              <Deal deal={deal} uuid={uuid} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </Box>
+    </Grid>
   );
 }
 

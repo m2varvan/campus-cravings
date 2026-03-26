@@ -117,7 +117,7 @@ const FlagDeal = ({ uuid, dealID, totalFlags, userFlag }) => {
         // If the deal has been flagged by the user, 
         // show the remove flag button
         <Button 
-            variant="outlined"
+            variant="contained"
             size='small'
             color="error" 
             onClick={handleUndo}>

@@ -85,6 +85,7 @@ const FilterSortDeals = ({
           label="Sort By"
         >
           <MenuItem value=""><em>None</em></MenuItem>
+          <MenuItem value="Top Voted">Top Vote</MenuItem>
           <MenuItem value="Top Rated">Overall Rating</MenuItem>
           <MenuItem value="Value Rated">Value Rating</MenuItem>
           <MenuItem value="Portion Rated">Portion Rating</MenuItem>

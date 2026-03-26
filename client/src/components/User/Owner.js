@@ -10,10 +10,14 @@ import FollowButton from "./FollowButton";
 import FollowersFollowingModal from "./FollowersFollowingModal";
 import UserRatingList from "./UserRatingList";
 import UserReviewList from "./UserReviewList";
+import FavouriteDealList from "./FavouriteDealList";
+import FavouriteRestaurantList from "./FavouriteRestaurantList";
 
 import loadUserInfo from "../../APIs/loadUserInfo";
 import loadOwnerRestaurants from "../../APIs/loadOwnerRestaurants";
 import loadOwnerDeals from "../../APIs/loadOwnerDeals";
+import loadFaveDeals from "../../APIs/loadFaveDeals";
+import loadFaveRestaurants from "../../APIs/loadFaveRestaurants";
 import { getUserRatings } from "../../APIs/getUserRatings";
 import { getUserReviews } from "../../APIs/getUserReviews";
 
@@ -22,19 +26,21 @@ const Owner = ({ uuid }) => {
   const profileUserID = searchParams.get("id") || uuid;
   const isOwnProfile = profileUserID === uuid;
 
-  // Shared state
   const [userInfo, setUserInfo] = React.useState(null);
+  const profileName = userInfo ? userInfo.firstName : null;
 
   // Dashboard state
   const [ownerRestaurants, setOwnerRestaurants] = React.useState([]);
   const [ownerDeals, setOwnerDeals] = React.useState([]);
   const [openCreateDeal, setOpenCreateDeal] = React.useState(false);
 
+  // Favourite profile state
+  const [faveDeals, setFaveDeals] = React.useState([]);
+  const [faveRestaurants, setFaveRestaurants] = React.useState([]);
+
   // Profile state
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
-
-  // Follow system state
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
   const [followerCount, setFollowerCount] = React.useState(0);
@@ -47,7 +53,6 @@ const Owner = ({ uuid }) => {
     setOwnerDeals(deals);
   };
 
-  // Follow status
   React.useEffect(() => {
     if (!isOwnProfile && uuid && profileUserID) {
       setLoadingFollow(true);
@@ -63,7 +68,6 @@ const Owner = ({ uuid }) => {
     }
   }, [uuid, profileUserID, isOwnProfile]);
 
-  // Follow counts
   React.useEffect(() => {
     if (!profileUserID) return;
     fetch("/api/follow/counts", {
@@ -92,61 +96,121 @@ const Owner = ({ uuid }) => {
 
   return (
     <>
-      <Grid container p={4}>
+       <Grid container px={8} py={4}>
 
         {/* Header */}
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="h3">{pageTitle}</Typography>
-
             {!isOwnProfile && !loadingFollow && (
               <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
             )}
-
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
 
-          {/* Followers */}
-          <Box sx={{ display: "flex", gap: 2, pb: 2 }}>
-            <Button onClick={() => openModal("followers")}>
-              <strong>{followerCount}</strong> Followers
-            </Button>
-            <Button onClick={() => openModal("following")}>
-              <strong>{followingCount}</strong> Following
-            </Button>
+          {/* Followers + Post New Deal (aligned right for owners) */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+              pb: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+              <Button onClick={() => openModal("followers")}>
+                <strong>{followerCount}</strong> Followers
+              </Button>
+              <Button onClick={() => openModal("following")}>
+                <strong>{followingCount}</strong> Following
+              </Button>
+            </Box>
+            {isOwnProfile && (
+              <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
+                + Post New Deal
+              </Button>
+            )}
           </Box>
         </Grid>
 
         {/* Main Content */}
         <Grid container item xs={12} spacing={2}>
           {/* Left Side */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <UserInfo
               uuid={profileUserID}
               loadUserInfo={loadUserInfo}
               setUserInfo={setUserInfo}
               userInfo={userInfo}
             />
+
+            {isOwnProfile && (
+              <>
+                <Box mt={2}>
+                  <UserRatingList
+                    uuid={profileUserID}
+                    loadUserRatings={getUserRatings}
+                    setUserRatings={setUserRatings}
+                    userRatings={userRatings}
+                    readOnly={false}
+                    profileName={profileName}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <UserReviewList
+                    uuid={profileUserID}
+                    loadUserReviews={getUserReviews}
+                    setUserReviews={setUserReviews}
+                    userReviews={userReviews}
+                    readOnly={false}
+                    profileName={profileName}
+                  />
+                </Box>
+              </>
+            )}
+
+            {!isOwnProfile && (
+              <>
+                <Box mt={2}>
+                  <UserRatingList
+                    uuid={profileUserID}
+                    loadUserRatings={getUserRatings}
+                    setUserRatings={setUserRatings}
+                    userRatings={userRatings}
+                    readOnly
+                    profileName={profileName}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <UserReviewList
+                    uuid={profileUserID}
+                    loadUserReviews={getUserReviews}
+                    setUserReviews={setUserReviews}
+                    userReviews={userReviews}
+                    readOnly
+                    profileName={profileName}
+                  />
+                </Box>
+              </>
+            )}
           </Grid>
 
           {/* Right Side */}
-          <Grid item xs={12} md={8}>
-
-            {/* Dashboard (OWN PROFILE) */}
-            {isOwnProfile && (
+          <Grid item xs={12} md={6}>
+            {isOwnProfile ? (
               <>
-                <Box sx={{ pb: 2 }}>
-                  <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
-                    + Post New Deal
-                  </Button>
+                <Box mb={2}>
+                  <OwnerDealList
+                    uuid={uuid}
+                    loadOwnerDeals={loadOwnerDeals}
+                    ownerDeals={ownerDeals}
+                    setOwnerDeals={setOwnerDeals}
+                  />
                 </Box>
-
-                <OwnerDealList
-                  uuid={uuid}
-                  loadOwnerDeals={loadOwnerDeals}
-                  ownerDeals={ownerDeals}
-                  setOwnerDeals={setOwnerDeals}
-                />
 
                 <OwnerRestaurantList
                   uuid={uuid}
@@ -154,6 +218,26 @@ const Owner = ({ uuid }) => {
                   ownerRestaurants={ownerRestaurants}
                   setOwnerRestaurants={setOwnerRestaurants}
                 />
+
+                <Box mt={2}>
+                  <FavouriteDealList
+                    uuid={profileUserID}
+                    loadFaveDeals={loadFaveDeals}
+                    faveDeals={faveDeals}
+                    setFaveDeals={setFaveDeals}
+                    profileName={null}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <FavouriteRestaurantList
+                    uuid={profileUserID}
+                    loadFaveRestaurants={loadFaveRestaurants}
+                    faveRestaurants={faveRestaurants}
+                    setFaveRestaurants={setFaveRestaurants}
+                    profileName={null}
+                  />
+                </Box>
 
                 <CreateDealDialog
                   open={openCreateDeal}
@@ -163,29 +247,27 @@ const Owner = ({ uuid }) => {
                   onDealCreated={reloadDeals}
                 />
               </>
-            )}
-
-            {/* Profile (OTHER USERS) */}
-            {!isOwnProfile && (
+            ) : (
               <>
-                <UserRatingList
-                  uuid={profileUserID}
-                  loadUserRatings={getUserRatings}
-                  setUserRatings={setUserRatings}
-                  userRatings={userRatings}
-                  readOnly
-                />
+                <Box mb={2}>
+                  <FavouriteDealList
+                    uuid={profileUserID}
+                    loadFaveDeals={loadFaveDeals}
+                    faveDeals={faveDeals}
+                    setFaveDeals={setFaveDeals}
+                    profileName={profileName}
+                  />
+                </Box>
 
-                <UserReviewList
+                <FavouriteRestaurantList
                   uuid={profileUserID}
-                  loadUserReviews={getUserReviews}
-                  setUserReviews={setUserReviews}
-                  userReviews={userReviews}
-                  readOnly
+                  loadFaveRestaurants={loadFaveRestaurants}
+                  faveRestaurants={faveRestaurants}
+                  setFaveRestaurants={setFaveRestaurants}
+                  profileName={profileName}
                 />
               </>
             )}
-
           </Grid>
         </Grid>
       </Grid>

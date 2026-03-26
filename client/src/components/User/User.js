@@ -27,6 +27,8 @@ const User = ({ uuid }) => {
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
 
+  const profileName = userInfo ? userInfo.firstName : null;
+
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
   const [followerCount, setFollowerCount] = React.useState(0);
@@ -77,13 +79,17 @@ const User = ({ uuid }) => {
 
   return (
     <>
-      <Grid container p={4}>
+       <Grid container px={8} py={4}>
 
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Typography variant="h3">{pageTitle}</Typography>
             {!isOwnProfile && !loadingFollow && (
-              <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
+              <FollowButton 
+                uuid={uuid} 
+                targetUserID={profileUserID} 
+                initialFollow={isFollowing} 
+                setFollowerCount={setFollowerCount} />
             )}
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
@@ -125,6 +131,7 @@ const User = ({ uuid }) => {
                   setUserRatings={setUserRatings}
                   userRatings={userRatings}
                   readOnly={!isOwnProfile}
+                  profileName={profileName}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -134,33 +141,34 @@ const User = ({ uuid }) => {
                   setUserReviews={setUserReviews}
                   userReviews={userReviews}
                   readOnly={!isOwnProfile}
+                  profileName={profileName}
                 />
               </Grid>
             </Grid>
           </Grid>
 
-          {isOwnProfile && (
-            <Grid item xs={12} md={6}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FavouriteDealList
-                    uuid={uuid}
-                    loadFaveDeals={loadFaveDeals}
-                    faveDeals={faveDeals}
-                    setFaveDeals={setFaveDeals}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FavouriteRestaurantList
-                    uuid={uuid}
-                    loadFaveRestaurants={loadFaveRestaurants}
-                    setFaveRestaurants={setFaveRestaurants}
-                    faveRestaurants={faveRestaurants}
-                  />
-                </Grid>
+          <Grid item xs={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <FavouriteDealList
+                  uuid={profileUserID}
+                  loadFaveDeals={loadFaveDeals}
+                  faveDeals={faveDeals}
+                  setFaveDeals={setFaveDeals}
+                  profileName={profileName}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FavouriteRestaurantList
+                  uuid={profileUserID}
+                  loadFaveRestaurants={loadFaveRestaurants}
+                  setFaveRestaurants={setFaveRestaurants}
+                  faveRestaurants={faveRestaurants}
+                  profileName={profileName}
+                />
               </Grid>
             </Grid>
-          )}
+          </Grid>
 
         </Grid>
       </Grid>
