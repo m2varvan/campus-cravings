@@ -9,6 +9,7 @@ const RestaurantList = ({ uuid }) => {
   const [restaurantHours, setRestaurantHours] = useState([]);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [loadingRestaurantsError, setLoadingRestaurantsError] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   // Filter and Sort States
   const [restaurantFilter, setRestaurantFilter] = useState([]);
@@ -40,90 +41,67 @@ const RestaurantList = ({ uuid }) => {
   };
 
   useEffect(() => {
-    async function loadRestaurants() {
+    async function loadAllData() {
       try {
         setLoadingRestaurants(true);
+        setLoadingRestaurantsError(false);
 
-        const response = await fetch("/api/get-restaurants", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userID: uuid }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Restaurants',data)
-        setRestaurants(data);
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to load restaurants:", error);
-        setLoadingRestaurantsError(true);
-      } finally {
-        setLoadingRestaurants(false);
-      }
-    }
-
-    async function loadRestaurantRatings() {
-      try {
-        setLoadingRestaurants(true);
-        const res = await fetch("/api/restaurant-rating", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            getAll: true,
+        const [restaurantsRes, ratingsRes, hoursRes] = await Promise.all([
+          fetch("/api/get-restaurants", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userID: uuid }),
           }),
-        });
-        if (!res.ok) {
-          throw new Error(`Server error: ${res.status}`);
-        }
 
-        const data = await res.json();
-        setRestaurantRatings(data);
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to load restaurants:", error);
-        setLoadingRestaurantsError(true);
-      } finally {
-        setLoadingRestaurants(false);
-      }
-    }
-
-    async function loadRestaurantHours() {
-      try {
-        setLoadingRestaurants(true);
-        const res = await fetch("/api/restaurant-hours", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            getAll: true,
+          fetch("/api/restaurant-rating", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ getAll: true }),
           }),
-        });
-        if (!res.ok) {
-          throw new Error(`Server error: ${res.status}`);
+
+          fetch("/api/restaurant-hours", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ getAll: true }),
+          }),
+        ]);
+
+        // Check responses
+        if (!restaurantsRes.ok || !ratingsRes.ok || !hoursRes.ok) {
+          throw new Error("One or more API requests failed");
         }
 
-        const data = await res.json();
-        setRestaurantHours(data);
-        console.log(data);
+        // Parse all JSON
+        const [restaurantsData, ratingsData, hoursData] = await Promise.all([
+          restaurantsRes.json(),
+          ratingsRes.json(),
+          hoursRes.json(),
+        ]);
+
+        // Set states
+        setRestaurants(restaurantsData);
+        setRestaurantRatings(ratingsData);
+        setRestaurantHours(hoursData);
+
+        // console.log("Restaurants:", restaurantsData);
+        // console.log("Ratings:", ratingsData);
+        // console.log("Hours:", hoursData);
+
       } catch (error) {
-        console.error("Failed to load restaurants:", error);
+        console.error("Failed to load data:", error);
         setLoadingRestaurantsError(true);
       } finally {
         setLoadingRestaurants(false);
+        setHasLoaded(true)
       }
     }
 
-    loadRestaurants();
-    loadRestaurantRatings();
-    loadRestaurantHours();
+    loadAllData();
   }, [uuid]);
 
-    useEffect(() => {
+  useEffect(() => {
       console.log("Restaurants", restaurants);
   }, [restaurants]);
 
@@ -305,7 +283,7 @@ const RestaurantList = ({ uuid }) => {
   const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
    
   return (
-    <Grid container p={4} display={"flex"}>
+    <Grid container py={4} px={8} display={"flex"}>
       <Grid item xs={12} mb={2}>
         {/* Page Title */}
         <Typography variant="h4">University Shops Plaza Restaurants</Typography>
@@ -359,7 +337,8 @@ const RestaurantList = ({ uuid }) => {
         )}
 
         {/* Show message saying no restaurants available */}
-        {!loadingRestaurants &&
+        {hasLoaded &&
+          !loadingRestaurants &&
           !loadingRestaurantsError &&
           restaurants.length === 0 && (
             <Box

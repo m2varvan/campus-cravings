@@ -38,16 +38,17 @@ const Deal = ({uuid, deal, size='lg'}) => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
                     {/* Name and Restaurant Name */}
                     <Box sx={{width: '70%'}}>
-                    <Typography
+                        <Typography
                             data-testid="deal-name"
-                            variant= {size === 'lg' ? "h6": 'subtitle1'}
+                            variant={size === 'lg' ? "h6" : 'subtitle1'}
                             sx={{
+                                fontWeight: 'bold',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            {deal.dealName}
+                        {deal.dealName}
                         </Typography>
                     </Box>
                     

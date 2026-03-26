@@ -66,21 +66,22 @@ const FlaggedDealsList = ({loading, error, setFlaggedDeals, flaggedDeals}) => {
                 </Alert>
             }
             {!loading && !error && flaggedDeals && flaggedDeals.length > 0 && (
-                <>
-                {flaggedDeals.slice(0, visibleCount).map(deal => {
-                    return(
-                        <Grid item xs={12} md={6}>
-                            <FlaggedDeal
-                                key={deal.dealID} 
-                                deal={deal}
-                                setFlaggedDeals={setFlaggedDeals}
-                                setErrorMSG={setErrorMSG}
-                                setSuccessMSG={setSuccessMSG}
-                            />
-                        </Grid>
-                    )
-                    })}
-                </>
+            <>
+            <Grid container spacing={2} alignItems="stretch">
+                {flaggedDeals.slice(0, visibleCount).map((deal) => {
+                return (
+                    <Grid item xs={12} md={6} sx={{ display: "flex" }} key={deal.dealID}>
+                    <FlaggedDeal
+                        deal={deal}
+                        setFlaggedDeals={setFlaggedDeals}
+                        setErrorMSG={setErrorMSG}
+                        setSuccessMSG={setSuccessMSG}
+                    />
+                    </Grid>
+                );
+                })}
+            </Grid>
+            </>
             )}
             </Grid>
 
