@@ -1,7 +1,6 @@
 import { renderWithDealsProvider } from "../../utils/test-utils";
 
 const {
-  render,
   screen,
   fireEvent,
   waitFor,

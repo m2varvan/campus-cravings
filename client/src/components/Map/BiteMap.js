@@ -19,7 +19,7 @@ const BiteMap = ({ uuid }) => {
   const [clickedRestaurant, setClickedRestaurant] = useState(null);
 
   const mapCenter = [43.4723, -80.5373];
-  const defaultZoom = 16;
+  const defaultZoom = 17;
 
   useEffect(() => {
     const loadData = async () => {
@@ -69,7 +69,7 @@ const BiteMap = ({ uuid }) => {
   }
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
+    <div style={{ height: "100%", width: "100%" }}>
       <MapContainer
         center={mapCenter}
         zoom={defaultZoom}
@@ -100,7 +100,7 @@ const BiteMap = ({ uuid }) => {
                   style={{
                     cursor: "pointer",
                     padding: "5px 10px",
-                    background: "#007bff",
+                    background: "#ffd700",
                     color: "white",
                     border: "none",
                     borderRadius: "4px",
