@@ -101,7 +101,7 @@ const BiteMap = ({ uuid }) => {
                     cursor: "pointer",
                     padding: "5px 10px",
                     background: "#ffd700",
-                    color: "white",
+                    color: "black",
                     border: "none",
                     borderRadius: "4px",
                   }}
