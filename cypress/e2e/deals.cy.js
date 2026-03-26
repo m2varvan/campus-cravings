@@ -68,7 +68,7 @@ describe("Showing Deals", () => {
   };
 
   it("Shows Monday's Deals from the server", () => {
-    cy.intercept("POST", "/api/all/deals", [deal1, deal2, deal3, deal4, ]);
+    cy.intercept("POST", "/api/all/deals", [deal1, deal2, deal3, deal4]);
 
     cy.visit("/");
     cy.contains("Today's Deals");
@@ -89,6 +89,5 @@ describe("Showing Deals", () => {
     cy.contains(deal4.dealName);
     cy.contains(deal4.restaurantName);
     cy.contains("$" + deal4.dealPrice);
-
   });
 });

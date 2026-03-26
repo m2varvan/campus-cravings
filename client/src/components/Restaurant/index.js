@@ -19,7 +19,7 @@ const RestaurantList = ({ uuid }) => {
   const [openNowFilter, setOpenNowFilter] = useState(false);
 
   // Variables and functions to show only 18 by default
-  const defaultVisible = 18;
+  const defaultVisible = 12;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
   const handleShowMore = () => {
@@ -31,12 +31,12 @@ const RestaurantList = ({ uuid }) => {
 
   // Callback to update favorite status in the restaurants list
   const handleFavouriteChange = (restaurantID, isFavourited) => {
-    setRestaurants(prevRestaurants =>
-      prevRestaurants.map(r =>
+    setRestaurants((prevRestaurants) =>
+      prevRestaurants.map((r) =>
         r.restaurant_id === restaurantID
           ? { ...r, is_favourited: isFavourited }
-          : r
-      )
+          : r,
+      ),
     );
   };
 
@@ -102,7 +102,7 @@ const RestaurantList = ({ uuid }) => {
   }, [uuid]);
 
   useEffect(() => {
-      console.log("Restaurants", restaurants);
+    console.log("Restaurants", restaurants);
   }, [restaurants]);
 
   // Get times for open now feature
@@ -281,12 +281,12 @@ const RestaurantList = ({ uuid }) => {
   ].sort();
 
   const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
-   
+
   return (
     <Grid container py={4} px={8} display={"flex"}>
       <Grid item xs={12} mb={2}>
         {/* Page Title */}
-        <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+        <Typography variant="h3">University Shops Plaza Restaurants</Typography>
 
         <FilterSortRestaurants
           restaurantFilter={restaurantFilter}
