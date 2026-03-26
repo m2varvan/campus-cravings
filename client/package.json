@@ -9,7 +9,7 @@
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.12.3",
     "@mui/styled-engine-sc": "^5.12.0",
-    "firebase": "^12.10.0",
+    "firebase": "^12.11.0",
     "install": "^0.13.0",
     "leaflet": "^1.9.4",
     "mathjs": "^11.8.0",

@@ -14,6 +14,7 @@ import SiteAppBar from "./AppBar";
 import { FirebaseContext } from "../Firebase";
 import { DealsProvider } from "../../Contexts/DealsContext";
 import MapPage from "../Map";
+import Admin from "../User/Admin";
 
 const theme = createTheme({
   palette: {
@@ -80,8 +81,8 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <DealsProvider uuid={uuid}>
-        <CssBaseline />
         <Router>
           <SiteAppBar
             authUser={authUser}
@@ -102,10 +103,12 @@ const App = () => {
             />
             <Route path="/Login" element={<Login />} />
             <Route path="/Signup" element={<SignUp />} />
+            {/* /User and /Owner support optional ?id= query param for public profiles */}
             <Route path="/User" element={<User uuid={uuid} />} />
             <Route path="/Owner" element={<Owner uuid={uuid} />} />
             <Route path="/search" element={<SearchPage uuid={uuid} />} />
             <Route path="/BiteMap" element={<MapPage uuid={uuid} />} />{" "}
+            <Route path='/Admin' element={<Admin uuid={uuid} />} />
           </Routes>
         </Router>
       </DealsProvider>

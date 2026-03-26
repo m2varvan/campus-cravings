@@ -23,6 +23,7 @@ const SignUp = ({ firebase }) => {
     const [lastName, setLastName] = React.useState('');
     const [restaurantName, setRestaurantName] = React.useState('');
     const [restaurantOptions, setRestaurantOptions] = React.useState([]);
+    const [restaurantId, setRestaurantId] = React.useState('');
     const [userType, setUserType] = React.useState('regular');
 
     const [error, setError] = React.useState({});
@@ -47,7 +48,7 @@ const SignUp = ({ firebase }) => {
         if (userType === 'restaurant_owner') {
             fetch('/api/signup/restaurants')
                 .then(res => res.json())
-                .then(data => setRestaurantOptions(data.map(r => r.restaurant_name)))
+                .then(data => setRestaurantOptions(data))
                 .catch(err => console.error("Failed to fetch restaurants:", err));
         }
     }, [userType]);
@@ -75,7 +76,7 @@ const SignUp = ({ firebase }) => {
         if (firstName.trim() === '') newErrors.firstname = "Enter a first name";
         if (lastName.trim() === '') newErrors.lastname = "Enter a last name";
 
-        if (userType === 'restaurant_owner' && restaurantName.trim() === '')
+        if (userType === 'restaurant_owner' && !restaurantId)
             newErrors.restaurantName = "Please select your restaurant";
 
         if (Object.keys(newErrors).length > 0) {
@@ -102,6 +103,7 @@ const SignUp = ({ firebase }) => {
                     lastName,
                     profilePhoto: initials,
                     userType,
+                    restaurantId: userType === 'restaurant_owner' ? restaurantId : null
                 }),
             });
 
@@ -169,7 +171,7 @@ const SignUp = ({ firebase }) => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <Button
                         variant={userType === 'regular' ? 'contained' : 'outlined'}
-                        onClick={() => { setUserType('regular'); setRestaurantName(''); }}
+                        onClick={() => { setUserType('regular'); setRestaurantId(''); }}
                         sx={{ mr: 1 }}
                     >
                         Regular User
@@ -260,12 +262,12 @@ const SignUp = ({ firebase }) => {
                                 <InputLabel id="restaurant-select-label">Select Your Restaurant</InputLabel>
                                 <Select
                                     labelId="restaurant-select-label"
-                                    value={restaurantName}
-                                    onChange={(e) => setRestaurantName(e.target.value)}
+                                    value={restaurantId}
+                                    onChange={(e) => setRestaurantId(e.target.value)}
                                     input={<OutlinedInput label="Select Your Restaurant" />}
                                 >
-                                    {restaurantOptions.map((name) => (
-                                        <MenuItem key={name} value={name}>{name}</MenuItem>
+                                    {restaurantOptions.map((r) => (
+                                        <MenuItem key={r.restaurant_id} value={r.restaurant_id}>{r.restaurant_name}</MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
