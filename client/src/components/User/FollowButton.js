@@ -49,11 +49,12 @@ const FollowButton = ({ uuid, targetUserID, initialFollow }) => {
         onClick={handleClick}
         disabled={loading}
         sx={{
-          bgcolor: isFollowing ? "secondary.main" : "primary.dark",
-          color: "secondary.dark",
+          bgcolor: isFollowing ? "secondary.main" : "#FFC107",
+          color: isFollowing ? "white" : "#000000",
+          fontWeight: 600,
           "&:hover": {
-            bgcolor: isFollowing ? "secondary.dark" : "primary.main",
-            color: isFollowing ? "white" : "secondary.dark",
+            bgcolor: isFollowing ? "secondary.dark" : "#FFA000",
+            color: isFollowing ? "white" : "#000000",
           },
         }}
       >
