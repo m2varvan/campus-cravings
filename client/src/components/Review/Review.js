@@ -335,10 +335,16 @@ function Review({ uuid, dealID }) {
 
               {uuid === review.user_id && (
                 <>
-                  <Button
+                 <Button
                     size="small"
-                    onClick={()=>handleEdit(review)}
-                    sx={{mr:1}}
+                    onClick={() => handleEdit(review)}
+                    sx={{
+                      mr: 1,
+                      color: 'text.primary',
+                      '&:hover': {
+                        backgroundColor: 'grey.100', // light grey hover
+                      },
+                    }}
                   >
                     Edit
                   </Button>

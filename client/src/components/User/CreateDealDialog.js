@@ -167,7 +167,17 @@ const CreateDealDialog = ({ open, handleClose, uuid, ownerRestaurants, onDealCre
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => { reset(); handleClose(); }} disabled={loading}>Cancel</Button>
+                <Button 
+                onClick={() => { reset(); handleClose(); }} 
+                disabled={loading}
+                sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                    backgroundColor: 'grey.100',
+                    },
+                }}                       
+                >Cancel</Button>
                 <Button variant="contained" onClick={handleSubmit} disabled={loading}>
                     {loading ? <CircularProgress size={20} color="inherit" /> : "Post Deal"}
                 </Button>

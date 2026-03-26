@@ -123,7 +123,19 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} disabled={loading}>Cancel</Button>
+                <Button 
+                    onClick={handleClose} 
+                    disabled={loading}
+                    sx={{
+                        mr: 1,
+                        color: 'text.primary',
+                        '&:hover': {
+                        backgroundColor: 'grey.100',
+                        },
+                    }} 
+                    >
+                        Cancel
+                </Button>
                 <Button variant="contained" onClick={handleSave} disabled={loading}>
                     {loading ? <CircularProgress size={20} color="inherit" /> : "Save Changes"}
                 </Button>
