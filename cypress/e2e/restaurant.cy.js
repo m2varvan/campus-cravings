@@ -31,10 +31,9 @@ describe("Showing Restaurants", () => {
 
   it("shows restaurants from the server and displays correct details", () => {
     cy.intercept("POST", "/api/get-restaurants", [restaurant2, restaurant3]);
-
     cy.visit("/Restaurant");
 
-    cy.contains(restaurant2.restaurant_name);
-    cy.contains(restaurant3.restaurant_name);
+    cy.contains(restaurant2.restaurant_name).should("be.visible");
+    cy.contains(restaurant3.restaurant_name).should("be.visible");
   });
 });

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Alert, Box } from "@mui/material";
 
-const FollowButton = ({ uuid, targetUserID, initialFollow }) => {
+const FollowButton = ({ uuid, targetUserID, initialFollow, setFollowerCount }) => {
 
   const [isFollowing, setIsFollowing] = React.useState(initialFollow);
   const [loading, setLoading] = React.useState(false);
@@ -32,8 +32,11 @@ const FollowButton = ({ uuid, targetUserID, initialFollow }) => {
         setError(data.error || "Action failed. Please try again.");
         return;
       }
-
+      
+      isFollowing ? setFollowerCount((prev) => prev - 1 ) : setFollowerCount((prev) => prev + 1)
+      
       setIsFollowing((prev) => !prev);
+
     } catch (err) {
       console.error("Follow/unfollow error:", err);
       setError("Something went wrong. Please try again.");

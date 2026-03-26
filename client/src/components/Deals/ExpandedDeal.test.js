@@ -17,7 +17,7 @@ describe('ExpandedDeal', () => {
         dealValueRating: 4.5,
         dealTasteRating: 5,
         dealPortionRating: 2.5,
-        dealEditData: '2024-01-01 13:16',
+        dealEditDate: '2024-01-01 13:16',
         fave: false,
         totalVote: 0,
         userVote: 0,
@@ -101,9 +101,9 @@ describe('ExpandedDeal', () => {
         expect(await screen.findByText(mockDeal.dealName)).toBeInTheDocument();
         expect(screen.getByText(mockDeal.dealDescription)).toBeInTheDocument();
         expect(screen.getByText(mockDeal.restaurantName)).toBeInTheDocument();
-        expect(screen.getByText(`$${mockDeal.dealPrice}`)).toBeInTheDocument();
+        expect(screen.getByText(`${mockDeal.dealPrice}`)).toBeInTheDocument();
         expect(
-            screen.getByText(`Deal information last updated: ${mockDeal.dealEditData}`)
+            screen.getByText(`Last updated: ${mockDeal.dealEditData}`)
         ).toBeInTheDocument();
     });
 

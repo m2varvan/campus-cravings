@@ -25,7 +25,7 @@ const WeekDayDeal = ({ uuid, day, dealList}) => {
           borderRadius: 2,
           p: 1,
           m: 1,
-          height: 550, // Set height so boxes are same size
+          height: 560, // Set height so boxes are same size
         }}
       >
         {/* Day Title */}

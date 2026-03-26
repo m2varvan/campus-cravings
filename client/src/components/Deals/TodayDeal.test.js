@@ -149,7 +149,7 @@ describe('TodayDeal', () => {
         expect(screen.getByText(/Something went wrong while loading deals. Please try again./i)).toBeInTheDocument();
     });
 
-    test('limits to 12 promotions by default and shows "See more" for extra', () => {
+    test('limits to 9 promotions by default and shows "See more" for extra', () => {
         const manyPromos = Array.from({ length: 20 }, (_, i) => ({
             dealID: i,
             dealName: `Promo ${i}`,
@@ -172,7 +172,7 @@ describe('TodayDeal', () => {
                         loading={false}
                         error={false}
                         uuid={null} />);
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 9; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }
         expect(screen.queryByText('Promo 12')).not.toBeInTheDocument();

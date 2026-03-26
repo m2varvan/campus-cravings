@@ -26,7 +26,6 @@ const Owner = ({ uuid }) => {
   const profileUserID = searchParams.get("id") || uuid;
   const isOwnProfile = profileUserID === uuid;
 
-  // Shared state
   const [userInfo, setUserInfo] = React.useState(null);
   const profileName = userInfo ? userInfo.firstName : null;
 
@@ -42,8 +41,6 @@ const Owner = ({ uuid }) => {
   // Profile state
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
-
-  // Follow system state
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
   const [followerCount, setFollowerCount] = React.useState(0);
@@ -56,7 +53,6 @@ const Owner = ({ uuid }) => {
     setOwnerDeals(deals);
   };
 
-  // Follow status
   React.useEffect(() => {
     if (!isOwnProfile && uuid && profileUserID) {
       setLoadingFollow(true);
@@ -72,7 +68,6 @@ const Owner = ({ uuid }) => {
     }
   }, [uuid, profileUserID, isOwnProfile]);
 
-  // Follow counts
   React.useEffect(() => {
     if (!profileUserID) return;
     fetch("/api/follow/counts", {
@@ -101,17 +96,15 @@ const Owner = ({ uuid }) => {
 
   return (
     <>
-      <Grid container p={4}>
+       <Grid container px={8} py={4}>
 
         {/* Header */}
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="h3">{pageTitle}</Typography>
-
             {!isOwnProfile && !loadingFollow && (
               <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
             )}
-
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
 

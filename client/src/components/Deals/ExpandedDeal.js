@@ -354,8 +354,17 @@ const ExpandedDeal = ({ uuid, dealID, open, handleClose }) => {
             dealID={deal.dealID}
             />
 
-          <Typography variant="caption" color="text.secondary" sx={{mr: 'auto'}}>
-            Deal information last updated: {deal.dealEditData}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              mr: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <span>Added on: {deal.dealAddDate}</span>
+            <span>Last updated: {deal.dealEditDate}</span>
           </Typography>
 
           {/* Button to Flag Deal in Footer of Dialog */}
