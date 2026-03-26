@@ -1469,7 +1469,7 @@ app.get("/api/signup/restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
 
   connection.query(
-    "SELECT DISTINCT restaurant_name FROM restaurants",
+    "SELECT restaurant_id, restaurant_name FROM restaurants",
     (err, data) => {
       connection.end();
       if (err) {

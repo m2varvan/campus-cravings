@@ -1,9 +1,8 @@
 import React from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, Alert, CircularProgress
+    Button, Alert, CircularProgress, Box, TextField, Typography
 } from '@mui/material';
-import RestaurantFormFields from './RestaurantFormFields';
 
 const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdated }) => {
     const [values, setValues] = React.useState({});
@@ -11,7 +10,6 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
     const [loading, setLoading] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
 
-    // Pre-populate when restaurant changes
     React.useEffect(() => {
         if (restaurant) {
             setValues({
@@ -26,7 +24,6 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
                 cuisine: restaurant.cuisine || '',
                 openingTime: restaurant.opening_time || '',
                 closingTime: restaurant.closing_time || '',
-                image: restaurant.image || '',
             });
             setErrors({});
             setSuccess(false);
@@ -34,6 +31,18 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
     }, [restaurant]);
 
     const handleChange = (key, value) => setValues(prev => ({ ...prev, [key]: value }));
+
+    const field = (label, key, props = {}) => (
+        <TextField
+            label={label}
+            fullWidth size="small"
+            value={values[key] || ''}
+            onChange={(e) => handleChange(key, e.target.value)}
+            error={!!errors[key]}
+            helperText={errors[key]}
+            {...props}
+        />
+    );
 
     const validate = () => {
         const newErrors = {};
@@ -73,9 +82,37 @@ const EditRestaurantDialog = ({ open, handleClose, restaurant, onRestaurantUpdat
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle>Edit Restaurant Details</DialogTitle>
             <DialogContent>
-                {errors.general && <Alert severity="error" sx={{ mt: 1 }}>{errors.general}</Alert>}
-                {success && <Alert severity="success" sx={{ mt: 1 }}>Restaurant updated successfully!</Alert>}
-                <RestaurantFormFields values={values} onChange={handleChange} errors={errors} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                    {errors.general && <Alert severity="error">{errors.general}</Alert>}
+                    {success && <Alert severity="success">Restaurant updated successfully!</Alert>}
+
+                    {field("Restaurant Name", "restaurantName")}
+                    {field("Street Address", "streetAddress")}
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        {field("Unit / Suite (optional)", "unit")}
+                        {field("City", "city")}
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        {field("Province", "province")}
+                        {field("Postal Code", "postalCode")}
+                    </Box>
+
+                    <Typography variant="body2" color="text.secondary">Contact & Online</Typography>
+
+                    {field("Phone Number (optional)", "phoneNumber")}
+                    {field("Website URL (optional)", "websiteUrl")}
+
+                    <Typography variant="body2" color="text.secondary">Details</Typography>
+
+                    {field("Cuisine Type (optional)", "cuisine")}
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        {field("Opening Time (optional)", "openingTime", { type: 'time', InputLabelProps: { shrink: true } })}
+                        {field("Closing Time (optional)", "closingTime", { type: 'time', InputLabelProps: { shrink: true } })}
+                    </Box>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} disabled={loading}>Cancel</Button>
