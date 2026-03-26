@@ -8,8 +8,8 @@ email: testuser123@gmail.com
 password: 1234Password
 
 Sample login input for restaurant owner account:  
-email: ownersample@gmail.com  
-password: 1234Owner  
+email: test123456@gmail.com  
+password: Password123! 
 
 Sample login input for admin account:  
 email: admin@gmail.com
