@@ -101,9 +101,11 @@ describe('ExpandedDeal', () => {
         expect(await screen.findByText(mockDeal.dealName)).toBeInTheDocument();
         expect(screen.getByText(mockDeal.dealDescription)).toBeInTheDocument();
         expect(screen.getByText(mockDeal.restaurantName)).toBeInTheDocument();
-        expect(screen.getByText(`${mockDeal.dealPrice}`)).toBeInTheDocument();
+        // Price is rendered with a dollar sign, match with regex
+        expect(await screen.findByText(new RegExp(`\\$\\s*${mockDeal.dealPrice}`))).toBeInTheDocument();
+        // Fix typo: use dealEditDate
         expect(
-            screen.getByText(`Last updated: ${mockDeal.dealEditData}`)
+            await screen.findByText(new RegExp(`Last updated:\\s*${mockDeal.dealEditDate}`))
         ).toBeInTheDocument();
     });
 
