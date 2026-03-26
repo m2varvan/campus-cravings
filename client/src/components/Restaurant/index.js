@@ -18,7 +18,7 @@ const RestaurantList = ({ uuid }) => {
   const [openNowFilter, setOpenNowFilter] = useState(false);
 
   // Variables and functions to show only 18 by default
-  const defaultVisible = 18;
+  const defaultVisible = 12;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
 
   const handleShowMore = () => {
