@@ -83,7 +83,11 @@ const User = ({ uuid }) => {
           <Box sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <Typography variant="h3">{pageTitle}</Typography>
             {!isOwnProfile && !loadingFollow && (
-              <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
+              <FollowButton 
+                uuid={uuid} 
+                targetUserID={profileUserID} 
+                initialFollow={isFollowing} 
+                setFollowerCount={setFollowerCount} />
             )}
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
