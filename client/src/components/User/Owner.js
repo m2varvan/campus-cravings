@@ -123,6 +123,13 @@ const Owner = ({ uuid }) => {
               <Button
                 variant="text"
                 onClick={() => openModal("followers")}
+                sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                    backgroundColor: 'grey.100',
+                    },
+                }} 
               >
                 {`${followerCount} ${followerCount === 1 ? 'Follower' : 'Followers'}`}
               </Button>
@@ -130,6 +137,13 @@ const Owner = ({ uuid }) => {
               <Button
                 variant="text"
                 onClick={() => openModal("following")}
+                sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                    backgroundColor: 'grey.100',
+                    },
+                }} 
               >
                 {`${followingCount} Following`}
               </Button>

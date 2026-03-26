@@ -130,7 +130,17 @@ const UserReview = ({ review, uuid, onDelete, onUpdate, readOnly = false }) => {
 
             {isOwner && (
               <>
-                <Button size="small" onClick={handleEdit} sx={{ mr: 1 }}>
+                <Button
+                  size="small"
+                  onClick={handleEdit}
+                  sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                      backgroundColor: 'grey.100',
+                    },
+                  }}
+                >
                   Edit
                 </Button>
                 <Button size="small" color="error" onClick={() => handleDelete(review.review_id)}>
