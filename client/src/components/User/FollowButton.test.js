@@ -4,7 +4,10 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import FollowButton from "./FollowButton";
 
 describe("FollowButton", () => {
+  let setFollowerCount;
+
   beforeEach(() => {
+    setFollowerCount = jest.fn();
     global.fetch = jest.fn();
   });
 
@@ -21,21 +24,21 @@ describe("FollowButton", () => {
 
   test("renders nothing when uuid is not provided", () => {
     const { container } = render(
-      <FollowButton uuid={undefined} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={undefined} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
     expect(container.firstChild).toBeNull();
   });
 
   test("renders Follow button when not following", () => {
-    render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+    const { container } = render(
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
     expect(screen.getByRole("button", { name: /Follow/i })).toBeInTheDocument();
   });
 
   test("renders Unfollow button when already following", () => {
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={true} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={true} setFollowerCount={setFollowerCount} />
     );
     expect(screen.getByRole("button", { name: /Unfollow/i })).toBeInTheDocument();
   });
@@ -47,7 +50,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button", { name: /Follow/i });
@@ -72,7 +75,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={true} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={true} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button", { name: /Unfollow/i });
@@ -97,7 +100,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button", { name: /Follow/i });
@@ -115,7 +118,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={true} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={true} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button", { name: /Unfollow/i });
@@ -135,7 +138,7 @@ describe("FollowButton", () => {
     );
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button");
@@ -157,7 +160,7 @@ describe("FollowButton", () => {
     );
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button");
@@ -179,7 +182,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button");
@@ -194,7 +197,7 @@ describe("FollowButton", () => {
     global.fetch.mockRejectedValueOnce(new Error("Network error"));
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button");
@@ -207,13 +210,13 @@ describe("FollowButton", () => {
 
   test("updates button state based on initialFollow prop changes", async () => {
     const { rerender } = render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     expect(screen.getByRole("button", { name: /Follow/i })).toBeInTheDocument();
 
     rerender(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={true} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={true} setFollowerCount={setFollowerCount} />
     );
 
     await waitFor(() => {
@@ -228,7 +231,7 @@ describe("FollowButton", () => {
     });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button", { name: /Follow/i });
@@ -254,7 +257,7 @@ describe("FollowButton", () => {
       });
 
     render(
-      <FollowButton uuid={1} targetUserID={2} initialFollow={false} />
+      <FollowButton uuid={1} targetUserID={2} initialFollow={false} setFollowerCount={setFollowerCount} />
     );
 
     const button = screen.getByRole("button");

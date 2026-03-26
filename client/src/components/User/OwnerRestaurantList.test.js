@@ -117,6 +117,7 @@ describe('OwnerRestaurantList Component', () => {
                 setOwnerRestaurants={jest.fn()}
             />
         );
-        expect(screen.getByText(/my restaurants/i)).toBeInTheDocument();
+            // Component renders header 'My Restaurant' (singular) — match that text
+            expect(screen.getByText(/my restaurant/i)).toBeInTheDocument();
     });
 });

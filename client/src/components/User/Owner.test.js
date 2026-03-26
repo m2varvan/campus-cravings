@@ -1,6 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Owner from './Owner';
 
 // Mock all child components
@@ -18,7 +19,14 @@ describe('Owner Component', () => {
     const uuid = 'test-owner-uuid';
 
     beforeEach(() => {
-        render(<Owner uuid={uuid} />);
+        // mock follow counts used by Owner component
+        global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ followers: 0, following: 0 }) }));
+
+        render(
+            <MemoryRouter>
+                <Owner uuid={uuid} />
+            </MemoryRouter>
+        );
     });
 
     test('renders the Owner Dashboard title', () => {
