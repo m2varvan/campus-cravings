@@ -105,7 +105,7 @@ const FilterSortDeals = ({
           px: 3
         }}
       >
-        Clear Filters
+        Reset All
       </Button>
     </Box>
   );

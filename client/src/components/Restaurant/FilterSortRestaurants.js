@@ -129,7 +129,28 @@ const FilterSortRestaurants = ({
             <Switch
               checked={openNowFilter}
               onChange={(e) => setOpenNowFilter(e.target.checked)}
-              color="primary"
+              sx={{
+                // UNCHECKED thumb (circle)
+                '& .MuiSwitch-switchBase': {
+                  color: (theme) => theme.palette.grey[400],
+                },
+
+                // UNCHECKED track (background)
+                '& .MuiSwitch-track': {
+                  backgroundColor: (theme) => theme.palette.grey[300],
+                  opacity: 1, // override default faded look if you want solid grey
+                },
+
+                // CHECKED thumb
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: (theme) => theme.palette.primary.dark,
+                },
+
+                // CHECKED track
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  backgroundColor: (theme) => theme.palette.primary.dark,
+                },
+              }}
             />
           }
           label="Open Now"
@@ -140,8 +161,14 @@ const FilterSortRestaurants = ({
       </Box>
 
       {/* Clear Filters */}
-      <Button variant="contained" onClick={handleClearFilters}>
-        Clear Filters
+      <Button 
+        variant="contained" 
+        onClick={handleClearFilters}
+        sx={{
+          height: 40, // match small select height
+          px: 3
+        }}>
+        Reset All
       </Button>
     </Box>
   );

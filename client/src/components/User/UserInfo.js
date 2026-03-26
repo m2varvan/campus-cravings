@@ -1,10 +1,16 @@
 import React from 'react';
 import { Typography, CircularProgress, Box } from '@mui/material';
 
-const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
+const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo, isOwnProfile }) => {
 
     const [loadingUserInfo, setLoadingUserInfo] = React.useState(false);
     const [error, setError] = React.useState(false);
+
+    const userTypeMap = {
+            restaurant_owner : 'Restarant Owner',
+            regular: 'Regular',
+            admin: 'Admin',
+            }
 
     React.useEffect(() => {
         const getInfo = async () => {
@@ -69,12 +75,19 @@ const UserInfo = ({ uuid, loadUserInfo, setUserInfo, userInfo }) => {
                     <strong>Name:</strong> {userInfo.firstName} {userInfo.lastName}
                 </Typography>
 
+                {isOwnProfile &&
                 <Typography variant="body1">
                     <strong>Email:</strong> {userInfo.email}
                 </Typography>
+                }
+                
 
                 <Typography variant="body1">
                     <strong>Username:</strong> {userInfo.userName}
+                </Typography>
+
+                <Typography variant="body1">
+                    <strong>Account Type:</strong> {userInfo.accountType ? userTypeMap[userInfo.accountType] : 'Regular'}
                 </Typography>
 
                 <Typography variant="body1">

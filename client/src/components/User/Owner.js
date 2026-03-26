@@ -144,6 +144,7 @@ const Owner = ({ uuid }) => {
               loadUserInfo={loadUserInfo}
               setUserInfo={setUserInfo}
               userInfo={userInfo}
+              isOwnProfile={isOwnProfile}
             />
 
             {isOwnProfile && (

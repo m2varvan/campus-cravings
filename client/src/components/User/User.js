@@ -122,6 +122,7 @@ const User = ({ uuid }) => {
                   loadUserInfo={loadUserInfo}
                   setUserInfo={setUserInfo}
                   userInfo={userInfo}
+                  isOwnProfile={isOwnProfile}
                 />
               </Grid>
               <Grid item xs={12}>
