@@ -119,12 +119,19 @@ const Owner = ({ uuid }) => {
               flexWrap: "wrap",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-              <Button onClick={() => openModal("followers")}>
-                <strong>{followerCount}</strong> Followers
+            <Box sx={{ display: 'flex', gap: 2, pb: 2 }}>
+              <Button
+                variant="text"
+                onClick={() => openModal("followers")}
+              >
+                {`${followerCount} ${followerCount === 1 ? 'Follower' : 'Followers'}`}
               </Button>
-              <Button onClick={() => openModal("following")}>
-                <strong>{followingCount}</strong> Following
+
+              <Button
+                variant="text"
+                onClick={() => openModal("following")}
+              >
+                {`${followingCount} Following`}
               </Button>
             </Box>
             {isOwnProfile && (
