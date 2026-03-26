@@ -1,18 +1,11 @@
 import React from "react";
-import { Typography, Container, Paper } from "@mui/material";
+import { Typography, Grid, Paper } from "@mui/material";
 import BiteMap from "./BiteMap";
 
 const MapPage = ({ uuid }) => {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{ fontWeight: "bold", color: "#2B2D42" }}
-      >
-        BiteMap
-      </Typography>
+    <Grid container py={4} px={8} display={"flex"}>
+      <Typography variant="h4">BiteMap</Typography>
 
       <Paper
         elevation={4}
@@ -28,7 +21,7 @@ const MapPage = ({ uuid }) => {
       >
         <BiteMap uuid={uuid} />
       </Paper>
-    </Container>
+    </Grid>
   );
 };
 
