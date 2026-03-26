@@ -305,7 +305,7 @@ const RestaurantList = ({ uuid }) => {
   const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
    
   return (
-    <Grid container p={4} display={"flex"}>
+    <Grid container py={4} px={8} display={"flex"}>
       <Grid item xs={12} mb={2}>
         {/* Page Title */}
         <Typography variant="h4">University Shops Plaza Restaurants</Typography>

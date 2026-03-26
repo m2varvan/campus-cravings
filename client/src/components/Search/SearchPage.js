@@ -229,6 +229,7 @@ function SearchPage({ uuid }) {
   };
 
   return (
+    <Grid container py={4} px={8} display={"flex"}>
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
         Search Results for "{query}"
@@ -327,6 +328,7 @@ function SearchPage({ uuid }) {
         <Deal key={deal.dealID} deal={deal} uuid={uuid} />
       ))}
     </Box>
+    </Grid>
   );
 }
 

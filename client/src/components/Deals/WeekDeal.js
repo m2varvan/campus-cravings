@@ -51,7 +51,7 @@ const WeekDeal = ({
             Something went wrong while loading deals. Please try again.
           </Typography>
         </Box>
-      ) : (
+      ) : ( !loading &&
         <Grid container justifyContent={"center"}>
           {/*For each day of week, RenderWeekDayDeals* */}
           {Object.keys(weekDeals).map((dayOfWeek, index) => (

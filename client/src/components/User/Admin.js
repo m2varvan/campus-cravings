@@ -38,7 +38,7 @@ const Admin = () => {
 
     return (
     <>
-        <Grid container p={4}>
+        <Grid container px={8} py={4} >
         
         {/* Page Title */}
         <Grid item xs={12}>

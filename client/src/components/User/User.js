@@ -77,7 +77,7 @@ const User = ({ uuid }) => {
 
   return (
     <>
-      <Grid container p={4}>
+       <Grid container px={8} py={4}>
 
         <Grid item xs={12}>
           <Box sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>

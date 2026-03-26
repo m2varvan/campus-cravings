@@ -397,135 +397,6 @@ app.post("/api/restaurant-deals", (req, res) => {
   });
 });
 
-// Route to get all valid deals
-app.post("/api/week/deals", (req, res) => {
-  const { userID } = req.body;
-  const connection = mysql.createConnection(config);
-
-  const sql = `
-    SELECT 
-        d.deal_id, 
-        d.restaurant_id, 
-        d.deal_name, 
-        d.description, 
-        d.deal_price, 
-        DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted, 
-        r.restaurant_name, 
-
-        dh.day_of_week,
-        dh.start_times,
-        dh.end_times,
-
-        AVG(rt.taste_score) AS avg_taste_rating,
-        AVG(rt.value_score) AS avg_value_rating,
-        AVG(rt.portion_score) AS avg_portion_rating,
-        COUNT(DISTINCT rt.rating_id) AS number_of_ratings,
-
-        COALESCE(v.total_votes, 0) AS total_votes,
-        COALESCE(v.user_vote, 0) AS user_vote,
-
-        (fd.deal_id IS NOT NULL) AS is_favourited
-
-    FROM deals d
-
-    JOIN restaurants r 
-        ON r.restaurant_id = d.restaurant_id
-
-    -- aggregate deal_hours by deal + day
-    LEFT JOIN (
-        SELECT 
-            deal_id,
-            day_of_week,
-            GROUP_CONCAT(DISTINCT TIME_FORMAT(start_time, '%H:%i')) AS start_times,
-            GROUP_CONCAT(DISTINCT TIME_FORMAT(end_time, '%H:%i')) AS end_times
-        FROM deal_hours
-        WHERE (start_date <= DATE(NOW()) OR start_date IS NULL)
-          AND (end_date >= DATE(NOW()) OR end_date IS NULL)
-        GROUP BY deal_id, day_of_week
-    ) dh ON dh.deal_id = d.deal_id
-
-    -- aggregate votes once
-    LEFT JOIN (
-        SELECT 
-            deal_id,
-            SUM(vote) AS total_votes,
-            MAX(CASE WHEN user_id = ? THEN vote ELSE 0 END) AS user_vote
-        FROM deal_votes
-        GROUP BY deal_id
-    ) v ON v.deal_id = d.deal_id
-
-    -- ratings (safe with DISTINCT)
-    LEFT JOIN ratings rt 
-        ON rt.deal_id = d.deal_id
-
-    LEFT JOIN favourite_deals fd 
-        ON fd.deal_id = d.deal_id 
-      AND fd.user_id = ?
-
-    -- only include deals that actually have hours
-    WHERE dh.deal_id IS NOT NULL
-
-    GROUP BY d.deal_id, dh.day_of_week
-    ORDER BY v.total_votes DESC;
-  `;
-
-  connection.query(sql, [userID, userID], (error, results) => {
-    if (error) {
-      console.error("Database error:", error.message);
-      return res.status(500).json({ error: "Failed to fetch promotions" });
-    }
-
-    // Create object to sort deals by day of week
-    const dealsByDay = {
-      Monday: [],
-      Tuesday: [],
-      Wednesday: [],
-      Thursday: [],
-      Friday: [],
-      Saturday: [],
-      Sunday: [],
-    };
-
-    // Iterate through results and append to correct day of week array.
-    results.map((deal) => {
-      dealsByDay[deal.day_of_week].push({
-        dealID: deal.deal_id,
-        restaurantID: deal.restaurant_id,
-        restaurantName: deal.restaurant_name,
-        dealName: deal.deal_name,
-        dealDescription: deal.description || "n/a",
-        dealPrice: deal.deal_price.toFixed(2),
-        dealEditData: deal.edited_at_formatted,
-        dayOfWeek: deal.day_of_week,
-        dealStartTime: deal.start_times ? deal.start_times.split(",") : [],
-        dealEndTime: deal.end_times ? deal.end_times.split(",") : [],
-        dealValueRating: deal.avg_value_rating
-          ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1))
-          : 0,
-        dealTasteRating: deal.avg_taste_rating
-          ? parseFloat(parseFloat(deal.avg_taste_rating).toFixed(1))
-          : 0,
-        dealPortionRating: deal.avg_portion_rating
-          ? parseFloat(parseFloat(deal.avg_portion_rating).toFixed(1))
-          : 0,
-        numRatings: deal.number_of_ratings
-          ? parseInt(deal.number_of_ratings, 10)
-          : 0,
-        totalVote: parseInt(deal.total_votes) || 0,
-        userVote:
-          parseInt(deal.user_vote) === 0
-            ? null
-            : parseInt(deal.user_vote) || null,
-        fave: deal.is_favourited || 0,
-      });
-    });
-
-    res.json(dealsByDay);
-  });
-
-  connection.end();
-});
-
 // API to get a user's reviews for a deal
 app.post("/api/user/rating", (req, res) => {
   const connection = mysql.createConnection(config);
@@ -1748,6 +1619,7 @@ app.post("/api/deal", (req, res) => {
         d.description, 
         d.deal_price, 
         DATE_FORMAT(d.edited_at, '%Y-%m-%d %H:%i') AS edited_at_formatted,
+        DATE_FORMAT(d.created_at, '%Y-%m-%d %H:%i') AS created_at_formatted,
         r.restaurant_name, 
         AVG(rt.taste_score) AS avg_taste_rating,
         AVG(rt.value_score) AS avg_value_rating,
@@ -1803,6 +1675,7 @@ app.post("/api/deal", (req, res) => {
       dealDescription: deal.description || "n/a",
       dealPrice: deal.deal_price.toFixed(2),
       dealEditDate: deal.edited_at_formatted,
+      dealAddDate: deal.created_at_formatted,
       dealValueRating: deal.avg_value_rating
         ? parseFloat(parseFloat(deal.avg_value_rating).toFixed(1))
         : 0,

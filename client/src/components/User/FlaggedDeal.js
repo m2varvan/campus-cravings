@@ -65,6 +65,9 @@ const FlaggedDeal = ({ deal, setFlaggedDeals, setErrorMSG, setSuccessMSG }) => {
   return (
     <Box
       sx={{
+        display: 'flex',
+        flexDirection: 'column', 
+        height: '100%',
         bgcolor: "primary.light",
         p: 2,
         m: 1,
@@ -92,14 +95,14 @@ const FlaggedDeal = ({ deal, setFlaggedDeals, setErrorMSG, setSuccessMSG }) => {
       </Box>
 
       {/* Flag Counts */}
-      <Box sx={{ mb: 1 }}>
+      <Box sx={{ mb: 1, mt: 'auto' }}>
         <Typography variant="body2">
           Flags: Deal Does not Exist ({deal.dneCount}) | Inaccurate Price ({deal.inaccuratePriceCount}) | Inaccurate Description ({deal.inaccurateDescriptionCount})
         </Typography>
       </Box>
 
       {/* Buttons */}
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{mt:'auto'}}>
         <Button
           variant="contained"
           size="small"
@@ -129,7 +132,21 @@ const FlaggedDeal = ({ deal, setFlaggedDeals, setErrorMSG, setSuccessMSG }) => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color='primary' onClick={() => setOpenDelete(false)}>Cancel</Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => setOpenDelete(false)}
+            sx={{
+              borderColor: 'primary.dark',      
+              color: 'primary.dark', 
+              '&:hover': {
+                borderColor: 'primary.dark',  
+                backgroundColor: 'transparent',
+              },
+            }}
+          >
+            Cancel
+          </Button>
           <Button variant="outlined" color='error' data-cy="confirm-delete-btn" onClick={handleDeleteDeal}>
             Delete
           </Button>
