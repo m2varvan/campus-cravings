@@ -28,7 +28,7 @@ const Owner = ({ uuid }) => {
 
   // Shared state
   const [userInfo, setUserInfo] = React.useState(null);
-  const profileName = userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : null;
+  const profileName = userInfo ? userInfo.firstName : null;
 
   // Dashboard state
   const [ownerRestaurants, setOwnerRestaurants] = React.useState([]);
@@ -115,47 +115,109 @@ const Owner = ({ uuid }) => {
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
 
-          {/* Followers */}
-          <Box sx={{ display: "flex", gap: 2, pb: 2 }}>
-            <Button onClick={() => openModal("followers")}>
-              <strong>{followerCount}</strong> Followers
-            </Button>
-            <Button onClick={() => openModal("following")}>
-              <strong>{followingCount}</strong> Following
-            </Button>
+          {/* Followers + Post New Deal (aligned right for owners) */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+              pb: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+              <Button onClick={() => openModal("followers")}>
+                <strong>{followerCount}</strong> Followers
+              </Button>
+              <Button onClick={() => openModal("following")}>
+                <strong>{followingCount}</strong> Following
+              </Button>
+            </Box>
+            {isOwnProfile && (
+              <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
+                + Post New Deal
+              </Button>
+            )}
           </Box>
         </Grid>
 
         {/* Main Content */}
         <Grid container item xs={12} spacing={2}>
           {/* Left Side */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <UserInfo
               uuid={profileUserID}
               loadUserInfo={loadUserInfo}
               setUserInfo={setUserInfo}
               userInfo={userInfo}
             />
+
+            {isOwnProfile && (
+              <>
+                <Box mt={2}>
+                  <UserRatingList
+                    uuid={profileUserID}
+                    loadUserRatings={getUserRatings}
+                    setUserRatings={setUserRatings}
+                    userRatings={userRatings}
+                    readOnly={false}
+                    profileName={profileName}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <UserReviewList
+                    uuid={profileUserID}
+                    loadUserReviews={getUserReviews}
+                    setUserReviews={setUserReviews}
+                    userReviews={userReviews}
+                    readOnly={false}
+                    profileName={profileName}
+                  />
+                </Box>
+              </>
+            )}
+
+            {!isOwnProfile && (
+              <>
+                <Box mt={2}>
+                  <UserRatingList
+                    uuid={profileUserID}
+                    loadUserRatings={getUserRatings}
+                    setUserRatings={setUserRatings}
+                    userRatings={userRatings}
+                    readOnly
+                    profileName={profileName}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <UserReviewList
+                    uuid={profileUserID}
+                    loadUserReviews={getUserReviews}
+                    setUserReviews={setUserReviews}
+                    userReviews={userReviews}
+                    readOnly
+                    profileName={profileName}
+                  />
+                </Box>
+              </>
+            )}
           </Grid>
 
           {/* Right Side */}
-          <Grid item xs={12} md={8}>
-
-            {/* Dashboard (OWN PROFILE) */}
-            {isOwnProfile && (
+          <Grid item xs={12} md={6}>
+            {isOwnProfile ? (
               <>
-                <Box sx={{ pb: 2 }}>
-                  <Button variant="contained" onClick={() => setOpenCreateDeal(true)}>
-                    + Post New Deal
-                  </Button>
+                <Box mb={2}>
+                  <OwnerDealList
+                    uuid={uuid}
+                    loadOwnerDeals={loadOwnerDeals}
+                    ownerDeals={ownerDeals}
+                    setOwnerDeals={setOwnerDeals}
+                  />
                 </Box>
-
-                <OwnerDealList
-                  uuid={uuid}
-                  loadOwnerDeals={loadOwnerDeals}
-                  ownerDeals={ownerDeals}
-                  setOwnerDeals={setOwnerDeals}
-                />
 
                 <OwnerRestaurantList
                   uuid={uuid}
@@ -163,6 +225,26 @@ const Owner = ({ uuid }) => {
                   ownerRestaurants={ownerRestaurants}
                   setOwnerRestaurants={setOwnerRestaurants}
                 />
+
+                <Box mt={2}>
+                  <FavouriteDealList
+                    uuid={profileUserID}
+                    loadFaveDeals={loadFaveDeals}
+                    faveDeals={faveDeals}
+                    setFaveDeals={setFaveDeals}
+                    profileName={null}
+                  />
+                </Box>
+
+                <Box mt={2}>
+                  <FavouriteRestaurantList
+                    uuid={profileUserID}
+                    loadFaveRestaurants={loadFaveRestaurants}
+                    faveRestaurants={faveRestaurants}
+                    setFaveRestaurants={setFaveRestaurants}
+                    profileName={null}
+                  />
+                </Box>
 
                 <CreateDealDialog
                   open={openCreateDeal}
@@ -172,36 +254,17 @@ const Owner = ({ uuid }) => {
                   onDealCreated={reloadDeals}
                 />
               </>
-            )}
-
-            {/* Profile (OTHER USERS) */}
-            {!isOwnProfile && (
+            ) : (
               <>
-                <UserRatingList
-                  uuid={profileUserID}
-                  loadUserRatings={getUserRatings}
-                  setUserRatings={setUserRatings}
-                  userRatings={userRatings}
-                  readOnly
-                  profileName={profileName}
-                />
-
-                <UserReviewList
-                  uuid={profileUserID}
-                  loadUserReviews={getUserReviews}
-                  setUserReviews={setUserReviews}
-                  userReviews={userReviews}
-                  readOnly
-                  profileName={profileName}
-                />
-
-                <FavouriteDealList
-                  uuid={profileUserID}
-                  loadFaveDeals={loadFaveDeals}
-                  faveDeals={faveDeals}
-                  setFaveDeals={setFaveDeals}
-                  profileName={profileName}
-                />
+                <Box mb={2}>
+                  <FavouriteDealList
+                    uuid={profileUserID}
+                    loadFaveDeals={loadFaveDeals}
+                    faveDeals={faveDeals}
+                    setFaveDeals={setFaveDeals}
+                    profileName={profileName}
+                  />
+                </Box>
 
                 <FavouriteRestaurantList
                   uuid={profileUserID}
@@ -212,7 +275,6 @@ const Owner = ({ uuid }) => {
                 />
               </>
             )}
-
           </Grid>
         </Grid>
       </Grid>

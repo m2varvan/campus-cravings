@@ -27,7 +27,7 @@ const User = ({ uuid }) => {
   const [userRatings, setUserRatings] = React.useState([]);
   const [userReviews, setUserReviews] = React.useState([]);
 
-  const profileName = userInfo ? `${userInfo.firstName} ${userInfo.lastName}` : null;
+  const profileName = userInfo ? userInfo.firstName : null;
 
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [loadingFollow, setLoadingFollow] = React.useState(false);
