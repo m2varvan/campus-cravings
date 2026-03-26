@@ -12,7 +12,7 @@ const OwnerRestaurantList = ({ uuid, loadOwnerRestaurants, ownerRestaurants, set
     const handleShowLess = () => setVisibleCount(defaultVisible);
 
     React.useEffect(() => {
-        const fetch = async () => {
+        const fetchRestaurants = async () => {
             try {
                 setLoading(true);
                 setError(false);
@@ -24,14 +24,19 @@ const OwnerRestaurantList = ({ uuid, loadOwnerRestaurants, ownerRestaurants, set
                 setLoading(false);
             }
         };
-        fetch();
-    }, [uuid, loadOwnerRestaurants, setOwnerRestaurants]);
+        fetchRestaurants();
+    }, [uuid]);
+
+    const handleRestaurantUpdated = async () => {
+        const data = await loadOwnerRestaurants(uuid);
+        setOwnerRestaurants(data);
+    };
 
     return (
         <Box sx={{ border: "3px solid", borderColor: "secondary.dark", borderRadius: 2, p: 1 }}>
 
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5">My Restaurants</Typography>
+                <Typography variant="h5">My Restaurant</Typography>
                 <Typography variant="body1">
                     ({ownerRestaurants.length} {ownerRestaurants.length === 1 ? 'restaurant' : 'restaurants'})
                 </Typography>
@@ -59,6 +64,7 @@ const OwnerRestaurantList = ({ uuid, loadOwnerRestaurants, ownerRestaurants, set
                                     <OwnerRestaurant
                                         restaurant={restaurant}
                                         uuid={uuid}
+                                        onRestaurantUpdated={handleRestaurantUpdated} 
                                     />
                                 </Grid>
                             ))}
