@@ -111,7 +111,7 @@ const TodayDeal = ({
       {/* Show Deals */}
       {!loading && !error && todayDeals.length > 0 && (
         <>
-          <Grid container data-testid="today-deals">
+          <Grid container spacing={2} data-testid="today-deals">
             {/* Iterate through deals array and render a each deal in a deal component */}
             {todayDeals.slice(0, visibleCount).map((deal) => (
               <Grid item xs={12} sm={6} lg={4} key={deal.dealID} >

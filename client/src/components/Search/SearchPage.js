@@ -229,11 +229,11 @@ function SearchPage({ uuid }) {
   };
 
   return (
-    <Grid container py={4} px={8} display={"flex"}>
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Search Results for "{query}"
-      </Typography>
+    <Box sx={{ py: 4, px: 8, width: '100%' }}>
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom>
+          Search Results for "{query}"
+        </Typography>
 
       {loading && <CircularProgress sx={{ mt: 2 }} />}
       {error && <Typography color="error">{error}</Typography>}
@@ -244,7 +244,7 @@ function SearchPage({ uuid }) {
 
       {!loading && users.length === 0 && <Typography>No users found.</Typography>}
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} justifyContent="flex-start">
         {users.map((user) => (
           <Grid item xs={12} sm={6} md={4} key={user.id}>
             <Paper
@@ -252,6 +252,7 @@ function SearchPage({ uuid }) {
               elevation={1}
               onClick={() => handleUserClick(user)}
               sx={{
+                width: "100%",
                 p: 2,
                 display: "flex",
                 alignItems: "center",
@@ -311,7 +312,7 @@ function SearchPage({ uuid }) {
       <Typography variant="h6" gutterBottom>Restaurants</Typography>
       {!loading && restaurants.length === 0 && <Typography>No restaurants found.</Typography>}
       {/* Pass restaurantRatings the same way RestaurantList does so the Rating chip renders correctly */}
-      <Grid container>
+      <Grid container spacing={2} justifyContent="flex-start">
         {restaurants.map((restaurant) => (
           <Restaurant
             key={restaurant.restaurant_id}
@@ -327,7 +328,7 @@ function SearchPage({ uuid }) {
       <Typography variant="h6" gutterBottom>Deals</Typography>
       {!loading && deals.length === 0 && <Typography>No deals found.</Typography>}
       {deals.length > 0 && (
-        <Grid container>
+        <Grid container spacing={2} justifyContent="flex-start">
           {deals.map((deal) => (
             <Grid item xs={12} sm={6} lg={4} key={deal.dealID}>
               <Deal deal={deal} uuid={uuid} />
@@ -336,7 +337,7 @@ function SearchPage({ uuid }) {
         </Grid>
       )}
     </Box>
-    </Grid>
+  </Box>
   );
 }
 

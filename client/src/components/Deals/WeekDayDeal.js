@@ -24,12 +24,14 @@ const WeekDayDeal = ({ uuid, day, dealList}) => {
           borderColor: "secondary.dark",
           borderRadius: 2,
           p: 1,
-          m: 1,
+          m: 0,
           height: 560, // Set height so boxes are same size
         }}
       >
         {/* Day Title */}
-        <Typography variant="h5">{day}</Typography>
+      <Typography variant="h5" align="center" sx={{ mb: 1 }}>
+        {day}
+      </Typography>
 
         {/* Scrollable Box for deals */}
         <Box
@@ -45,12 +47,13 @@ const WeekDayDeal = ({ uuid, day, dealList}) => {
             <>
               {/* Visible deals */}
               {dealList.slice(0, visibleCount).map((deal) => (
-                <Deal
-                  key={deal.dealID}
-                  uuid={uuid}
-                  deal={deal}
-                  size={"sm"}
-                />
+                <Box key={deal.dealID} sx={{ mb: 1 }}>
+                  <Deal
+                    uuid={uuid}
+                    deal={deal}
+                    size={"sm"}
+                  />
+                </Box>
               ))}
 
               {/* Show More button */}

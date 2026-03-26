@@ -24,12 +24,13 @@ const Restaurant = ({ uuid, restaurant, ratings, onFavouriteChange }) => {
 
   return (
     <>
-      <Grid item xs={12} sm={6} lg={4} sx={{ display: "flex" }}>
+      <Grid item xs={12} sm={6} lg={4} sx={{ width: "100%", display: "flex" }}>
         <Box
           sx={{
             bgcolor: "secondary.light",
             p: 2,
             m: 1,
+            width: "100%",
             borderRadius: 2,
             cursor: "pointer",
             transition: "all 0.2s ease-in-out",
