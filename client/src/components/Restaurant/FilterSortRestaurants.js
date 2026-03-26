@@ -105,7 +105,7 @@ const FilterSortRestaurants = ({
           label="Sort by Category"
         >
           <MenuItem value="">
-            <em>Default (A-Z)</em>
+            <em>None</em>
           </MenuItem>
           <MenuItem value="overall">Overall Rating</MenuItem>
           <MenuItem value="taste">Taste</MenuItem>
