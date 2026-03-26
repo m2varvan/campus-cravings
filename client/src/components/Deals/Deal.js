@@ -42,7 +42,7 @@ const Deal = ({uuid, deal, size='lg'}) => {
                             data-testid="deal-name"
                             variant={size === 'lg' ? "h6" : 'subtitle1'}
                             sx={{
-                                fontWeight: 'bold', // 👈 add this
+                                fontWeight: 'bold',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
