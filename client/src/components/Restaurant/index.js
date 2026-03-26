@@ -30,12 +30,12 @@ const RestaurantList = ({ uuid }) => {
 
   // Callback to update favorite status in the restaurants list
   const handleFavouriteChange = (restaurantID, isFavourited) => {
-    setRestaurants(prevRestaurants =>
-      prevRestaurants.map(r =>
+    setRestaurants((prevRestaurants) =>
+      prevRestaurants.map((r) =>
         r.restaurant_id === restaurantID
           ? { ...r, is_favourited: isFavourited }
-          : r
-      )
+          : r,
+      ),
     );
   };
 
@@ -57,7 +57,7 @@ const RestaurantList = ({ uuid }) => {
         }
 
         const data = await response.json();
-        console.log('Restaurants',data)
+        console.log("Restaurants", data);
         setRestaurants(data);
         console.log(data);
       } catch (error) {
@@ -123,8 +123,8 @@ const RestaurantList = ({ uuid }) => {
     loadRestaurantHours();
   }, [uuid]);
 
-    useEffect(() => {
-      console.log("Restaurants", restaurants);
+  useEffect(() => {
+    console.log("Restaurants", restaurants);
   }, [restaurants]);
 
   // Get times for open now feature
@@ -303,12 +303,12 @@ const RestaurantList = ({ uuid }) => {
   ].sort();
 
   const cuisineOptions = [...new Set(restaurants.map((r) => r.cuisine))];
-   
+
   return (
     <Grid container p={4} display={"flex"}>
       <Grid item xs={12} mb={2}>
         {/* Page Title */}
-        <Typography variant="h4">University Shops Plaza Restaurants</Typography>
+        <Typography variant="h3">University Shops Plaza Restaurants</Typography>
 
         <FilterSortRestaurants
           restaurantFilter={restaurantFilter}
