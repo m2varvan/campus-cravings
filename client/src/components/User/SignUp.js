@@ -59,7 +59,7 @@ const SignUp = ({ firebase }) => {
         setError({});
 
         if (email.trim() === '') newErrors.email = "Enter an email address";
-        else if (!isValidEmail(email)) newErrors.email = "fivalid email address";
+        else if (!isValidEmail(email)) newErrors.email = "Enter a valid email address";
 
         if (username.trim() === '') newErrors.username = "Enter a username";
         else if (!isValidUsername(username))
