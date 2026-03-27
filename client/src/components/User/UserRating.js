@@ -133,16 +133,29 @@ const UserRating = ({ rating, uuid, onUpdate, onDelete, readOnly = false }) => {
         <Box sx={{ display: "flex", mt: 1 }}>
           {editing ? (
             <>
-              <Button variant="contained" size="small" onClick={handleUpdateRating} sx={{ mr: 1 }}>
+              <Button 
+                variant="contained" 
+                size="small"
+                onClick={handleUpdateRating}>
                 Update
               </Button>
-              <Button variant="outlined" onClick={handleCancel}>
+              <Button 
+                variant="outlined" 
+                color='error'
+                onClick={handleCancel}>
                 Cancel
               </Button>
             </>
           ) : (
             <>
-              <Button size="small" onClick={() => setEditing(true)} sx={{ mr: 1 }}>
+              <Button size="small" onClick={() => setEditing(true)} 
+                 sx={{
+                    mr: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                      backgroundColor: 'grey.100',
+                    },
+                  }}>
                 Edit
               </Button>
               <Button size="small" color="error" onClick={handleDeleteRating}>
