@@ -65,6 +65,17 @@ function SearchPage({ uuid }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Callback to update favorite status in the restaurants list
+  const handleFavouriteChange = (restaurantID, isFavourited) => {
+    setRestaurants((prevRestaurants) =>
+      prevRestaurants.map((r) =>
+        r.restaurant_id === restaurantID
+          ? { ...r, is_favourited: isFavourited }
+          : r,
+      ),
+    );
+  };
+
   useEffect(() => {
     if (!query) return;
 
@@ -287,6 +298,7 @@ function SearchPage({ uuid }) {
             restaurant={restaurant}
             uuid={uuid}
             ratings={restaurantRatings}
+            onFavouriteChange={handleFavouriteChange}
           />
         ))}
       </Grid>

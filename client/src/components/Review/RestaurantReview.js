@@ -97,7 +97,7 @@ function RestaurantReview({ restaurantID, uuid }) { // uuid added for HelpfulRev
 
             <Typography
               variant="body2"
-              color="primary"
+              color="primary.dark"
               sx={{ mb: 0.5 }}
             >
               Deal: {review.deal_name}
