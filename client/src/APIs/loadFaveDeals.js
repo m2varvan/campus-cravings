@@ -1,10 +1,10 @@
-const loadFaveDeals = async (uuid) => {
+const loadFaveDeals = async (profileUserID, viewerID) => {
   const response = await fetch("/api/load/fave/deal", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ userID: uuid }),
+    body: JSON.stringify({ profileUserID, viewerID }),
   });
 
   if (!response.ok) {

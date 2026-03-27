@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import React from "react";
 import FavouriteDealList from "./FavouriteDealList";
+import { renderWithDealsProvider } from "../../utils/test-utils";
 
 describe("FavouriteDeals Component", () => {
   const mockDeals = [
@@ -29,12 +30,14 @@ describe("FavouriteDeals Component", () => {
   let setFaveDeals;
 
   function renderComponent() {
-    mockLoadFaveDeals = jest.fn();
+    mockLoadFaveDeals = jest.fn().mockResolvedValue(mockDeals);
     setFaveDeals = jest.fn();
 
-    render(
+    renderWithDealsProvider(
       <FavouriteDealList 
-        uuid={1}
+        profileUserID={1}
+        viewerID={1}
+        isOwnProfile
         loadFaveDeals={mockLoadFaveDeals}
         faveDeals={mockDeals}
         setFaveDeals={setFaveDeals}
@@ -42,9 +45,11 @@ describe("FavouriteDeals Component", () => {
     );
   }
 
-  test("loadFaveDeals function is called on initial render", () => {
+  test("loadFaveDeals function is called on initial render", async () => {
     renderComponent();
-    expect(mockLoadFaveDeals).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockLoadFaveDeals).toHaveBeenCalledWith(1, 1);
+    });
   });
 
   test("Deal name, restaurant, and average rating are displayed", async () => {
@@ -68,12 +73,14 @@ describe("FavouriteDeals Component", () => {
   });
 
   test("A message saying the user has no favourites is shown if the user has not favourited any deals", async () => {
-    mockLoadFaveDeals = jest.fn();
+    mockLoadFaveDeals = jest.fn().mockResolvedValue([]);
     setFaveDeals = jest.fn();
 
-    render(
+    renderWithDealsProvider(
       <FavouriteDealList 
-        uuid={1}
+        profileUserID={1}
+        viewerID={1}
+        isOwnProfile
         loadFaveDeals={mockLoadFaveDeals}
         faveDeals={[]}
         setFaveDeals={setFaveDeals}

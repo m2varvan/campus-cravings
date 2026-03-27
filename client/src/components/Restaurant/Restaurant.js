@@ -5,7 +5,7 @@ import Favourite from "../Deals/Favourite";
 import saveFaveRestaurant from "../../APIs/saveFaveRestaurant";
 import removeFaveRestaurant from "../../APIs/removeFaveRestaurant";
 
-const Restaurant = ({ uuid, restaurant, ratings }) => {
+const Restaurant = ({ uuid, restaurant, ratings, onFavouriteChange }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const { isOpen, isClosingSoon } = restaurant;
 
@@ -15,32 +15,39 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
     (r) => r.restaurant_id === restaurant.restaurant_id,
   );
 
-  const averageRating = restaurantRating && restaurantRating.total_ratings > 0
-    ? ((restaurantRating.avg_value_rating +
-        restaurantRating.avg_taste_rating +
-        restaurantRating.avg_portion_rating) / 3).toFixed(1)
-    : null;
+  const averageRating =
+    restaurantRating && restaurantRating.total_ratings > 0
+      ? (
+          (restaurantRating.avg_value_rating +
+            restaurantRating.avg_taste_rating +
+            restaurantRating.avg_portion_rating) /
+          3
+        ).toFixed(1)
+      : null;
 
   return (
     <>
-      <Grid item xs={12} sm={6} lg={4} sx={{ display: "flex" }}>
+      <Grid item xs={12} sm={6} lg={4} sx={{ width: "100%", display: "flex" }}>
         <Box
           sx={{
             bgcolor: "secondary.light",
             p: 2,
+            mx: 7,
+            my: 4,
             m: 1,
+            width: "100%",
             borderRadius: 2,
             cursor: "pointer",
             transition: "all 0.2s ease-in-out",
-            flexGrow: 1, 
+            flexGrow: 1,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between", 
-            minHeight: "120px", 
+            justifyContent: "space-between",
+            minHeight: "120px",
             "&:hover": {
               filter: "brightness(0.95)",
               boxShadow: 3,
-              transform: "translateY(-2px)" 
+              transform: "translateY(-2px)",
             },
           }}
           onClick={() => setOpenDetails(true)}
@@ -50,7 +57,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              gap: 1
+              gap: 1,
             }}
           >
             {/* Restaurant Name and Status */}
@@ -63,41 +70,53 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   display: "-webkit-box",
-                  WebkitLineClamp: 2, 
+                  WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
                   lineHeight: 1.2,
-                  mb: 1
+                  mb: 1,
                 }}
               >
                 {restaurant.restaurant_name}
               </Typography>
-              
+
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                 {isOpen ? (
-                  <Chip 
-                    label={isClosingSoon ? "Closing Soon" : "Open Now"} 
-                    size="small" 
+                  <Chip
+                    label={isClosingSoon ? "Closing Soon" : "Open Now"}
+                    size="small"
                     color={isClosingSoon ? "warning" : "success"}
-                    sx={{ height: 20, fontSize: "0.65rem", fontWeight: 'bold' }}
+                    sx={{ height: 25, fontSize: "0.75rem", fontWeight: "bold" }}
                   />
                 ) : (
-                  <Chip 
-                    label="Closed" 
-                    size="small" 
-                    sx={{ height: 20, fontSize: "0.65rem", fontWeight: 'bold', bgcolor: "#ddd" }}
+                  <Chip
+                    label="Closed"
+                    size="small"
+                    sx={{
+                      height: 25,
+                      fontSize: "0.75rem",
+                      fontWeight: "bold",
+                      bgcolor: "#ddd",
+                    }}
                   />
                 )}
-                <Chip 
-                  label={restaurant.cuisine || "Food"} 
-                  size="small" 
+                <Chip
+                  label={restaurant.cuisine || "Food"}
+                  size="small"
                   variant="outlined"
-                  sx={{ height: 20, fontSize: "0.65rem" }}
+                  sx={{ height: 24, fontSize: "0.75rem" }}
                 />
               </Box>
             </Box>
 
             {/* Heart and Rating */}
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                flexShrink: 0,
+              }}
+            >
               <Box onClick={(e) => e.stopPropagation()}>
                 <Favourite
                   uuid={uuid}
@@ -107,20 +126,24 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
                   removeFave={removeFaveRestaurant}
                 />
               </Box>
-              
+
               <Box sx={{ mt: 1, textAlign: "right" }}>
                 {averageRating ? (
                   <>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                      ⭐ {averageRating}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                      ({restaurantRating.total_ratings} reviews)
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      ⭐ {averageRating}/5 ({restaurantRating.total_ratings})
                     </Typography>
                   </>
                 ) : (
-                  <Typography variant="caption" color="text.secondary">
-                    No ratings
+                  <Typography variant="body2" color="text.secondary">
+                    No ratings yet
                   </Typography>
                 )}
               </Box>
@@ -134,6 +157,7 @@ const Restaurant = ({ uuid, restaurant, ratings }) => {
         restaurant_id={restaurant.restaurant_id}
         handleClose={() => setOpenDetails(false)}
         open={openDetails}
+        onFavouriteChange={onFavouriteChange}
       />
     </>
   );

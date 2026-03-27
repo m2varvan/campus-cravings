@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Deal from "./Deal";
 import { Typography, Grid, Button } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -10,7 +10,6 @@ const TodayDeal = ({
       loading,
       error,
       loadTodayDeals,
-      reloadDeals,
     }) => {
 
   // Load today's deals on render
@@ -19,7 +18,7 @@ const TodayDeal = ({
   }, [uuid]);
 
   // Variables and functions to show only 12 by default
-  const defaultVisible = 12;
+  const defaultVisible = 9;
   const [visibleCount, setVisibleCount] = useState(defaultVisible);
   const handleShowMore = () => {
     setVisibleCount(todayDeals.length);
@@ -112,16 +111,13 @@ const TodayDeal = ({
       {/* Show Deals */}
       {!loading && !error && todayDeals.length > 0 && (
         <>
-          <Grid container data-testid="today-deals">
+          <Grid container spacing={2} data-testid="today-deals">
             {/* Iterate through deals array and render a each deal in a deal component */}
             {todayDeals.slice(0, visibleCount).map((deal) => (
-              <Grid item xs={12} sm={6} lg={4} >
-                
+              <Grid item xs={12} sm={6} lg={4} key={deal.dealID} >
                 <Deal
-                  key={deal.dealID}
                   uuid={uuid}
                   deal={deal}
-                  reloadDeals={reloadDeals}
                 />
               </Grid>
             ))}

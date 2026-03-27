@@ -1,5 +1,6 @@
+import { renderWithDealsProvider } from "../../utils/test-utils";
+
 const {
-  render,
   screen,
   fireEvent,
   waitFor,
@@ -7,6 +8,7 @@ const {
 require("@testing-library/jest-dom");
 const React = require("react");
 const Restaurant = require("./Restaurant").default;
+
 
 jest.mock("./RestaurantDetails", () => {
   const mockReact = require("react");
@@ -43,7 +45,7 @@ describe("Restaurant", () => {
   });
 
   function renderComponent(props = {}) {
-    return render(
+    return renderWithDealsProvider(
       React.createElement(Restaurant, {
         uuid: null,
         restaurant: mockRestaurant,
@@ -61,7 +63,7 @@ describe("Restaurant", () => {
 
     const spy = jest.spyOn(console, "error").mockImplementation(() => {});
     expect(() => {
-      render(
+      renderWithDealsProvider(
         React.createElement(Restaurant, { uuid: null, restaurant: { isOpen: false, isClosingSoon: false } }),
       );
     }).not.toThrow();

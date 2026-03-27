@@ -4,14 +4,14 @@ import { Box, FormControl, InputLabel, Select, MenuItem, Button, OutlinedInput, 
 const FilterSortDeals = ({
     restaurantFilter,
     setRestaurantFilter,
-    ratingSort,
-    setRatingSort,
+    sort,
+    setSort,
     restaurantOptions = []
     }) => {
 
   const handleClearFilters = () => {
     setRestaurantFilter([]);
-    setRatingSort("");
+    setSort("");
   };
 
   const menuProps = {
@@ -23,10 +23,11 @@ const FilterSortDeals = ({
     },
   };
 
-  // Functio to remove a single selected restaurant
+  // Function to remove a single selected restaurant
   const handleDeleteRestaurant = (restaurant) => {
     setRestaurantFilter(restaurantFilter.filter((r) => r !== restaurant));
   };
+
 
 
   return (
@@ -58,9 +59,7 @@ const FilterSortDeals = ({
                     <Chip
                       label={value}
                       size="small"
-                      onDelete={() => {
-                        setRestaurantFilter((prev) => prev.filter((r) => r !== value));
-                      }}
+                      onDelete={() => {handleDeleteRestaurant(value)}}
                     />
                   </Box>
                 ))}
@@ -75,19 +74,24 @@ const FilterSortDeals = ({
         </Select>
       </FormControl>
 
-      {/* Rating Sort */}
+    {/* Rating and Price Sort */}
     <FormControl size="small" sx={{ minWidth: 200 }}>
-        <InputLabel id="rating-sort-label">Sort by Rating</InputLabel>
+        <InputLabel id="deal-sort-label">Sort By</InputLabel>
         <Select
-          labelId="rating-sort-label"
-          data-testid="rating-sort"
-          value={ratingSort}
-          onChange={(e) => setRatingSort(e.target.value)}
-          label="Sort by Rating"
+          labelId="deal-sort-label"
+          data-testid="deal-sort"
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          label="Sort By"
         >
           <MenuItem value=""><em>None</em></MenuItem>
-          <MenuItem value="Highest">Highest to Lowest</MenuItem>
-          <MenuItem value="Lowest">Lowest to Highest</MenuItem>
+          <MenuItem value="Top Voted">Top Vote</MenuItem>
+          <MenuItem value="Top Rated">Overall Rating</MenuItem>
+          <MenuItem value="Value Rated">Value Rating</MenuItem>
+          <MenuItem value="Portion Rated">Portion Rating</MenuItem>
+          <MenuItem value="Taste Rated">Taste Rating</MenuItem>
+          <MenuItem value="Top Price">Price High to Low</MenuItem>
+          <MenuItem value="Low Price">Price Low to High</MenuItem>
         </Select>
     </FormControl>
 
@@ -101,7 +105,7 @@ const FilterSortDeals = ({
           px: 3
         }}
       >
-        Clear Filters
+        Reset All
       </Button>
     </Box>
   );

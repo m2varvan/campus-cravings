@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithDealsProvider, screen, fireEvent, waitFor } from '../../utils/test-utils';
 import '@testing-library/jest-dom';
 import React from 'react';
 import Favourite from './Favourite'
@@ -9,7 +9,7 @@ describe('Favourite', () => {
     
     test('If user is not logged in the favourite button is disabled', () => {
 
-        render(<Favourite uuid={null} />);
+        renderWithDealsProvider(<Favourite uuid={null} />);
 
         const favourite = screen.getByTestId("favourite-empty");
     
@@ -20,7 +20,7 @@ describe('Favourite', () => {
     test('A logged in user can favourite a deal and the favourite deal/restaurant function is called', () => {
 
         const saveFave = jest.fn().mockName('saveDeal')
-        render(<Favourite uuid={1} fave={false} saveFave={saveFave} />);
+        renderWithDealsProvider(<Favourite uuid={1} fave={false} saveFave={saveFave} />, { uuid: 1 });
 
         const faveButton = screen.getByTestId('favourite-empty')
         fireEvent.click(faveButton)
@@ -33,7 +33,7 @@ describe('Favourite', () => {
     test('A logged in user can unfavourinte a deal and the unfavourite deal/restaurant function is called', () => {
 
         const removeFave = jest.fn().mockName('removeFave')
-        render(<Favourite uuid={1} fave={true} removeFave={removeFave} />);
+        renderWithDealsProvider(<Favourite uuid={1} fave={true} removeFave={removeFave} />, { uuid: 1 });
 
         const faveButton = screen.getByTestId('favourite-filled')
         fireEvent.click(faveButton)
@@ -47,7 +47,7 @@ describe('Favourite', () => {
     test('An indication of success is shown after a deal/restaurant has been favourited', async () => {
 
         const saveFave = jest.fn().mockName('saveFave')
-        render(<Favourite uuid={1} fave={false} saveFave={saveFave} />);
+        renderWithDealsProvider(<Favourite uuid={1} fave={false} saveFave={saveFave} />, { uuid: 1 });
 
         const faveButton = screen.getByTestId('favourite-empty')
         fireEvent.click(faveButton)
@@ -61,7 +61,7 @@ describe('Favourite', () => {
     test('An indication of success is shown after a deal/restaurant has been unfavourited', async () => {
 
         const removeFave = jest.fn().mockName('removeFave')
-        render(<Favourite uuid={1} fave={true} removeFave={removeFave} />);
+        renderWithDealsProvider(<Favourite uuid={1} fave={true} removeFave={removeFave} />, { uuid: 1 });
 
         const faveButton = screen.getByTestId('favourite-filled')
         fireEvent.click(faveButton)

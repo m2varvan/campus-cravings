@@ -1,5 +1,5 @@
 
-import { render, screen, fireEvent, within} from "@testing-library/react";
+import { renderWithDealsProvider, screen, fireEvent, within} from "../../utils/test-utils";
 import "@testing-library/jest-dom";
 import React from "react";
 import Deals from "./index";
@@ -55,22 +55,16 @@ describe("Deals Filtering and Sorting", () => {
         dealValueRating: 5,
     };
 
-    const todayDeals = [deal1, deal2, deal3];
-    const weekDeals = { Monday: [deal1, deal2, deal3] };
+    const deals = [deal1, deal2, deal3];
 
     beforeAll(() => {
         global.fetch = jest.fn((url) => {
-            if (url.includes("/api/today/deals")) {
+            if (url.includes("/api/all/deals")) {
             return Promise.resolve({
                 ok: true,
-                json: () => Promise.resolve(todayDeals),
+                json: () => Promise.resolve(deals),
             });
-            } else if (url.includes("/api/week/deals")) {
-            return Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve(weekDeals),
-            });
-            }
+            } 
             return Promise.reject(new Error("Unknown API endpoint"));
         });
     });
@@ -81,14 +75,14 @@ describe("Deals Filtering and Sorting", () => {
 
     // Render Deals component and wait for deals to load, return references to select boxes and clear button
     const renderDeals= async () => {
-        render(<Deals uuid={null} />);
+        renderWithDealsProvider(<Deals uuid={null} />);
         
         // Wait for the first deal to appear
         const deal1 = await screen.findAllByText("Lunch Special");
         expect(deal1.length).toBeGreaterThan(0); // at least one
 
         const restaurantDropdown = screen.getByTestId("restaurant-filter");
-        const ratingDropdown = screen.getByTestId('rating-sort');
+        const ratingDropdown = screen.getByTestId('deal-sort');
         const clearButton = screen.getByTestId('clear-filters');
 
         return { restaurantDropdown, ratingDropdown, clearButton };

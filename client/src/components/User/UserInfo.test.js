@@ -25,6 +25,7 @@ describe('UserInfo', () => {
                 uuid={1}
                 loadUserInfo={mockLoadUserInfo}
                 userInfo={mockUser}
+                isOwnProfile={true}
                 setUserInfo={setUserInfo}
             />
         );

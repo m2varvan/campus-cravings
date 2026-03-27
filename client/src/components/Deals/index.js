@@ -3,145 +3,188 @@ import { Typography, Grid } from "@mui/material";
 import TodayDeal from "./TodayDeal";
 import WeekDeal from "./WeekDeal";
 import FilterSortDeals from "./FilterSortDeals";
+import { useDeals } from "../../Hooks/useDeals";
 
+// Inner component that uses the context
 const Deals = ({ uuid }) => {
 
-  // Stateful variables to load today's deals from db
+  const { allDeals, loading, error, loadAllDeals } = useDeals();
+
+  // Separated deals for display
   const [todayDeals, setTodayDeals] = React.useState([]);
-  const [loadingTodayDeals, setLoadingTodayDeals] = React.useState(false);
-  const [todayDealsError, setTodayDealsError] = React.useState(false);
+  const [weekDeals, setWeekDeals] = React.useState({
+    Monday: [],
+    Tuesday: [],
+    Wednesday: [],
+    Thursday: [],
+    Friday: [],
+    Saturday: [],
+    Sunday: [],
+  });
 
-  // Stateful variables to load today's deals from db
-  const [weekDeals, setWeekDeals] = React.useState({});
-  const [loadingWeekDeals, setLoadingWeekDeals] = React.useState(false);
-  const [WeekDealsError, setWeekDealsError] = React.useState(false);
-
+  const [dealsReady, setDealsReady] = React.useState(false)
+  
   // Variables to hold displayed deals
-  const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([])
+  const [displayedTodayDeals, setDisplayedTodayDeals] = React.useState([]);
   const [displayedWeekDeals, setDisplayedWeekDeals] = React.useState({});
 
   // Variables to hold filter states
   const [restaurantFilter, setRestaurantFilter] = React.useState([]);
-  const [ratingSort, setRatingSort] = React.useState('');
-  const [restaurantOptions, setRestaurantOptions] = React.useState([])
+  const [sort, setSort] = React.useState("");
+  const [restaurantOptions, setRestaurantOptions] = React.useState([]);
 
-
-
-  // API to load today's deals
- const loadTodayDeals = async () => {
-    try {
-      setLoadingTodayDeals(true);
-
-      const response = await fetch("/api/today/deals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userID: uuid }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setTodayDeals(data);
-      setDisplayedTodayDeals(data);
-
-      console.log(data);
-    } catch (error) {
-      console.error("Failed to load today's deals:", error);
-      setTodayDealsError(true);
-    } finally {
-      setLoadingTodayDeals(false);
+  React.useEffect(() => {
+    if (loading) {
+      setDealsReady(false);
+      return;
     }
-  };
 
-  // API to load week deals
-  const loadWeekDeals = async () => {
-    try {
-      setLoadingWeekDeals(true);
+    const hasTodayDeals = displayedTodayDeals.length > 0;
+    const hasWeekDeals = Object.values(displayedWeekDeals).some(
+      (dayDeals) => dayDeals.length > 0
+    );
 
-      const response = await fetch("/api/week/deals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userID: uuid }),
-      });
+    setDealsReady( hasTodayDeals || hasWeekDeals);
+  }, [loading, displayedTodayDeals, displayedWeekDeals]);
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+  // Load all deals on component mount
+  React.useEffect(() => {
+    loadAllDeals();
+  }, [uuid, loadAllDeals]);
+
+
+  // Regroup deals when deals updates
+  React.useEffect(() => {
+    const todayDayName = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+
+    const separatedByDay = {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+      Saturday: [],
+      Sunday: [],
+    };
+
+    const todayDealsArray = [];
+    const dealMap = new Map(); // To avoid duplicates in today's deals
+
+    allDeals.forEach((deal) => {
+      // Add to byDay
+      separatedByDay[deal.dayOfWeek].push(deal);
+
+      // Add to today's deals if it's today (and not already added)
+      if (deal.dayOfWeek === todayDayName && !dealMap.has(deal.dealID)) {
+        todayDealsArray.push(deal);
+        dealMap.set(deal.dealID, true);
       }
+    });
 
-      const data = await response.json();
-      setWeekDeals(data);
-      setDisplayedWeekDeals(data);
-    } catch (error) {
-      console.error("Failed to load weekly deals:", error);
-      setWeekDealsError(true);
-    } finally {
-      setLoadingWeekDeals(false);
-    }
-  };
+    setTodayDeals(todayDealsArray);
+    setWeekDeals(separatedByDay);
+  }, [allDeals])
 
-
-  // Funtion to find restaurants for dropdown list once deals load
+  // Function to find restaurants for dropdown list once deals load
   React.useEffect(() => {
     const restaurantSet = new Set();
 
-    Object.values(weekDeals).forEach((dailyDeals) => {
-      dailyDeals.forEach((deal) => {
-        if (deal.restaurantName) {
-          restaurantSet.add(deal.restaurantName);
-        }
-      });
+    allDeals.forEach((deal) => {
+      if (deal.restaurantName) {
+        restaurantSet.add(deal.restaurantName);
+      }
     });
 
     setRestaurantOptions(Array.from(restaurantSet));
-  }, [weekDeals])
+  }, [allDeals]);
 
+  // Function to sort deals by vote descending
+  const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
 
   // Apply filters and update lists of displayed deals
   React.useEffect(() => {
-
-    // Sort by votes descending
-    const sortByVotes = (deals) => [...deals].sort((a, b) => b.totalVote - a.totalVote);
-
-
-     // Helper to compute overall rating for a deal
+    // Helper to compute overall rating for a deal
     const getOverallRating = (deal) => {
       if (deal.numRatings === 0) return null; // unrated deals
-      return (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) / 3;
+      return (
+        (deal.dealTasteRating + deal.dealPortionRating + deal.dealValueRating) /
+        3
+      );
     };
 
-    // Function to sort deals by rating, keeping unrated last
-    const sortByRating = (deals) => {
+    const sortDeals = (deals) => {
       return [...deals].sort((a, b) => {
-        const aRating = getOverallRating(a);
-        const bRating = getOverallRating(b);
+        let aRating = null;
+        let bRating = null;
 
-        if (aRating === null && bRating === null) return 0; // both unrated
-        if (aRating === null) return 1; // a goes after b
-        if (bRating === null) return -1; // b goes after a
+        // Handle all rating-based sorts (always highest → lowest)
+        if (
+          sort === "Top Rated" ||
+          sort === "Value Rated" ||
+          sort === "Portion Rated" ||
+          sort === "Taste Rated"
+        ) {
+          switch (sort) {
+            case "Top Rated":
+              aRating = getOverallRating(a);
+              bRating = getOverallRating(b);
+              break;
 
-        if (ratingSort === "Highest") return bRating - aRating;
-        if (ratingSort === "Lowest") return aRating - bRating;
-        return 0; // no sort
+            case "Value Rated":
+              aRating = a.dealValueRating;
+              bRating = b.dealValueRating;
+              break;
+
+            case "Portion Rated":
+              aRating = a.dealPortionRating;
+              bRating = b.dealPortionRating;
+              break;
+
+            case "Taste Rated":
+              aRating = a.dealTasteRating;
+              bRating = b.dealTasteRating;
+              break;
+
+            default:
+              aRating = getOverallRating(a);
+              bRating = getOverallRating(b);
+          }
+
+          // Handle nulls (unrated last)
+          if (aRating === null && bRating === null) return 0;
+          if (aRating === null) return 1;
+          if (bRating === null) return -1;
+
+          return bRating - aRating;
+        }
+
+        // Price sorting
+        if (sort === "Top Price") {
+          return b.dealPrice - a.dealPrice;
+        }
+
+        if (sort === "Low Price") {
+          return a.dealPrice - b.dealPrice;
+        }
+
+        // No sorting ("None")
+        return 0;
       });
     };
 
-
     // Filter and sort today's deals
-    let filteredToday = todayDeals.filter((deal) =>
-      restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+    let filteredToday = todayDeals.filter(
+      (deal) =>
+        restaurantFilter.length === 0 ||
+        restaurantFilter.includes(deal.restaurantName),
     );
 
-    if (ratingSort === '') {
-      // No rating sort so sort by votes
+    if (sort === "Top Voted") {
       filteredToday = sortByVotes(filteredToday);
     } else {
-      filteredToday = sortByRating(filteredToday);
+      filteredToday = sortDeals(filteredToday);
     }
 
     setDisplayedTodayDeals(filteredToday);
@@ -150,68 +193,58 @@ const Deals = ({ uuid }) => {
     const newWeekDeals = {};
     Object.keys(weekDeals).forEach((day) => {
       let filtered = (weekDeals[day] || []).filter(
-        (deal) => restaurantFilter.length === 0 || restaurantFilter.includes(deal.restaurantName)
+        (deal) =>
+          restaurantFilter.length === 0 ||
+          restaurantFilter.includes(deal.restaurantName),
       );
 
-      if (ratingSort === '') {
+      if (sort === "Top Voted") {
         filtered = sortByVotes(filtered);
       } else {
-        filtered = sortByRating(filtered);
+        filtered = sortDeals(filtered);
       }
 
       newWeekDeals[day] = filtered;
     });
 
     setDisplayedWeekDeals(newWeekDeals);
-    
-
-  }, [restaurantFilter, ratingSort, todayDeals, weekDeals])
-
-  // Function to reload all deals
-  const reloadDeals = () => {
-    loadWeekDeals();
-    loadTodayDeals();
-  };
+  }, [restaurantFilter, sort, todayDeals, weekDeals]);
 
   return (
-    <Grid container p={4} display={"flex"}>
-
+    <Grid container py={4} px={8} display={"flex"}>
       {/* Page Title */}
       <Grid item xs={12}>
         <Typography variant="h3">University Shops Plaza Deals</Typography>
       </Grid>
 
       {/* Filter Options */}
-      <Grid item xs={12} justifyContent={'flex-start'}>
-        <FilterSortDeals 
+      <Grid item xs={12} justifyContent={"flex-start"}>
+        <FilterSortDeals
           restaurantFilter={restaurantFilter}
-          ratingSort={ratingSort}
           setRestaurantFilter={setRestaurantFilter}
-          setRatingSort={setRatingSort}
-          restaurantOptions={restaurantOptions} />
+          sort={sort}
+          setSort={setSort}
+          restaurantOptions={restaurantOptions}
+        />
       </Grid>
-      
 
       {/* Today's Deals */}
       <TodayDeal
         uuid={uuid}
         todayDeals={displayedTodayDeals}
-        loading={loadingTodayDeals}
-        error={todayDealsError}
-        loadTodayDeals={loadTodayDeals}
-        reloadDeals={reloadDeals}
+        loading={!dealsReady}
+        error={error}
+        loadTodayDeals={loadAllDeals}
       />
 
       {/* Weekly Deals */}
       <WeekDeal
         uuid={uuid}
         weekDeals={displayedWeekDeals}
-        loading={loadingWeekDeals}
-        error={WeekDealsError}
-        loadWeekDeals={loadWeekDeals}
-        reloadDeals={reloadDeals}
+        loading={!dealsReady}
+        error={error}
+        loadWeekDeals={loadAllDeals}
       />
-
     </Grid>
   );
 };

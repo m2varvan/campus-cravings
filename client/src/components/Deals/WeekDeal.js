@@ -8,7 +8,6 @@ const WeekDeal = ({
   loadWeekDeals,
   loading,
   error,
-  reloadDeals,
 }) => {
 
   // Load all deals for week view
@@ -52,8 +51,8 @@ const WeekDeal = ({
             Something went wrong while loading deals. Please try again.
           </Typography>
         </Box>
-      ) : (
-        <Grid container justifyContent={"center"}>
+      ) : ( !loading &&
+        <Grid container spacing={2} justifyContent={"center"} sx={{ overflowX: "hidden" }}>
           {/*For each day of week, RenderWeekDayDeals* */}
           {Object.keys(weekDeals).map((dayOfWeek, index) => (
             <Grid
@@ -69,7 +68,6 @@ const WeekDeal = ({
                 uuid={uuid}
                 day={dayOfWeek}
                 dealList={weekDeals[dayOfWeek]}
-                reloadDeals={reloadDeals}
               />
             </Grid>
           ))}

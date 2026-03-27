@@ -12,38 +12,43 @@ describe("Search functionality", () => {
   };
 
   it("shows restaurant and deal results", () => {
-    // intercept the lightweight search response
     cy.intercept("GET", "/api/search?*", {
       restaurants: [rest],
       deals: [deal],
     });
 
-    // intercept full restaurant list used for favourites
+    cy.intercept("GET", "/api/search/users?*", []);
+
     cy.intercept("POST", "/api/get-restaurants", [
       { restaurant_id: 1, is_favourited: true },
     ]);
 
-    // intercept restaurant-deals call
-    cy.intercept("POST", "/api/restaurant-deals", [
+    cy.intercept("POST", "/api/restaurant-rating", []);
+
+    cy.intercept("POST", "/api/restaurant-hours", []);
+
+    cy.intercept("POST", "/api/all/deals", [
       {
         dealID: 10,
+        restaurantID: 1,
+        restaurantName: "Test Resto",
         dealName: "Test Deal",
-        dealPrice: 5,
-        restaurant_name: "Test Resto",
-        avg_value_rating: 0,
-        avg_portion_rating: 0,
-        avg_taste_rating: 0,
-        number_of_ratings: 0,
-        total_votes: 0,
-        user_vote: 0,
-        daysOfWeek: ["Monday"],
+        dealDescription: "n/a",
+        dealPrice: "5.00",
+        dealEditData: null,
+        dayOfWeek: "Monday",
+        dealStartTime: [],
+        dealEndTime: [],
+        dealValueRating: 0,
+        dealTasteRating: 0,
+        dealPortionRating: 0,
+        numRatings: 0,
+        totalVote: 0,
+        userVote: null,
+        fave: 0,
       },
     ]);
 
-    // intercept week/deals for favourites map
-    cy.intercept("POST", "/api/week/deals", { Monday: [{ dealID: 10, fave: true }] });
-
-    // navigate directly to search page
     cy.visit("/search?q=test");
 
     // restaurant card should be visible

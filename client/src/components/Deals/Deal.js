@@ -6,7 +6,7 @@ import Favourite from "./Favourite";
 import saveFaveDeal from "../../APIs/saveFaveDeal";
 import removeFaveDeal from "../../APIs/removeFaveDeal";
 
-const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
+const Deal = ({uuid, deal, size='lg'}) => {
 
     // State to open dialog box with deal details
     const [openDetails, setOpenDetails] = React.useState(false);
@@ -20,10 +20,11 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                 data-cy="deal-card"
                 data-testid={`expand-dealID-${deal.dealID}`}
                 sx={{
+                    width: '100%',
                     bgcolor: 'secondary.light',
                     p: size==='lg' ? 2 : 1, // If large size, more padding
                     pb: size==='lg' ? 1 : 0.5, // If large size, more padding
-                    m: 1,
+                    m: 0,
                     borderRadius: 1,
                     "&:hover": {
                         filter: "brightness(0.95)",
@@ -38,16 +39,17 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', }}>
                     {/* Name and Restaurant Name */}
                     <Box sx={{width: '70%'}}>
-                    <Typography
+                        <Typography
                             data-testid="deal-name"
-                            variant= {size === 'lg' ? "h6": 'subtitle1'}
+                            variant={size === 'lg' ? "h6" : 'subtitle1'}
                             sx={{
+                                fontWeight: 'bold',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            {deal.dealName}
+                        {deal.dealName}
                         </Typography>
                     </Box>
                     
@@ -109,10 +111,10 @@ const Deal = ({uuid, deal, size='lg', reloadDeals}) => {
         
         {/* Dialog with expanded deal information */}
         <ExpandedDeal uuid={uuid} 
-                    deal={deal} 
+                    dealID={deal.dealID} 
                     handleClose={() => setOpenDetails(false)} 
                     open={openDetails} 
-                    reloadDeals={reloadDeals} />
+                    />
         </>
 
     )

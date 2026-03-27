@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react'; 
 import TodayDeal from './TodayDeal';
+import { renderWithDealsProvider } from '../../utils/test-utils';
 
 
 
@@ -94,7 +95,7 @@ describe('TodayDeal', () => {
     function renderComponent(props = {}) {
         loadTodayDeals = jest.fn().mockName('loadTodayDeals');
 
-        render(<TodayDeal 
+        renderWithDealsProvider(<TodayDeal 
             loadTodayDeals={loadTodayDeals}
             error={false}
             loading={false}
@@ -129,7 +130,7 @@ describe('TodayDeal', () => {
     
     test('displays "No promotions available." if no promotions exist', () => {
         const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={[]}
+        renderWithDealsProvider(<TodayDeal todayDeals={[]}
                         loadTodayDeals={loadTodayDeals}
                         loading={false}
                         error={false}
@@ -140,7 +141,7 @@ describe('TodayDeal', () => {
 
     test('displays error message if promotions fail to load', () => {
         const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={[]}
+        renderWithDealsProvider(<TodayDeal todayDeals={[]}
                         loadTodayDeals={loadTodayDeals}
                         loading={false}
                         error={true}
@@ -148,7 +149,7 @@ describe('TodayDeal', () => {
         expect(screen.getByText(/Something went wrong while loading deals. Please try again./i)).toBeInTheDocument();
     });
 
-    test('limits to 12 promotions by default and shows "See more" for extra', () => {
+    test('limits to 9 promotions by default and shows "See more" for extra', () => {
         const manyPromos = Array.from({ length: 20 }, (_, i) => ({
             dealID: i,
             dealName: `Promo ${i}`,
@@ -166,12 +167,12 @@ describe('TodayDeal', () => {
             endTime: '16:00:00',
         }));
         const loadTodayDeals = jest.fn().mockName('loadTodayDeals');
-        render(<TodayDeal todayDeals={manyPromos}
+        renderWithDealsProvider(<TodayDeal todayDeals={manyPromos}
                         loadTodayDeals={loadTodayDeals}
                         loading={false}
                         error={false}
                         uuid={null} />);
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 9; i++) {
             expect(screen.getByText(`Promo ${i}`)).toBeInTheDocument();
         }
         expect(screen.queryByText('Promo 12')).not.toBeInTheDocument();
