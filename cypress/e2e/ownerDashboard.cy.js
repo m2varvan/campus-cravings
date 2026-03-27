@@ -1,6 +1,6 @@
 const loginAsOwner = () => {
   cy.visit('/Login');
-  cy.get('input[type="email"]').type('test123456@gmail.com');
+  cy.get('input[type="email"]').type('muhammadvarvani@gmail.com');
   cy.get('input[type="password"]').type('Password123!');
   cy.contains('button', /login/i).click();
   cy.url().should('not.include', '/Login');
