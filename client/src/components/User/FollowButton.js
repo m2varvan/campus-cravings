@@ -1,7 +1,13 @@
 import React from "react";
 import { Button, Alert, Box } from "@mui/material";
 
-const FollowButton = ({ uuid, targetUserID, initialFollow, setFollowerCount }) => {
+const FollowButton = ({
+  uuid,
+  targetUserID,
+  initialFollow,
+  setFollowerCount,
+  onFollowChange,
+}) => {
 
   const [isFollowing, setIsFollowing] = React.useState(initialFollow);
   const [loading, setLoading] = React.useState(false);
@@ -33,9 +39,14 @@ const FollowButton = ({ uuid, targetUserID, initialFollow, setFollowerCount }) =
         return;
       }
       
-      isFollowing ? setFollowerCount((prev) => prev - 1 ) : setFollowerCount((prev) => prev + 1)
-      
-      setIsFollowing((prev) => !prev);
+      const nextIsFollowing = !isFollowing;
+
+      if (typeof setFollowerCount === "function") {
+        setFollowerCount((prev) => prev + (nextIsFollowing ? 1 : -1));
+      }
+
+      setIsFollowing(nextIsFollowing);
+      onFollowChange?.(nextIsFollowing);
 
     } catch (err) {
       console.error("Follow/unfollow error:", err);

@@ -103,7 +103,13 @@ const Owner = ({ uuid }) => {
           <Box sx={{ pb: 1, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
             <Typography variant="h3">{pageTitle}</Typography>
             {!isOwnProfile && !loadingFollow && (
-              <FollowButton uuid={uuid} targetUserID={profileUserID} initialFollow={isFollowing} />
+              <FollowButton
+                uuid={uuid}
+                targetUserID={profileUserID}
+                initialFollow={isFollowing}
+                setFollowerCount={setFollowerCount}
+                onFollowChange={setIsFollowing}
+              />
             )}
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
@@ -243,7 +249,9 @@ const Owner = ({ uuid }) => {
 
                 <Box mt={2}>
                   <FavouriteDealList
-                    uuid={profileUserID}
+                    profileUserID={profileUserID}
+                    viewerID={uuid}
+                    isOwnProfile={isOwnProfile}
                     loadFaveDeals={loadFaveDeals}
                     faveDeals={faveDeals}
                     setFaveDeals={setFaveDeals}
@@ -253,7 +261,9 @@ const Owner = ({ uuid }) => {
 
                 <Box mt={2}>
                   <FavouriteRestaurantList
-                    uuid={profileUserID}
+                    profileUserID={profileUserID}
+                    viewerID={uuid}
+                    isOwnProfile={isOwnProfile}
                     loadFaveRestaurants={loadFaveRestaurants}
                     faveRestaurants={faveRestaurants}
                     setFaveRestaurants={setFaveRestaurants}
@@ -273,7 +283,9 @@ const Owner = ({ uuid }) => {
               <>
                 <Box mb={2}>
                   <FavouriteDealList
-                    uuid={profileUserID}
+                    profileUserID={profileUserID}
+                    viewerID={uuid}
+                    isOwnProfile={isOwnProfile}
                     loadFaveDeals={loadFaveDeals}
                     faveDeals={faveDeals}
                     setFaveDeals={setFaveDeals}
@@ -282,7 +294,9 @@ const Owner = ({ uuid }) => {
                 </Box>
 
                 <FavouriteRestaurantList
-                  uuid={profileUserID}
+                  profileUserID={profileUserID}
+                  viewerID={uuid}
+                  isOwnProfile={isOwnProfile}
                   loadFaveRestaurants={loadFaveRestaurants}
                   faveRestaurants={faveRestaurants}
                   setFaveRestaurants={setFaveRestaurants}

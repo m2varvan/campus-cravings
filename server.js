@@ -1244,7 +1244,7 @@ app.post("/api/load/user", (req, res) => {
 
 // Route to get a user's favourite deals
 app.post("/api/load/fave/deal", (req, res) => {
-  const { userID } = req.body;
+  const { profileUserID, viewerID } = req.body;
 
   const connection = mysql.createConnection(config);
 
@@ -1263,16 +1263,20 @@ app.post("/api/load/fave/deal", (req, res) => {
       COUNT(rt.rating_id) AS number_of_ratings,
       COALESCE(SUM(dv.vote), 0) AS total_votes,
       MAX(CASE WHEN dv.user_id = ? THEN dv.vote ELSE 0 END) AS user_vote,
-      1 AS is_favourited
+      CASE
+        WHEN fd_viewer.deal_id IS NULL THEN 0
+        ELSE 1
+      END AS is_favourited
     FROM deals d
-    JOIN favourite_deals fd ON fd.deal_id = d.deal_id AND fd.user_id = ?
+    JOIN favourite_deals fd_profile ON fd_profile.deal_id = d.deal_id AND fd_profile.user_id = ?
     JOIN restaurants r ON r.restaurant_id = d.restaurant_id
     LEFT JOIN ratings rt ON rt.deal_id = d.deal_id
     LEFT JOIN deal_votes dv ON dv.deal_id = d.deal_id
+    LEFT JOIN favourite_deals fd_viewer ON fd_viewer.deal_id = d.deal_id AND fd_viewer.user_id = ?
     GROUP BY d.deal_id;
   `;
 
-  connection.query(sql, [userID, userID], (error, results) => {
+  connection.query(sql, [viewerID || null, profileUserID, viewerID || null], (error, results) => {
     if (error) {
       console.error("Database error:", error.message);
       return res.status(500).json({ error: "Failed to fetch favourite deals" });
@@ -1303,7 +1307,7 @@ app.post("/api/load/fave/deal", (req, res) => {
         parseInt(deal.user_vote) === 0
           ? null
           : parseInt(deal.user_vote) || null,
-      fave: 1,
+      fave: deal.is_favourited || 0,
     }));
 
     res.json(faveDeals);
@@ -1315,7 +1319,7 @@ app.post("/api/load/fave/deal", (req, res) => {
 // API endpoint to get favourited restaurants with average rating and rating count
 app.post("/api/load/fave/restaurants", (req, res) => {
   const connection = mysql.createConnection(config);
-  const { uuid } = req.body;
+  const { profileUserID, viewerID } = req.body;
 
   connection.connect((err) => {
     if (err) {
@@ -1326,21 +1330,24 @@ app.post("/api/load/fave/restaurants", (req, res) => {
     const query = `
       SELECT 
           r.*,
-          1 as fave,
+          (fr_viewer.restaurant_id IS NOT NULL) AS fave,
           ROUND(AVG((rt.taste_score + rt.portion_score + rt.value_score) / 3), 1) AS avg_rating,
           COUNT(rt.rating_id) AS num_ratings
       FROM restaurants r
-      JOIN favourite_restaurants fr
-          ON r.restaurant_id = fr.restaurant_id
+        JOIN favourite_restaurants fr_profile
+          ON r.restaurant_id = fr_profile.restaurant_id
+        LEFT JOIN favourite_restaurants fr_viewer
+          ON r.restaurant_id = fr_viewer.restaurant_id
+        AND fr_viewer.user_id = ?
       LEFT JOIN deals d
           ON d.restaurant_id = r.restaurant_id
       LEFT JOIN ratings rt
           ON rt.deal_id = d.deal_id
-      WHERE fr.user_id = ?
+        WHERE fr_profile.user_id = ?
       GROUP BY r.restaurant_id;
     `;
 
-    connection.query(query, [uuid], (error, results) => {
+      connection.query(query, [viewerID || null, profileUserID], (error, results) => {
       if (error) {
         console.error("Database error:", error.message);
         connection.end();

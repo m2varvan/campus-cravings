@@ -2,10 +2,26 @@ import React from 'react';
 import { Typography, Box, CircularProgress, Grid, Button } from '@mui/material';
 import FavouriteRestaurant from './FavouriteRestaurant';
 
-const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, setFaveRestaurants, profileName }) => {
+const FavouriteRestaurantList = ({
+    profileUserID,
+    viewerID,
+    isOwnProfile = false,
+    loadFaveRestaurants,
+    faveRestaurants,
+    setFaveRestaurants,
+    profileName,
+}) => {
 
-    const title = profileName ? `${profileName}'s Favourite Restaurants` : 'My Favourite Restaurants';
-    const noRestaurantsText = profileName ? `${profileName} has no favourited restaurants.` : 'No restaurants favourited.';
+    const title = isOwnProfile
+        ? 'My Favourite Restaurants'
+        : profileName
+            ? `${profileName}'s Favourite Restaurants`
+            : 'Their Favourite Restaurants';
+    const noRestaurantsText = isOwnProfile
+        ? 'No restaurants favourited.'
+        : profileName
+            ? `${profileName} has no favourited restaurants.`
+            : 'No favourited restaurants.';
 
     //States for loading / errors
     const [loadingRestaurants, setLoadingRestaurants] = React.useState(false);
@@ -22,7 +38,7 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
         try {
             setLoadingRestaurants(true);
             setError(false);
-            const restaurants = await loadFaveRestaurants(uuid);
+            const restaurants = await loadFaveRestaurants(profileUserID, viewerID);
             setFaveRestaurants(restaurants);
         } catch (err) {
             setError(true);
@@ -34,10 +50,14 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
     // Load favourite restaurants when uuid changes
     React.useEffect(() => {
         loadRestaurants();
-    }, [uuid]);
+    }, [profileUserID, viewerID, loadFaveRestaurants, setFaveRestaurants]);
 
     // Remove favourite restaurant from list
     const handleRemoveRestaurant = (restaurantID) => {
+        if (!isOwnProfile) {
+            return;
+        }
+
         setFaveRestaurants(prevRestaurants =>
             prevRestaurants.filter(r => r.restaurant_id !== restaurantID)
         );
@@ -89,7 +109,7 @@ const FavouriteRestaurantList = ({ uuid, loadFaveRestaurants, faveRestaurants, s
                             <Grid item xs={12} md={6} key={restaurant.restaurant_id}>
                                 <FavouriteRestaurant
                                     restaurant={restaurant}
-                                    uuid={uuid}
+                                    uuid={viewerID}
                                     handleRemoveRestaurant={handleRemoveRestaurant}
                                 />
                             </Grid>

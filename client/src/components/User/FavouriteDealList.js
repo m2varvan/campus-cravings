@@ -2,10 +2,26 @@ import React from 'react';
 import { Typography, Box, CircularProgress, Grid, Button } from '@mui/material';
 import FavouriteDeal from './FavouriteDeal';
 
-const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals, profileName }) => {
+const FavouriteDealList = ({
+    profileUserID,
+    viewerID,
+    isOwnProfile = false,
+    loadFaveDeals,
+    faveDeals,
+    setFaveDeals,
+    profileName,
+}) => {
 
-    const title = profileName ? `${profileName}'s Favourite Deals` : 'My Favourite Deals';
-    const noDealsText = profileName ? `${profileName} has no favourited deals.` : 'No deals favourited.';
+    const title = isOwnProfile
+        ? 'My Favourite Deals'
+        : profileName
+            ? `${profileName}'s Favourite Deals`
+            : 'Their Favourite Deals';
+    const noDealsText = isOwnProfile
+        ? 'No deals favourited.'
+        : profileName
+            ? `${profileName} has no favourited deals.`
+            : 'No favourited deals.';
 
     //States for loading / errors
     const [loadingDeals, setLoadingDeals] = React.useState(false);
@@ -22,7 +38,7 @@ const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals, profi
         try {
         setLoadingDeals(true);
         setError(false);
-        const deals = await loadFaveDeals(uuid);
+        const deals = await loadFaveDeals(profileUserID, viewerID);
         setFaveDeals(deals);
         } catch (err) {
         setError(true);
@@ -34,11 +50,15 @@ const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals, profi
     // Load favourite deals when uuid changes
     React.useEffect(() => {
         loadDeals();
-    }, [uuid, loadFaveDeals, setFaveDeals]);
+    }, [profileUserID, viewerID, loadFaveDeals, setFaveDeals]);
 
 
     // Remove favourite deal from list
     const handleRemoveDeal = (dealID) => {
+        if (!isOwnProfile) {
+            return;
+        }
+
         setFaveDeals(prevDeals => prevDeals.filter(deal => deal.dealID !== dealID));
     };
 
@@ -89,7 +109,7 @@ const FavouriteDealList = ({ uuid, loadFaveDeals, faveDeals, setFaveDeals, profi
                         <Grid item xs={12} md={6} key={deal.dealID}>
                             <FavouriteDeal
                                 deal={deal}
-                                uuid={uuid}
+                                uuid={viewerID}
                                 reloadDeals={loadDeals}
                                 handleRemoveDeal={handleRemoveDeal}
                             />

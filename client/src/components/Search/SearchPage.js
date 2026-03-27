@@ -60,6 +60,7 @@ function SearchPage({ uuid }) {
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantRatings, setRestaurantRatings] = useState([]); // kept separately so Restaurant component receives it the same way as RestaurantList
   const [deals, setDeals] = useState([]);
+  const [matchedDealIDs, setMatchedDealIDs] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -73,7 +74,7 @@ function SearchPage({ uuid }) {
       setUsers([]);
       setRestaurants([]);
       setRestaurantRatings([]);
-      setDeals([]);
+      setMatchedDealIDs([]);
 
       
       if (allDeals.length === 0) {
@@ -158,18 +159,7 @@ function SearchPage({ uuid }) {
         setRestaurants(enrichedRestaurants);
 
         
-        const searchDealIds = new Set((searchResults.deals || []).map(d => d.deal_id));
-        const dealMap = new Map(); // To avoid duplicates
-        const foundDeals = [];
-
-        allDeals.forEach((deal) => {
-          if (searchDealIds.has(deal.dealID) && !dealMap.has(deal.dealID)) {
-            foundDeals.push(deal);
-            dealMap.set(deal.dealID, true);
-          }
-        });
-
-        setDeals(foundDeals);
+        setMatchedDealIDs((searchResults.deals || []).map((deal) => deal.deal_id));
       })
       .catch((e) => {
         console.error("Search error", e);
@@ -179,7 +169,28 @@ function SearchPage({ uuid }) {
     };
 
     performSearch();
-  }, [query, uuid, allDeals, loadAllDeals]);
+  }, [query, uuid, allDeals.length, loadAllDeals]);
+
+  useEffect(() => {
+    if (matchedDealIDs.length === 0) {
+      setDeals([]);
+      return;
+    }
+
+    const searchDealIds = new Set(matchedDealIDs);
+    const dealMap = new Map();
+    const foundDeals = [];
+
+    allDeals.forEach((deal) => {
+      if (searchDealIds.has(deal.dealID) && !dealMap.has(deal.dealID)) {
+        foundDeals.push(deal);
+        dealMap.set(deal.dealID, true);
+      }
+    });
+
+    setDeals(foundDeals);
+  }, [allDeals, matchedDealIDs]);
+
   const handleUserClick = (user) => {
     const route = user.user_type === "restaurant_owner" ? "/Owner" : "/User";
     navigate(`${route}?id=${user.id}`);

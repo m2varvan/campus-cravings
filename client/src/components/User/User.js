@@ -89,7 +89,8 @@ const User = ({ uuid }) => {
                 uuid={uuid} 
                 targetUserID={profileUserID} 
                 initialFollow={isFollowing} 
-                setFollowerCount={setFollowerCount} />
+                setFollowerCount={setFollowerCount}
+                onFollowChange={setIsFollowing} />
             )}
             {!isOwnProfile && loadingFollow && <CircularProgress size={24} />}
           </Box>
@@ -165,20 +166,24 @@ const User = ({ uuid }) => {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <FavouriteDealList
-                  uuid={profileUserID}
+                  profileUserID={profileUserID}
+                  viewerID={uuid}
+                  isOwnProfile={isOwnProfile}
                   loadFaveDeals={loadFaveDeals}
                   faveDeals={faveDeals}
                   setFaveDeals={setFaveDeals}
-                  profileName={profileName}
+                  profileName={isOwnProfile ? null : profileName}
                 />
               </Grid>
               <Grid item xs={12}>
                 <FavouriteRestaurantList
-                  uuid={profileUserID}
+                  profileUserID={profileUserID}
+                  viewerID={uuid}
+                  isOwnProfile={isOwnProfile}
                   loadFaveRestaurants={loadFaveRestaurants}
                   setFaveRestaurants={setFaveRestaurants}
                   faveRestaurants={faveRestaurants}
-                  profileName={profileName}
+                  profileName={isOwnProfile ? null : profileName}
                 />
               </Grid>
             </Grid>

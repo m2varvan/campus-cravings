@@ -12,27 +12,21 @@ describe("Search functionality", () => {
   };
 
   it("shows restaurant and deal results", () => {
-    // intercept the lightweight search response
     cy.intercept("GET", "/api/search?*", {
       restaurants: [rest],
       deals: [deal],
     });
 
-    // intercept user search
     cy.intercept("GET", "/api/search/users?*", []);
 
-    // intercept full restaurant list used for favourites
     cy.intercept("POST", "/api/get-restaurants", [
       { restaurant_id: 1, is_favourited: true },
     ]);
 
-    // intercept all ratings
     cy.intercept("POST", "/api/restaurant-rating", []);
 
-    // intercept restaurant hours
     cy.intercept("POST", "/api/restaurant-hours", []);
 
-    // intercept all deals — used by DealsContext via useDeals
     cy.intercept("POST", "/api/all/deals", [
       {
         dealID: 10,
@@ -55,7 +49,6 @@ describe("Search functionality", () => {
       },
     ]);
 
-    // navigate directly to search page
     cy.visit("/search?q=test");
 
     // restaurant card should be visible
